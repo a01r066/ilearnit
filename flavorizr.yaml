@@ -1,0 +1,16 @@
+flavors:
+  dev:
+    app:
+      name: "iLearnIt Dev"
+    android:
+      applicationId: "info.ilearnit.app.dev"
+    ios:
+      bundleId: "info.ilearnit.app.dev"
+
+  prod:
+    app:
+      name: "iLearnIt"
+    android:
+      applicationId: "info.ilearnit.app"
+    ios:
+      bundleId: "info.ilearnit.app"

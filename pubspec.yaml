@@ -1,0 +1,96 @@
+name: ilearnit
+description: "iLearnIt — Online Classical Music Lessons, Courses & Instructors (Guitars, Piano, Violin)."
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^3.1.0
+  riverpod_annotation: ^4.0.0
+
+  # Models / immutability
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.9.0
+
+  # Functional error handling
+  dartz: ^0.10.1
+
+  # Routing
+  go_router: ^17.2.2
+
+  # Networking
+  dio: ^5.7.0
+  pretty_dio_logger: ^1.4.0
+
+  # Firebase
+  firebase_core: ^4.7.0
+  firebase_auth: ^6.4.0
+  cloud_firestore: ^6.3.0
+  firebase_storage: ^13.3.0
+
+  # Storage
+  flutter_secure_storage: ^10.0.0
+  shared_preferences: ^2.3.2
+
+  # Connectivity
+  connectivity_plus: ^7.1.1
+
+  # Charts
+  fl_chart: ^1.2.0
+
+  # Utils
+  intl: ^0.20.2
+  equatable: ^2.0.5
+  logger: ^2.4.0
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+
+  # UI
+  cupertino_icons: ^1.0.8
+  google_fonts: ^8.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+  # Codegen
+  build_runner:
+  freezed: ^3.2.3
+  json_serializable: ^6.8.0
+  riverpod_generator: ^4.0.0+1
+  custom_lint: ^0.8.1
+  riverpod_lint: ^3.1.0
+
+  # Flavors
+  flutter_flavorizr: ^2.4.2
+
+  # Testing
+  mocktail: ^1.0.4
+
+# Force drift_flutter to NOT include sqlite3 for web builds
+dependency_overrides:
+  analyzer_plugin: ^0.13.1  # Force fixed version with publiclyExporting typo fix
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/
+  # fonts:
+  #   - family: Inter
+  #     fonts:
+  #       - asset: assets/fonts/Inter-Regular.ttf
+  #       - asset: assets/fonts/Inter-Medium.ttf
+  #         weight: 500
+  #       - asset: assets/fonts/Inter-SemiBold.ttf
+  #         weight: 600
