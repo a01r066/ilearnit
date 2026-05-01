@@ -45,12 +45,8 @@ class _SignupPageState extends ConsumerState<SignupPage> {
   @override
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authNotifierProvider, (prev, next) {
-      next.maybeWhen(
-        unauthenticated: (failure) {
-          if (failure != null) context.showSnack(failure.displayMessage);
-        },
-        orElse: () {},
-      );
+      final failure = next.failureOrNull;
+      if (failure != null) context.showSnack(failure.displayMessage);
     });
 
     final isLoading = ref.watch(authNotifierProvider).isLoading;

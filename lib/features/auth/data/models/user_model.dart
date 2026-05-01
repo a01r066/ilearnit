@@ -9,7 +9,7 @@ part 'user_model.g.dart';
 
 /// Firestore-backed DTO for the `users` collection.
 @freezed
-class UserModel with _$UserModel {
+abstract class UserModel with _$UserModel {
   const UserModel._();
 
   const factory UserModel({

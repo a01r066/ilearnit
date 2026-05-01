@@ -4,7 +4,7 @@ part 'user_entity.freezed.dart';
 
 /// Pure domain user — no JSON, no Firebase types. UI binds to this.
 @freezed
-class UserEntity with _$UserEntity {
+abstract class UserEntity with _$UserEntity {
   const factory UserEntity({
     required String id,
     required String email,

@@ -10,7 +10,7 @@ part 'courses_state.freezed.dart';
 ///
 /// Pagination is cursor-based; `nextCursor` and `hasMore` come from Firestore.
 @freezed
-class CoursesState with _$CoursesState {
+abstract class CoursesState with _$CoursesState {
   const CoursesState._();
 
   const factory CoursesState({

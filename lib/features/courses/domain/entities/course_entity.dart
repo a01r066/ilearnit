@@ -5,7 +5,7 @@ import 'instrument_category.dart';
 part 'course_entity.freezed.dart';
 
 @freezed
-class CourseEntity with _$CourseEntity {
+abstract class CourseEntity with _$CourseEntity {
   const factory CourseEntity({
     required String id,
     required String title,

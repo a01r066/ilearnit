@@ -43,18 +43,25 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final auth = notifier.value;
       final loc = state.matchedLocation;
 
-      final isOnAuthArea = loc == RoutePaths.login ||
-          loc == RoutePaths.signup ||
-          loc == RoutePaths.splash;
+      final isOnSplash = loc == RoutePaths.splash;
+      final isOnLoginOrSignup =
+          loc == RoutePaths.login || loc == RoutePaths.signup;
 
-      return auth.maybeWhen(
-        initial: () => RoutePaths.splash,
-        loading: () => null,
-        unauthenticated: (_) => isOnAuthArea ? null : RoutePaths.login,
-        authenticated: (_) =>
-            isOnAuthArea ? RoutePaths.home : null,
-        orElse: () => null,
-      );
+      // 1. Auth not yet resolved — keep showing splash, but do not
+      //    push splash on every redirect (avoids loops).
+      if (auth.isResolving) {
+        return isOnSplash ? null : RoutePaths.splash;
+      }
+
+      // 2. Signed in — kick out of splash / login / signup → home.
+      if (auth.isAuthenticated) {
+        if (isOnSplash || isOnLoginOrSignup) return RoutePaths.home;
+        return null;
+      }
+
+      // 3. Signed out — only login / signup are reachable.
+      if (isOnLoginOrSignup) return null;
+      return RoutePaths.login;
     },
     routes: [
       GoRoute(

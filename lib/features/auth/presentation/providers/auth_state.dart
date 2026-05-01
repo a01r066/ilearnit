@@ -24,8 +24,25 @@ class AuthState with _$AuthState {
   /// Signed in with a known user.
   const factory AuthState.authenticated(UserEntity user) = Authenticated;
 
+  // ── State predicates (used by router redirect, UI gates, etc.) ────
+  bool get isInitial => this is _Initial;
   bool get isLoading => this is _Loading;
   bool get isAuthenticated => this is Authenticated;
+  bool get isUnauthenticated => this is Unauthenticated;
 
-  UserEntity? get userOrNull => mapOrNull(authenticated: (s) => s.user);
+  /// True while we don't yet know if the user is signed in.
+  /// (Use this to keep the splash page visible.)
+  bool get isResolving => isInitial || isLoading;
+
+  /// Convenience — null when not signed in.
+  UserEntity? get userOrNull {
+    final self = this;
+    return self is Authenticated ? self.user : null;
+  }
+
+  /// Last auth failure (only set on unauthenticated transitions).
+  Failure? get failureOrNull {
+    final self = this;
+    return self is Unauthenticated ? self.lastFailure : null;
+  }
 }
