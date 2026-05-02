@@ -1,0 +1,15 @@
+{
+  "name": "ilearnit-firestore-seed",
+  "version": "1.0.0",
+  "private": true,
+  "description": "One-off seeding for the iLearnIt Firestore (dev / prod).",
+  "scripts": {
+    "seed:dev": "node seed_firestore.js --flavor dev",
+    "seed:prod": "node seed_firestore.js --flavor prod",
+    "seed:dev:dry": "node seed_firestore.js --flavor dev --dry",
+    "seed:dev:wipe": "node seed_firestore.js --flavor dev --wipe"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0"
+  }
+}

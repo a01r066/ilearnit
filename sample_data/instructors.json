@@ -1,0 +1,209 @@
+{
+  "ins_001": {
+    "id": "ins_001",
+    "name": "Antonio Vela",
+    "primaryInstrument": "guitar",
+    "bio": "Spanish-classical guitarist trained at the Royal Conservatory of Madrid. Specializes in Tárrega, Sor, and the Andalusian repertoire.",
+    "specialties": [
+      "spanish-classical",
+      "fingerstyle",
+      "tárrega",
+      "sor"
+    ],
+    "yearsExperience": 22,
+    "country": "Spain",
+    "photoUrl": "https://images.ilearnit.app/instructors/ins_001.jpg",
+    "rating": 4.87,
+    "studentCount": 13905,
+    "joinedAt": "2023-05-10T00:00:00.000Z",
+    "featuredCourseIds": [
+      "course_005"
+    ]
+  },
+  "ins_002": {
+    "id": "ins_002",
+    "name": "Helena Rojas",
+    "primaryInstrument": "guitar",
+    "bio": "Flamenco-trained classical guitarist; bridges the rasgueado technique with the standard concert repertoire.",
+    "specialties": [
+      "flamenco-classical",
+      "rasgueado",
+      "rhythm",
+      "improvisation"
+    ],
+    "yearsExperience": 15,
+    "country": "Argentina",
+    "photoUrl": "https://images.ilearnit.app/instructors/ins_002.jpg",
+    "rating": 4.68,
+    "studentCount": 13209,
+    "joinedAt": "2023-11-22T00:00:00.000Z",
+    "featuredCourseIds": []
+  },
+  "ins_003": {
+    "id": "ins_003",
+    "name": "Marcus Reinhardt",
+    "primaryInstrument": "guitar",
+    "bio": "Concert guitarist and pedagogue with a focus on sight-reading, scales, and the Bach lute suites transcribed for guitar.",
+    "specialties": [
+      "sight-reading",
+      "bach",
+      "technique",
+      "pedagogy"
+    ],
+    "yearsExperience": 28,
+    "country": "Germany",
+    "photoUrl": "https://images.ilearnit.app/instructors/ins_003.jpg",
+    "rating": 4.95,
+    "studentCount": 1426,
+    "joinedAt": "2023-05-09T00:00:00.000Z",
+    "featuredCourseIds": []
+  },
+  "ins_004": {
+    "id": "ins_004",
+    "name": "Yuki Tanaka",
+    "primaryInstrument": "guitar",
+    "bio": "Lutenist and Renaissance specialist whose courses bring period ornamentation into the modern guitarist's toolkit.",
+    "specialties": [
+      "lute",
+      "renaissance",
+      "ornamentation",
+      "early-music"
+    ],
+    "yearsExperience": 18,
+    "country": "Japan",
+    "photoUrl": "https://images.ilearnit.app/instructors/ins_004.jpg",
+    "rating": 4.76,
+    "studentCount": 13070,
+    "joinedAt": "2023-03-14T00:00:00.000Z",
+    "featuredCourseIds": []
+  },
+  "ins_005": {
+    "id": "ins_005",
+    "name": "Sofia Ackermann",
+    "primaryInstrument": "piano",
+    "bio": "Romantic-era pianist whose performances of Chopin and Schumann have earned her invitations to the Verbier and Lucerne festivals.",
+    "specialties": [
+      "chopin",
+      "schumann",
+      "romantic",
+      "phrasing"
+    ],
+    "yearsExperience": 24,
+    "country": "Austria",
+    "photoUrl": "https://images.ilearnit.app/instructors/ins_005.jpg",
+    "rating": 5.0,
+    "studentCount": 17712,
+    "joinedAt": "2023-05-04T00:00:00.000Z",
+    "featuredCourseIds": [
+      "course_045"
+    ]
+  },
+  "ins_006": {
+    "id": "ins_006",
+    "name": "Daniel Voss",
+    "primaryInstrument": "piano",
+    "bio": "Baroque keyboardist focused on Bach's Well-Tempered Clavier and the Goldberg Variations, with deep interpretive analyses.",
+    "specialties": [
+      "bach",
+      "baroque",
+      "counterpoint",
+      "fugue"
+    ],
+    "yearsExperience": 30,
+    "country": "Netherlands",
+    "photoUrl": "https://images.ilearnit.app/instructors/ins_006.jpg",
+    "rating": 4.52,
+    "studentCount": 2548,
+    "joinedAt": "2024-01-30T00:00:00.000Z",
+    "featuredCourseIds": [
+      "course_043",
+      "course_052"
+    ]
+  },
+  "ins_007": {
+    "id": "ins_007",
+    "name": "Isabela Moreau",
+    "primaryInstrument": "piano",
+    "bio": "Liszt and late-Romantic specialist; teaches the choreography of virtuosic technique without sacrificing musicality.",
+    "specialties": [
+      "liszt",
+      "virtuoso",
+      "technique",
+      "pedaling"
+    ],
+    "yearsExperience": 19,
+    "country": "France",
+    "photoUrl": "https://images.ilearnit.app/instructors/ins_007.jpg",
+    "rating": 4.97,
+    "studentCount": 5233,
+    "joinedAt": "2024-03-01T00:00:00.000Z",
+    "featuredCourseIds": [
+      "course_053"
+    ]
+  },
+  "ins_008": {
+    "id": "ins_008",
+    "name": "Ekaterina Volkova",
+    "primaryInstrument": "violin",
+    "bio": "Russian-school violinist; her interpretations of Tchaikovsky and Shostakovich have been called definitive by critics.",
+    "specialties": [
+      "russian-school",
+      "tchaikovsky",
+      "shostakovich",
+      "vibrato"
+    ],
+    "yearsExperience": 26,
+    "country": "Russia",
+    "photoUrl": "https://images.ilearnit.app/instructors/ins_008.jpg",
+    "rating": 4.7,
+    "studentCount": 15023,
+    "joinedAt": "2022-02-04T00:00:00.000Z",
+    "featuredCourseIds": [
+      "course_074",
+      "course_077",
+      "course_089"
+    ]
+  },
+  "ins_009": {
+    "id": "ins_009",
+    "name": "Lucas Ferreira",
+    "primaryInstrument": "violin",
+    "bio": "Baroque violinist who plays on a 1742 Goffriller; lectures on historically informed performance practice.",
+    "specialties": [
+      "baroque",
+      "vivaldi",
+      "corelli",
+      "historically-informed"
+    ],
+    "yearsExperience": 21,
+    "country": "Portugal",
+    "photoUrl": "https://images.ilearnit.app/instructors/ins_009.jpg",
+    "rating": 4.89,
+    "studentCount": 5134,
+    "joinedAt": "2023-01-06T00:00:00.000Z",
+    "featuredCourseIds": [
+      "course_078"
+    ]
+  },
+  "ins_010": {
+    "id": "ins_010",
+    "name": "Aria Kapoor",
+    "primaryInstrument": "violin",
+    "bio": "Contemporary classical specialist; premieres new works while teaching the bridge from etudes to commissioned repertoire.",
+    "specialties": [
+      "contemporary",
+      "etudes",
+      "extended-technique",
+      "premieres"
+    ],
+    "yearsExperience": 13,
+    "country": "United Kingdom",
+    "photoUrl": "https://images.ilearnit.app/instructors/ins_010.jpg",
+    "rating": 4.49,
+    "studentCount": 13334,
+    "joinedAt": "2023-06-01T00:00:00.000Z",
+    "featuredCourseIds": [
+      "course_085"
+    ]
+  }
+}

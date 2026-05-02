@@ -95,3 +95,6 @@ coverage/
 .env
 .env.dev
 .env.prod
+
+# Sample data
+/sample_data/ilearnit-dev-cedd97325478.json
