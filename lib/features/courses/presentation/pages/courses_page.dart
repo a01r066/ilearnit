@@ -95,7 +95,10 @@ class _CoursesPageState extends ConsumerState<CoursesPage> {
           maxCrossAxisExtent: 360,
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 0.78,
+          // Card height ≈ width / 0.82 — leaves the 16:9 thumbnail and
+          // ~3 lines of content (chips, title, instructor, stats) without
+          // tripping a RenderFlex overflow at narrow widths.
+          childAspectRatio: 0.82,
         ),
         itemCount: state.items.length + (state.isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {

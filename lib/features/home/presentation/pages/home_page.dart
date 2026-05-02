@@ -73,7 +73,9 @@ class HomePage extends ConsumerWidget {
                   );
                 }
                 return SizedBox(
-                  height: 280,
+                  // 280 (card width) ÷ 16*9 ≈ 158 for the thumbnail, plus
+                  // ~155 for content/padding/borders. 320 leaves headroom.
+                  height: 320,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
