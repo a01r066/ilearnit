@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ilearnit/features/profile/presentation/pages/settings_page.dart';
 
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/signup_page.dart';
@@ -141,6 +142,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 path: RoutePaths.profile,
                 name: RouteNames.profile,
                 builder: (_, __) => const ProfilePage(),
+                routes: [
+                  GoRoute(path: RoutePaths.settings, name: RouteNames.setting, builder: (_, __) => SettingsPage()),
+                ]
               ),
             ],
           ),

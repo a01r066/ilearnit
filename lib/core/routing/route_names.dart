@@ -16,6 +16,9 @@ class RouteNames {
   // Detail (within shell)
   static const String courseDetail = 'course-detail';
   static const String instructorDetail = 'instructor-detail';
+
+  // Settings (within profile)
+  static const String setting = 'settings';
 }
 
 class RoutePaths {
@@ -33,4 +36,5 @@ class RoutePaths {
   // Sub-routes
   static const String courseDetail = ':id';
   static const String instructorDetail = ':id';
+  static const String settings = '/settings';
 }
