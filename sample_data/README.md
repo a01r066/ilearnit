@@ -1,6 +1,7 @@
 # Sample Firestore data
 
-Seed data for the iLearnIt project: **10 instructors** and **100 courses**
+Seed data for the iLearnIt project: **10 instructors**, **100 courses**, and
+~**500 sections** with ~**2,300 lectures** (video / audio / pdf / doc),
 spread across guitar (35) / piano (35) / violin (30).
 
 ## Files
@@ -9,9 +10,10 @@ spread across guitar (35) / piano (35) / violin (30).
 | --------------------- | ---------------------------------------------------- |
 | `instructors.json`    | Map keyed by doc id. Goes into `instructors/`.       |
 | `courses.json`        | Map keyed by doc id. Goes into `courses/`.           |
+| `sections.json`       | `{ courseId: [section, ...] }` — subcollection under each course. Lectures embedded as an array on each section. |
 | `seed_firestore.js`   | Node.js seeder (Admin SDK, batched writes).          |
 | `package.json`        | Just for `firebase-admin` and convenience scripts.   |
-| `generate_seed.py`    | (Optional) regenerator — produces both JSON files.   |
+| `generate_seed.py`    | (Optional) regenerator — produces all three JSON files. |
 
 Timestamps in JSON are stored as ISO strings (e.g. `2025-08-01T22:26:08.000Z`).
 The seed script converts any field named `publishedAt`, `createdAt`, or
@@ -31,6 +33,7 @@ Provide a service account key — either:
 **Option A** — environment variable (cleanest):
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS=/abs/path/to/key-dev.json
+export GOOGLE_APPLICATION_CREDENTIALS=/Users/thanhminh/Documents/Claude/Projects/ilearnit/ilearnit/sample_data/ilearnit-dev-cedd97325478.json
 ```
 
 **Option B** — drop the key file next to the script:
@@ -122,6 +125,36 @@ The Admin SDK respects `FIRESTORE_EMULATOR_HOST` — no code change needed.
   publishedAt: Timestamp,
 }
 ```
+
+### `courses/{id}/sections/{sectionId}`
+```ts
+{
+  id: string,
+  title: string,
+  order: number,                        // 0-based
+  lectures: Array<{
+    id: string,
+    title: string,
+    type: 'video' | 'audio' | 'pdf' | 'doc',
+    durationSeconds: number,
+    order: number,
+    isPreview: boolean,                 // free outside enrollment
+    mediaUrl: string,                   // primary stream/download URL
+    thumbnailUrl: string | null,
+    description: string,
+    fileSizeBytes: number,
+    resources: Array<{                  // ancillary downloads
+      name: string,
+      url: string,
+      format: 'pdf' | 'docx' | 'mp3' | …,
+      sizeBytes: number,
+    }>,
+  }>,
+}
+```
+
+The Flutter `CoursesRepositoryImpl.fetchSections(courseId)` reads
+`courses/{id}/sections` ordered by `order` — no composite index needed.
 
 The Flutter app's `CoursesRepositoryImpl.fetchFeatured()` queries
 `where('isFeatured', isEqualTo: true)` — composite index on

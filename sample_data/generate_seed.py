@@ -238,6 +238,214 @@ def iso(dt: datetime) -> str:
     return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
 
+# ── Curriculum (sections + lectures) ─────────────────────────────────
+SECTION_THEMES = {
+    "guitar": [
+        "Posture, Hand Position & Tone",
+        "Right-Hand Technique Foundations",
+        "Reading Notation & Tablature",
+        "Scales, Arpeggios & Etudes",
+        "Repertoire Studies",
+        "Phrasing & Musical Interpretation",
+        "Memorization & Performance Prep",
+    ],
+    "piano": [
+        "Sitting Posture & Hand Position",
+        "Scales, Arpeggios & Hanon",
+        "Voicing the Melody",
+        "Pedaling Strategies",
+        "Polyphony & Counterpoint",
+        "Repertoire Workshop",
+        "Performance Practice",
+    ],
+    "violin": [
+        "Bow Hold & Posture",
+        "Intonation & Left-Hand Frame",
+        "Bow Strokes (Détaché → Spiccato)",
+        "Vibrato Development",
+        "Etudes & Caprices",
+        "Repertoire Studies",
+        "Recital Preparation",
+    ],
+}
+
+LECTURE_TOPICS = {
+    "guitar": [
+        "Warm-up routine",
+        "Slow practice strategy",
+        "Right-hand i-m alternation",
+        "Free vs rest stroke",
+        "Reading the treble clef",
+        "Tárrega-style legato",
+        "Sor study no. 17",
+        "Building speed without tension",
+        "Memorizing without rote",
+        "Dynamics on a single string",
+        "Vibrato basics",
+        "Recording yourself",
+    ],
+    "piano": [
+        "Warm-up: scales in two octaves",
+        "Hanon exercise no. 1",
+        "Voicing exercise: melody on top",
+        "Una corda use cases",
+        "Half-pedaling demo",
+        "Two-voice invention walkthrough",
+        "Slow practice with metronome",
+        "Memorization map",
+        "Sight-reading strategy",
+        "Musical phrasing decisions",
+        "Stage entrance and bow",
+        "Final-rep recording session",
+    ],
+    "violin": [
+        "Bow hold exercises",
+        "Open-string bow distribution",
+        "Détaché stroke fundamentals",
+        "Spiccato sweet spot",
+        "Continuous vibrato build-up",
+        "Shifting between positions",
+        "Caprice no. 1 (Rode)",
+        "Sevcik op. 1 part 1",
+        "Listening to recordings",
+        "Building a memory map",
+        "Tuning rituals",
+        "Recital warm-up routine",
+    ],
+}
+
+LECTURE_TYPE_WEIGHTS = [
+    ("video", 0.62),
+    ("audio", 0.18),
+    ("pdf", 0.14),
+    ("doc", 0.06),
+]
+
+RESOURCE_TEMPLATES = [
+    ("Practice plan PDF", "pdf", 180_000),
+    ("Sheet music excerpt", "pdf", 420_000),
+    ("Backing track (audio)", "mp3", 3_200_000),
+    ("Exercise worksheet", "docx", 95_000),
+    ("Annotated score", "pdf", 510_000),
+]
+
+
+def _weighted_choice(pairs: list[tuple[str, float]]) -> str:
+    r = random.random()
+    cum = 0.0
+    for value, w in pairs:
+        cum += w
+        if r <= cum:
+            return value
+    return pairs[-1][0]
+
+
+def _media_url(course_id: str, lecture_id: str, ltype: str) -> str:
+    domain = "https://media.ilearnit.app"
+    if ltype == "video":
+        return f"{domain}/videos/{course_id}/{lecture_id}.mp4"
+    if ltype == "audio":
+        return f"{domain}/audio/{course_id}/{lecture_id}.mp3"
+    if ltype == "pdf":
+        return f"{domain}/docs/{course_id}/{lecture_id}.pdf"
+    return f"{domain}/docs/{course_id}/{lecture_id}.docx"
+
+
+def _generate_lecture(
+    course_id: str,
+    section_index: int,
+    lecture_index: int,
+    instrument: str,
+) -> dict:
+    """One lecture row, embedded in a section's `lectures` array."""
+    lecture_id = f"lec_{section_index + 1:02}_{lecture_index + 1:02}"
+    title_base = random.choice(LECTURE_TOPICS[instrument])
+    suffix = random.choice([
+        "", " — walkthrough", " — exercise", " — drill", " — Q&A",
+    ])
+    title = f"{title_base}{suffix}"
+
+    ltype = _weighted_choice(LECTURE_TYPE_WEIGHTS)
+
+    if ltype == "video":
+        duration = random.randint(180, 1500)         # 3 – 25 min
+    elif ltype == "audio":
+        duration = random.randint(120, 900)           # 2 – 15 min
+    elif ltype == "pdf":
+        duration = random.randint(120, 600)           # est. read time
+    else:  # doc
+        duration = random.randint(60, 480)
+
+    is_preview = (section_index == 0 and lecture_index < 2) \
+        or (random.random() < 0.04)
+
+    file_size = 0
+    if ltype == "video":
+        # ~1.5 MB / minute heuristic
+        file_size = int(duration / 60 * 1_500_000)
+    elif ltype == "audio":
+        file_size = int(duration / 60 * 1_000_000)
+    elif ltype == "pdf":
+        file_size = random.randint(150_000, 1_400_000)
+    else:
+        file_size = random.randint(50_000, 350_000)
+
+    # Optional auxiliary resources (1 in 3 lectures has them)
+    resources: list[dict] = []
+    if random.random() < 0.33:
+        for _ in range(random.randint(1, 2)):
+            name, fmt, size = random.choice(RESOURCE_TEMPLATES)
+            resources.append({
+                "name": name,
+                "url": f"https://media.ilearnit.app/resources/{course_id}/"
+                       f"{lecture_id}_{fmt}.{fmt}",
+                "format": fmt,
+                "sizeBytes": size,
+            })
+
+    return {
+        "id": lecture_id,
+        "title": title,
+        "type": ltype,
+        "durationSeconds": duration,
+        "order": lecture_index,
+        "isPreview": is_preview,
+        "mediaUrl": _media_url(course_id, lecture_id, ltype),
+        "thumbnailUrl": None,
+        "description": (
+            f"A focused {ltype} lecture covering {title_base.lower()}. "
+            "Includes practice prompts and instructor commentary."
+        ),
+        "resources": resources,
+        "fileSizeBytes": file_size,
+    }
+
+
+def generate_sections(course: dict) -> list[dict]:
+    """Returns ordered section docs for a course (4–6 sections, 3–6 lectures)."""
+    instrument = course["category"]
+    n_sections = random.randint(4, 6)
+    themes = random.sample(
+        SECTION_THEMES[instrument],
+        k=min(n_sections, len(SECTION_THEMES[instrument])),
+    )
+
+    sections: list[dict] = []
+    for s_idx, theme in enumerate(themes):
+        n_lectures = random.randint(3, 6)
+        lectures = [
+            _generate_lecture(course["id"], s_idx, l_idx, instrument)
+            for l_idx in range(n_lectures)
+        ]
+        sections.append({
+            "id": f"section_{s_idx + 1:02}",
+            "title": theme,
+            "order": s_idx,
+            "lectures": lectures,
+        })
+    return sections
+
+
 def generate_course(idx: int, instrument: str, instructor: dict) -> tuple[str, dict]:
     """Returns (doc_id, fields) for a single course."""
     course_id = f"course_{idx:03}"
@@ -352,12 +560,33 @@ def main() -> None:
             if c["instructorId"] == ins_id and c["isFeatured"]
         ]
 
+    # ── Curriculum: sections + embedded lectures (per course) ─────────
+    # Output shape: { courseId: [ section, section, ... ] }
+    # The seed script writes each section as a doc under
+    #   /courses/{courseId}/sections/{sectionId}
+    sections_by_course: dict[str, list[dict]] = {}
+    total_sections = 0
+    total_lectures = 0
+    type_counts: dict[str, int] = {}
+    for course_id, course in courses.items():
+        secs = generate_sections(course)
+        sections_by_course[course_id] = secs
+        total_sections += len(secs)
+        for s in secs:
+            for l in s["lectures"]:
+                total_lectures += 1
+                type_counts[l["type"]] = type_counts.get(l["type"], 0) + 1
+
     (OUT_DIR / "instructors.json").write_text(
         json.dumps(instructors, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
     (OUT_DIR / "courses.json").write_text(
         json.dumps(courses, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    (OUT_DIR / "sections.json").write_text(
+        json.dumps(sections_by_course, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
 
@@ -374,6 +603,9 @@ def main() -> None:
     print(f"  by category : {by_cat}")
     print(f"  by level    : {by_level}")
     print(f"  featured    : {featured}")
+    print(f"  sections    : {total_sections}")
+    print(f"  lectures    : {total_lectures}")
+    print(f"  by type     : {type_counts}")
     print(f"Output: {OUT_DIR}")
 
 

@@ -10,6 +10,7 @@ import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/auth/presentation/providers/auth_state.dart';
 import '../../features/courses/presentation/pages/course_detail_page.dart';
 import '../../features/courses/presentation/pages/courses_page.dart';
+import '../../features/courses/presentation/pages/lecture_player_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/instructors/presentation/pages/instructor_detail_page.dart';
 import '../../features/instructors/presentation/pages/instructors_page.dart';
@@ -109,6 +110,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                     builder: (_, s) => CourseDetailPage(
                       courseId: s.pathParameters['id']!,
                     ),
+                    routes: [
+                      GoRoute(
+                        path: RoutePaths.lecturePlayer,
+                        name: RouteNames.lecturePlayer,
+                        builder: (_, s) => LecturePlayerPage(
+                          courseId: s.pathParameters['id']!,
+                          lectureId: s.pathParameters['lectureId']!,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

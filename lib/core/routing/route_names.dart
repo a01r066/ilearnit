@@ -17,6 +17,9 @@ class RouteNames {
   static const String courseDetail = 'course-detail';
   static const String instructorDetail = 'instructor-detail';
 
+  // Lecture player (nested under course detail)
+  static const String lecturePlayer = 'lecture-player';
+
   // Settings (within profile)
   static const String setting = 'settings';
 }
@@ -36,5 +39,7 @@ class RoutePaths {
   // Sub-routes
   static const String courseDetail = ':id';
   static const String instructorDetail = ':id';
+  // Nested under courseDetail → /courses/:id/lectures/:lectureId
+  static const String lecturePlayer = 'lectures/:lectureId';
   static const String settings = '/settings';
 }

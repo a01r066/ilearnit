@@ -1,5 +1,6 @@
 import '../../../../core/typedefs/typedefs.dart';
 import '../entities/course_entity.dart';
+import '../entities/course_section_entity.dart';
 import '../entities/instrument_category.dart';
 
 /// Cursor-based pagination payload.
@@ -25,4 +26,7 @@ abstract interface class CoursesRepository {
   ResultFuture<CourseEntity> fetchCourseById(String id);
 
   ResultFuture<List<CourseEntity>> fetchFeatured({int limit});
+
+  /// Curriculum: ordered list of sections, each with embedded lectures.
+  ResultFuture<List<CourseSectionEntity>> fetchSections(String courseId);
 }

@@ -5,6 +5,7 @@ import '../../../../core/error/exceptions.dart';
 import '../../domain/entities/instrument_category.dart';
 import '../../domain/repositories/courses_repository.dart';
 import '../models/course_model.dart';
+import '../models/course_section_model.dart';
 
 abstract interface class CoursesRemoteDataSource {
   Future<CoursesPageDto> fetchCourses({
@@ -16,6 +17,8 @@ abstract interface class CoursesRemoteDataSource {
 
   Future<CourseModel> fetchCourseById(String id);
   Future<List<CourseModel>> fetchFeatured({required int limit});
+
+  Future<List<CourseSectionModel>> fetchSections(String courseId);
 }
 
 class CoursesPageDto {
@@ -100,6 +103,22 @@ class CoursesRemoteDataSourceImpl implements CoursesRemoteDataSource {
       return snap.docs.map(CourseModel.fromDoc).toList();
     } on FirebaseException catch (e) {
       throw ServerException(message: e.message ?? 'Fetch failed.');
+    }
+  }
+
+  @override
+  Future<List<CourseSectionModel>> fetchSections(String courseId) async {
+    try {
+      final snap = await _courses
+          .doc(courseId)
+          .collection('sections')
+          .orderBy('order')
+          .get();
+      return snap.docs.map(CourseSectionModel.fromDoc).toList();
+    } on FirebaseException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Failed to load curriculum.',
+      );
     }
   }
 }

@@ -11,6 +11,8 @@ import 'course_detail_notifier.dart';
 import 'course_detail_state.dart';
 import 'courses_notifier.dart';
 import 'courses_state.dart';
+import 'curriculum_notifier.dart';
+import 'curriculum_state.dart';
 
 final coursesRemoteDataSourceProvider = Provider<CoursesRemoteDataSource>(
   (ref) => CoursesRemoteDataSourceImpl(
@@ -48,3 +50,12 @@ final featuredCoursesProvider =
     (list) => list,
   );
 });
+
+/// Curriculum (sections + embedded lectures) for a given course.
+final curriculumNotifierProvider = StateNotifierProvider.autoDispose
+    .family<CurriculumNotifier, CurriculumState, String>(
+  (ref, courseId) => CurriculumNotifier(
+    repo: ref.watch(coursesRepositoryProvider),
+    courseId: courseId,
+  ),
+);

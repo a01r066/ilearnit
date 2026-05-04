@@ -5,6 +5,7 @@ import '../../../../core/error/failure.dart';
 import '../../../../core/network/network_info.dart';
 import '../../../../core/typedefs/typedefs.dart';
 import '../../domain/entities/course_entity.dart';
+import '../../domain/entities/course_section_entity.dart';
 import '../../domain/entities/instrument_category.dart';
 import '../../domain/repositories/courses_repository.dart';
 import '../datasources/courses_remote_datasource.dart';
@@ -68,6 +69,19 @@ class CoursesRepositoryImpl implements CoursesRepository {
     }
     try {
       final list = await _remote.fetchFeatured(limit: limit);
+      return Right(list.map((m) => m.toEntity()).toList());
+    } catch (e, st) {
+      return Left(mapToFailure(e, st));
+    }
+  }
+
+  @override
+  ResultFuture<List<CourseSectionEntity>> fetchSections(String courseId) async {
+    if (!await _network.isConnected) {
+      return const Left(Failure.network());
+    }
+    try {
+      final list = await _remote.fetchSections(courseId);
       return Right(list.map((m) => m.toEntity()).toList());
     } catch (e, st) {
       return Left(mapToFailure(e, st));
