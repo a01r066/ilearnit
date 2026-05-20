@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../auth/data/models/user_model.dart';
+import '../../../purchases/domain/entities/price_tier.dart';
 import '../../domain/entities/course_entity.dart';
 import '../../domain/entities/instrument_category.dart';
 
@@ -27,6 +28,7 @@ abstract class CourseModel with _$CourseModel {
     @Default(0) int durationMinutes,
     @Default(false) bool isFeatured,
     @Default(<String>[]) List<String> tags,
+    @Default('basic') String priceTier,
     @TimestampConverter() DateTime? publishedAt,
   }) = _CourseModel;
 
@@ -53,6 +55,7 @@ abstract class CourseModel with _$CourseModel {
         durationMinutes: durationMinutes,
         isFeatured: isFeatured,
         tags: tags,
+        priceTier: PriceTier.fromId(priceTier),
         publishedAt: publishedAt,
       );
 }

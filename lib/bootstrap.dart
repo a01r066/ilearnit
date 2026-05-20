@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/app.dart';
 import 'core/storage/prefs_service.dart';
+import 'features/purchases/presentation/providers/purchases_providers.dart';
 import 'firebase_options_dev.dart' as dev_opts;
 import 'firebase_options_prod.dart' as prod_opts;
 import 'flavors.dart';
@@ -26,7 +27,7 @@ Future<void> bootstrap() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  await Firebase.initializeApp(options: _firebaseOptions());
+  await Firebase.initializeApp(options: _firebaseOptions(), name: 'ilearnit');
 
   final prefs = await PrefsService.create();
 
@@ -37,11 +38,20 @@ Future<void> bootstrap() async {
     // TODO(observability): forward to Crashlytics in prod once configured.
   };
 
+  final container = ProviderContainer(
+    overrides: [
+      prefsProvider.overrideWithValue(prefs),
+    ],
+  );
+
+  // Eagerly initialize the IAP listener so background purchases that the
+  // OS delivers before any UI renders are still captured. Reading the
+  // provider triggers its constructor → subscribes to purchaseStream.
+  container.read(purchasesNotifierProvider);
+
   runApp(
-    ProviderScope(
-      overrides: [
-        prefsProvider.overrideWithValue(prefs),
-      ],
+    UncontrolledProviderScope(
+      container: container,
       child: const App(),
     ),
   );

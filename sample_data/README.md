@@ -62,6 +62,7 @@ Or call the script directly with any combination:
 ```bash
 node seed_firestore.js --flavor dev
 node seed_firestore.js --flavor dev --wipe
+node seed_firestore.js dev --wipe
 node seed_firestore.js --flavor dev --only=courses
 node seed_firestore.js --flavor dev --dry
 ```
@@ -122,7 +123,24 @@ The Admin SDK respects `FIRESTORE_EMULATOR_HOST` — no code change needed.
   durationMinutes: number,
   isFeatured: boolean,
   tags: string[],
+  priceTier: 'basic' | 'standard' | 'premium',
   publishedAt: Timestamp,
+}
+```
+
+### `users/{uid}/purchases/{courseId}`
+Written by the app after the platform purchase stream confirms a transaction.
+The doc id is the courseId so a single `.exists` read tells the UI whether the
+user owns the course.
+```ts
+{
+  courseId: string,
+  productId: string,                    // info.ilearnit.tier_basic | _standard | _premium
+  status: 'pending' | 'purchased' | 'restored' | 'failed',
+  transactionId: string | null,
+  originalTransactionId: string | null, // iOS — for restore correlation
+  source: 'purchase' | 'restore' | 'admin',
+  purchasedAt: Timestamp,
 }
 ```
 

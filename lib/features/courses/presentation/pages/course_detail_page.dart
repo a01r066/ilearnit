@@ -7,6 +7,8 @@ import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/error_view.dart';
 import '../../../../core/widgets/loading_indicator.dart';
+import '../../../purchases/presentation/providers/purchases_providers.dart';
+import '../../../purchases/presentation/widgets/buy_course_button.dart';
 import '../../domain/entities/course_entity.dart';
 import '../../domain/entities/lecture_entity.dart';
 import '../providers/course_detail_state.dart';
@@ -50,11 +52,15 @@ class _Loaded extends ConsumerWidget {
     );
   }
 
+  void _startCourse(BuildContext context, LectureEntity firstLecture) {
+    _openLecture(context, firstLecture);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // TODO(enrollment): replace `false` with real `isEnrolled` from a provider
-    // once enrollment is implemented.
-    const isEnrolled = false;
+    // Ownership comes from Firestore via the purchases stream. Preview
+    // lectures remain accessible regardless of this flag.
+    final isEnrolled = ref.watch(isCoursePurchasedProvider(course.id));
 
     final curriculum = ref.watch(curriculumNotifierProvider(course.id));
     final curriculumNotifier =
@@ -126,12 +132,22 @@ class _Loaded extends ConsumerWidget {
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 const SizedBox(height: 24),
-                FilledButton.icon(
-                  onPressed: () {
-                    // TODO(courses): start enrollment flow.
+                BuyCourseButton(
+                  course: course,
+                  onStart: () {
+                    // Owners: jump straight to the first lecture if the
+                    // curriculum has loaded; otherwise this is a no-op
+                    // until the sections come in.
+                    curriculum.whenOrNull(
+                      loaded: (sections) {
+                        if (sections.isEmpty) return;
+                        final first = sections.first.lectures.isNotEmpty
+                            ? sections.first.lectures.first
+                            : null;
+                        if (first != null) _startCourse(context, first);
+                      },
+                    );
                   },
-                  icon: const Icon(Icons.play_arrow_rounded),
-                  label: const Text('Start course'),
                 ),
                 const SizedBox(height: 24),
                 _CurriculumHeader(state: curriculum),

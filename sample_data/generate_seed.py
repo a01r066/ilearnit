@@ -482,6 +482,20 @@ def generate_course(idx: int, instrument: str, instructor: dict) -> tuple[str, d
     enrollment = random.randint(120, 6800)
     is_featured = random.random() < 0.12  # ~12% featured
 
+    # Price tier — beginners trend basic, advanced trend premium.
+    if level == "beginner":
+        price_tier = random.choices(
+            ["basic", "standard", "premium"], weights=[70, 25, 5], k=1,
+        )[0]
+    elif level == "intermediate":
+        price_tier = random.choices(
+            ["basic", "standard", "premium"], weights=[30, 55, 15], k=1,
+        )[0]
+    else:  # advanced
+        price_tier = random.choices(
+            ["basic", "standard", "premium"], weights=[10, 40, 50], k=1,
+        )[0]
+
     # Date — anywhere in the last 24 months
     days_ago = random.randint(1, 720)
     published_at = datetime.now(timezone.utc) - timedelta(
@@ -505,6 +519,7 @@ def generate_course(idx: int, instrument: str, instructor: dict) -> tuple[str, d
         "durationMinutes": duration_minutes,
         "isFeatured": is_featured,
         "tags": tags,
+        "priceTier": price_tier,
         # ISO string — converted to Firestore Timestamp by the seed script.
         "publishedAt": iso(published_at),
     }
@@ -593,19 +608,22 @@ def main() -> None:
     # Print a quick distribution summary.
     by_cat: dict[str, int] = {}
     by_level: dict[str, int] = {}
+    by_tier: dict[str, int] = {}
     featured = 0
     for c in courses.values():
         by_cat[c["category"]] = by_cat.get(c["category"], 0) + 1
         by_level[c["level"]] = by_level.get(c["level"], 0) + 1
+        by_tier[c["priceTier"]] = by_tier.get(c["priceTier"], 0) + 1
         featured += 1 if c["isFeatured"] else 0
 
     print(f"Wrote {len(instructors)} instructors and {len(courses)} courses.")
-    print(f"  by category : {by_cat}")
-    print(f"  by level    : {by_level}")
-    print(f"  featured    : {featured}")
-    print(f"  sections    : {total_sections}")
-    print(f"  lectures    : {total_lectures}")
-    print(f"  by type     : {type_counts}")
+    print(f"  by category  : {by_cat}")
+    print(f"  by level     : {by_level}")
+    print(f"  by priceTier : {by_tier}")
+    print(f"  featured     : {featured}")
+    print(f"  sections     : {total_sections}")
+    print(f"  lectures     : {total_lectures}")
+    print(f"  by type      : {type_counts}")
     print(f"Output: {OUT_DIR}")
 
 

@@ -9,6 +9,7 @@ import '../../../../core/utils/extensions.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../auth/presentation/providers/auth_state.dart';
 import 'package:ilearnit/features/auth/domain/entities/user_entity.dart';
+import '../../../purchases/presentation/widgets/restore_purchases_tile.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -84,6 +85,7 @@ class ProfilePage extends ConsumerWidget {
             context.goNamed(RouteNames.setting);
           },
         ),
+        const RestorePurchasesTile(),
         const Divider(height: 32),
         ListTile(
           leading: const Icon(Icons.logout, color: AppColors.error),
