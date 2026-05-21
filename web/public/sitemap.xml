@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://ilearnit.info/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://ilearnit.info/about</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://ilearnit.info/help</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://ilearnit.info/contact</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://ilearnit.info/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://ilearnit.info/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>

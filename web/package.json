@@ -1,0 +1,14 @@
+{
+  "name": "ilearnit-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Marketing site for ilearnit.info (Firebase Hosting).",
+  "scripts": {
+    "serve": "firebase emulators:start --only hosting",
+    "deploy": "firebase deploy --only hosting --project prod",
+    "deploy:dev": "firebase deploy --only hosting --project dev"
+  },
+  "devDependencies": {
+    "firebase-tools": "^13.0.0"
+  }
+}
