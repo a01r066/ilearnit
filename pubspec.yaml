@@ -75,8 +75,12 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
 
+  # Generate launcher icons
+  flutter_launcher_icons: ^0.14.4
+
   # Codegen
   build_runner:
+  flutter_gen_runner:
   freezed: ^3.2.3
   json_serializable: ^6.8.0
   riverpod_generator: ^4.0.0+1
@@ -89,6 +93,22 @@ dev_dependencies:
   # Testing
   mocktail: ^1.0.4
 
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/launchers/ic_launcher.png" # Note: Not transparent image
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/launchers/ic_launcher_android_foreground.png"
+
+flutter_gen:
+  output: lib/gen/assets
+  null_safety: true
+  integrations:
+    flutter_svg: true
+  colors:
+    inputs:
+      - assets/colors/colors.xml
+
 # Force drift_flutter to NOT include sqlite3 for web builds
 dependency_overrides:
   analyzer_plugin: ^0.13.1  # Force fixed version with publiclyExporting typo fix
@@ -98,6 +118,8 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/launchers/
+    - assets/colors/
   # fonts:
   #   - family: Inter
   #     fonts:

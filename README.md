@@ -116,3 +116,14 @@ dart run build_runner build --delete-conflicting-outputs
 # Watch
 dart run build_runner watch --delete-conflicting-outputs
 ```
+***Build prod flavor***
+
+```
+flutter build ios --flavor prod -t lib/main.dart (or add --no-tree-shake-icons if error)
+flutter build apk --flavor prod -t lib/main.dart (or add --no-tree-shake-icons if error) (.apk)
+flutter build appbundle --flavor prod -t lib/main.dart
+```
+
+# Acknowledgements
+
+Inspired by ***VieZ Mobile Team***'s ideas, projects, people.
