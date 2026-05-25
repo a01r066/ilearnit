@@ -1,0 +1,68 @@
+{
+  "@@locale": "vi",
+
+  "appTitle": "iLearnIt",
+
+  "languageEnglish": "English",
+  "languageVietnamese": "Tiếng Việt",
+
+  "navHome": "Trang chủ",
+  "navCourses": "Khoá học",
+  "navInstructors": "Giảng viên",
+  "navProfile": "Hồ sơ",
+
+  "homeWelcomeAnon": "Chào mừng đến với iLearnIt",
+  "homeWelcomeNamed": "Xin chào, {name} 👋",
+  "homeWelcomeSubtitle": "Hôm nay bạn muốn luyện tập gì?",
+  "homeBrowseByInstrument": "Khám phá theo nhạc cụ",
+  "homeFeaturedCourses": "Khoá học nổi bật",
+  "homeSeeAll": "Xem tất cả",
+  "homeNoFeaturedYet": "Chưa có khoá học nổi bật.",
+
+  "instrumentGuitar": "Guitar",
+  "instrumentPiano": "Piano",
+  "instrumentViolin": "Violin",
+
+  "coursesTitle": "Khoá học",
+  "coursesFilterAll": "Tất cả",
+  "coursesEmpty": "Không tìm thấy khoá học nào.",
+
+  "instructorsTitle": "Giảng viên",
+
+  "settingsTitle": "Cài đặt",
+  "settingsAppearance": "Giao diện",
+  "settingsTheme": "Chủ đề",
+  "settingsThemeSystem": "Theo hệ thống",
+  "settingsThemeLight": "Sáng",
+  "settingsThemeDark": "Tối",
+  "settingsLanguage": "Ngôn ngữ",
+  "settingsLanguageDescription": "Chọn ngôn ngữ hiển thị cho ứng dụng.",
+
+  "authSignIn": "Đăng nhập",
+  "authSignUp": "Đăng ký",
+  "authSignOut": "Đăng xuất",
+  "authEmail": "Email",
+  "authPassword": "Mật khẩu",
+  "authConfirmPassword": "Xác nhận mật khẩu",
+  "authForgotPassword": "Quên mật khẩu?",
+  "authNoAccount": "Chưa có tài khoản?",
+  "authHaveAccount": "Đã có tài khoản?",
+
+  "commonOk": "OK",
+  "commonCancel": "Huỷ",
+  "commonRetry": "Thử lại",
+  "commonSave": "Lưu",
+  "commonLoading": "Đang tải…",
+  "commonError": "Đã xảy ra lỗi",
+  "commonEmpty": "Chưa có nội dung",
+
+  "purchaseBuy": "Mua",
+  "purchaseBuyForPrice": "Mua với giá {price}",
+  "purchaseOwned": "Đã sở hữu",
+  "purchaseRestore": "Khôi phục giao dịch",
+  "purchaseRestoring": "Đang khôi phục…",
+  "purchaseRestored": "Đã khôi phục giao dịch.",
+
+  "lectureLocked": "Bài học này đang bị khoá. Mua khoá học để mở khoá.",
+  "lectureFreePreview": "Xem thử miễn phí"
+}

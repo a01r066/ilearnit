@@ -126,4 +126,4 @@ flutter build appbundle --flavor prod -t lib/main.dart
 
 # Acknowledgements
 
-Inspired by ***VieZ Mobile Team***'s ideas, projects, people.
+Inspired by ***Tonebase***'s ideas.

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ilearnit/features/profile/presentation/providers/locale_provider.dart';
 import 'package:ilearnit/features/profile/presentation/providers/theme_provider.dart';
 
 import '../core/routing/app_router.dart';
 import '../core/theme/app_theme.dart';
 import '../features/profile/presentation/providers/theme_state.dart';
 import '../flavors.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class App extends ConsumerWidget {
   const App({super.key});
@@ -15,6 +18,8 @@ class App extends ConsumerWidget {
     final router = ref.watch(goRouterProvider);
 
     final themeState = ref.watch(themeStateNotifierProvider);
+    final localeState = ref.watch(localeStateNotifierProvider);
+
     ThemeData lightTheme;
     ThemeData? darkTheme;
 
@@ -26,7 +31,7 @@ class App extends ConsumerWidget {
         lightTheme = AppTheme.dark();
         break;
       case ThemeType.system:
-      // Use default Material 3 themes for system mode
+        // Use default Material 3 themes for system mode
         lightTheme = ThemeData(useMaterial3: true);
         darkTheme = ThemeData(useMaterial3: true);
         break;
@@ -36,7 +41,9 @@ class App extends ConsumerWidget {
     if (themeState.themeType == ThemeType.system) {
       themeMode = ThemeMode.system;
     } else {
-      themeMode = themeState.themeType == ThemeType.dark ? ThemeMode.dark : ThemeMode.light;
+      themeMode = themeState.themeType == ThemeType.dark
+          ? ThemeMode.dark
+          : ThemeMode.light;
     }
 
     return MaterialApp.router(
@@ -46,6 +53,12 @@ class App extends ConsumerWidget {
       // darkTheme: darkTheme,
       themeMode: themeMode,
       routerConfig: router,
+
+      // --- Localization ---
+      locale: localeState.language.locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+
       builder: (context, child) {
         if (!F.isDev) return child ?? const SizedBox.shrink();
         return Banner(

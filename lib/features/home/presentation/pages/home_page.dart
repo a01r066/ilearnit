@@ -6,6 +6,7 @@ import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/loading_indicator.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../courses/domain/entities/instrument_category.dart';
 import '../../../courses/presentation/providers/courses_providers.dart';
@@ -18,6 +19,7 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
     final featured = ref.watch(featuredCoursesProvider);
+    final t = AppLocalizations.of(context);
 
     return Scaffold(
       body: SafeArea(
@@ -31,13 +33,13 @@ class HomePage extends ConsumerWidget {
                 children: [
                   Text(
                     user?.displayName != null
-                        ? 'Hello, ${user!.displayName!.split(' ').first} 👋'
-                        : 'Welcome to iLearnIt',
+                        ? t.homeWelcomeNamed(user!.displayName!.split(' ').first)
+                        : t.homeWelcomeAnon,
                     style: context.textTheme.headlineLarge,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'What will you practice today?',
+                    t.homeWelcomeSubtitle,
                     style: context.textTheme.bodyLarge?.copyWith(
                       color: context.colors.onSurfaceVariant,
                     ),
@@ -46,13 +48,13 @@ class HomePage extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            _SectionHeader(title: 'Browse by instrument'),
+            _SectionHeader(title: t.homeBrowseByInstrument),
             const SizedBox(height: 12),
             const _CategoriesRow(),
             const SizedBox(height: 24),
             _SectionHeader(
-              title: 'Featured courses',
-              actionLabel: 'See all',
+              title: t.homeFeaturedCourses,
+              actionLabel: t.homeSeeAll,
               onAction: () => context.goNamed(RouteNames.courses),
             ),
             const SizedBox(height: 12),
@@ -67,9 +69,9 @@ class HomePage extends ConsumerWidget {
               ),
               data: (items) {
                 if (items.isEmpty) {
-                  return const SizedBox(
+                  return SizedBox(
                     height: 220,
-                    child: Center(child: Text('No featured courses yet.')),
+                    child: Center(child: Text(t.homeNoFeaturedYet)),
                   );
                 }
                 return SizedBox(

@@ -1,0 +1,89 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "iLearnIt",
+  "@appTitle": {
+    "description": "The application title shown in MaterialApp.title and the launcher label."
+  },
+
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Native name of the English language as shown in the language picker."
+  },
+  "languageVietnamese": "Tiếng Việt",
+  "@languageVietnamese": {
+    "description": "Native name of the Vietnamese language as shown in the language picker."
+  },
+
+  "navHome": "Home",
+  "navCourses": "Courses",
+  "navInstructors": "Instructors",
+  "navProfile": "Profile",
+
+  "homeWelcomeAnon": "Welcome to iLearnIt",
+  "homeWelcomeNamed": "Hello, {name} 👋",
+  "@homeWelcomeNamed": {
+    "description": "Greeting shown when the user is signed in. {name} is the user's first name.",
+    "placeholders": {
+      "name": { "type": "String", "example": "Thanh" }
+    }
+  },
+  "homeWelcomeSubtitle": "What will you practice today?",
+  "homeBrowseByInstrument": "Browse by instrument",
+  "homeFeaturedCourses": "Featured courses",
+  "homeSeeAll": "See all",
+  "homeNoFeaturedYet": "No featured courses yet.",
+
+  "instrumentGuitar": "Guitar",
+  "instrumentPiano": "Piano",
+  "instrumentViolin": "Violin",
+
+  "coursesTitle": "Courses",
+  "coursesFilterAll": "All",
+  "coursesEmpty": "No courses found.",
+
+  "instructorsTitle": "Instructors",
+
+  "settingsTitle": "Settings",
+  "settingsAppearance": "Appearance",
+  "settingsTheme": "Theme",
+  "settingsThemeSystem": "System",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsLanguage": "Language",
+  "settingsLanguageDescription": "Choose your preferred language for the app interface.",
+
+  "authSignIn": "Sign in",
+  "authSignUp": "Sign up",
+  "authSignOut": "Sign out",
+  "authEmail": "Email",
+  "authPassword": "Password",
+  "authConfirmPassword": "Confirm password",
+  "authForgotPassword": "Forgot password?",
+  "authNoAccount": "Don't have an account?",
+  "authHaveAccount": "Already have an account?",
+
+  "commonOk": "OK",
+  "commonCancel": "Cancel",
+  "commonRetry": "Retry",
+  "commonSave": "Save",
+  "commonLoading": "Loading…",
+  "commonError": "Something went wrong",
+  "commonEmpty": "Nothing here yet",
+
+  "purchaseBuy": "Buy",
+  "purchaseBuyForPrice": "Buy for {price}",
+  "@purchaseBuyForPrice": {
+    "description": "Buy button on a course detail page, including the formatted price.",
+    "placeholders": {
+      "price": { "type": "String", "example": "$9.99" }
+    }
+  },
+  "purchaseOwned": "Owned",
+  "purchaseRestore": "Restore purchases",
+  "purchaseRestoring": "Restoring…",
+  "purchaseRestored": "Purchases restored.",
+
+  "lectureLocked": "This lecture is locked. Purchase the course to unlock.",
+  "lectureFreePreview": "Free preview"
+}

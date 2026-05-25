@@ -115,6 +115,7 @@ dependency_overrides:
 
 flutter:
   uses-material-design: true
+  generate: true # Enable flutter gen-l10n (reads l10n.yaml + lib/l10n/*.arb)
   assets:
     - assets/images/
     - assets/icons/
