@@ -86,7 +86,11 @@ Text(t.purchaseBuyForPrice('\$9.99'));    // "Buy for $9.99"
 
 ## Where strings still need translating
 
-The current ARB covers the high-traffic surfaces: navigation, Home, Settings, Auth labels, common actions, purchases, and lecture lock messages. The following pages still contain hardcoded English `Text(...)` and should be migrated:
+The current ARB covers the high-traffic surfaces: navigation, Home, Settings (Theme + Language pickers), Auth labels, common actions, purchases, and lecture lock messages.
+
+> The theme picker uses keys `settingsThemeSystem`, `settingsThemeVibrant`, and `settingsThemeProfessional` (the old `settingsThemeLight` / `settingsThemeDark` keys were removed when the theme system was refactored to `{system, vibrant, professional}`).
+
+The following pages still contain hardcoded English `Text(...)` and should be migrated:
 
 - `features/courses/presentation/pages/courses_page.dart`
 - `features/courses/presentation/pages/course_detail_page.dart`

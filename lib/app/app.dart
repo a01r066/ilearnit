@@ -20,38 +20,14 @@ class App extends ConsumerWidget {
     final themeState = ref.watch(themeStateNotifierProvider);
     final localeState = ref.watch(localeStateNotifierProvider);
 
-    ThemeData lightTheme;
-    ThemeData? darkTheme;
-
-    switch (themeState.themeType) {
-      case ThemeType.light:
-        lightTheme = AppTheme.light();
-        break;
-      case ThemeType.dark:
-        lightTheme = AppTheme.dark();
-        break;
-      case ThemeType.system:
-        // Use default Material 3 themes for system mode
-        lightTheme = ThemeData(useMaterial3: true);
-        darkTheme = ThemeData(useMaterial3: true);
-        break;
-    }
-
-    ThemeMode themeMode;
-    if (themeState.themeType == ThemeType.system) {
-      themeMode = ThemeMode.system;
-    } else {
-      themeMode = themeState.themeType == ThemeType.dark
-          ? ThemeMode.dark
-          : ThemeMode.light;
-    }
+    final spec = _resolveTheme(themeState.themeType);
 
     return MaterialApp.router(
       title: F.title,
       debugShowCheckedModeBanner: F.isDev,
-      theme: lightTheme,
-      // darkTheme: darkTheme,
-      themeMode: themeMode,
+      theme: spec.light,
+      darkTheme: spec.dark,
+      themeMode: spec.mode,
       routerConfig: router,
 
       // --- Localization ---
@@ -70,4 +46,40 @@ class App extends ConsumerWidget {
       },
     );
   }
+
+  /// Resolve a [ThemeType] into the concrete `(light, dark, mode)` triple
+  /// that [MaterialApp.router] expects.
+  ///
+  /// - Vibrant / Professional lock to light mode so the picked look is what
+  ///   the user sees regardless of OS preference.
+  /// - System provides both a light + dark ThemeData and lets the OS pick.
+  static _ThemeSpec _resolveTheme(ThemeType type) {
+    switch (type) {
+      case ThemeType.vibrant:
+        return _ThemeSpec(
+          light: AppTheme.vibrant(),
+          dark: null,
+          mode: ThemeMode.light,
+        );
+      case ThemeType.professional:
+        return _ThemeSpec(
+          light: AppTheme.professional(),
+          dark: null,
+          mode: ThemeMode.light,
+        );
+      case ThemeType.system:
+        return _ThemeSpec(
+          light: AppTheme.systemLight(),
+          dark: AppTheme.systemDark(),
+          mode: ThemeMode.system,
+        );
+    }
+  }
+}
+
+class _ThemeSpec {
+  const _ThemeSpec({required this.light, required this.dark, required this.mode});
+  final ThemeData light;
+  final ThemeData? dark;
+  final ThemeMode mode;
 }

@@ -21,34 +21,29 @@ class SettingsPage extends ConsumerWidget {
   Widget _buildBody(BuildContext context, WidgetRef ref, AppLocalizations t) {
     final themeState = ref.watch(themeStateNotifierProvider);
     final localeState = ref.watch(localeStateNotifierProvider);
-    final isDark = themeState.themeType == ThemeType.dark;
 
     return ListView(
       children: [
         // --- Appearance ---
         _SectionHeader(label: t.settingsAppearance),
-        ListTile(
-          leading: Icon(isDark ? Icons.dark_mode : Icons.light_mode),
-          title: Text(t.settingsTheme),
-          subtitle: Text(_themeLabel(t, themeState.themeType)),
-          trailing: Switch(
-            value: isDark,
-            onChanged: (_) => _toggleTheme(ref),
+        _SectionDescription(text: t.settingsThemeDescription),
+        for (final type in ThemeType.values)
+          RadioListTile<ThemeType>(
+            value: type,
+            groupValue: themeState.themeType,
+            title: Text(_themeLabel(t, type)),
+            secondary: Icon(_themeIcon(type)),
+            onChanged: (v) {
+              if (v == null) return;
+              ref.read(themeStateNotifierProvider.notifier).setThemeType(v);
+            },
           ),
-          onTap: () => _toggleTheme(ref),
-        ),
 
         const Divider(height: 1),
 
         // --- Language ---
         _SectionHeader(label: t.settingsLanguage),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-          child: Text(
-            t.settingsLanguageDescription,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ),
+        _SectionDescription(text: t.settingsLanguageDescription),
         for (final lang in AppLanguage.values)
           RadioListTile<AppLanguage>(
             value: lang,
@@ -68,10 +63,21 @@ class SettingsPage extends ConsumerWidget {
     switch (type) {
       case ThemeType.system:
         return t.settingsThemeSystem;
-      case ThemeType.light:
-        return t.settingsThemeLight;
-      case ThemeType.dark:
-        return t.settingsThemeDark;
+      case ThemeType.vibrant:
+        return t.settingsThemeVibrant;
+      case ThemeType.professional:
+        return t.settingsThemeProfessional;
+    }
+  }
+
+  IconData _themeIcon(ThemeType type) {
+    switch (type) {
+      case ThemeType.system:
+        return Icons.brightness_auto_rounded;
+      case ThemeType.vibrant:
+        return Icons.palette_rounded;
+      case ThemeType.professional:
+        return Icons.work_outline_rounded;
     }
   }
 
@@ -82,13 +88,6 @@ class SettingsPage extends ConsumerWidget {
       case AppLanguage.vi:
         return t.languageVietnamese;
     }
-  }
-
-  Future<void> _toggleTheme(WidgetRef ref) async {
-    final themeState = ref.read(themeStateNotifierProvider);
-    final isDark = themeState.themeType == ThemeType.dark;
-    final notifier = ref.read(themeStateNotifierProvider.notifier);
-    await notifier.setThemeMode(isDark ? ThemeType.light : ThemeType.dark);
   }
 }
 
@@ -108,6 +107,22 @@ class _SectionHeader extends StatelessWidget {
           letterSpacing: 1.2,
           fontWeight: FontWeight.w700,
         ),
+      ),
+    );
+  }
+}
+
+class _SectionDescription extends StatelessWidget {
+  const _SectionDescription({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.bodySmall,
       ),
     );
   }

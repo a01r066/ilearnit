@@ -83,13 +83,17 @@ class AppLocalizationsVi extends AppLocalizations {
   String get settingsTheme => 'Chủ đề';
 
   @override
+  String get settingsThemeDescription =>
+      'Chọn giao diện cho ứng dụng. Theo hệ thống sẽ tự đổi sáng/tối theo thiết bị.';
+
+  @override
   String get settingsThemeSystem => 'Theo hệ thống';
 
   @override
-  String get settingsThemeLight => 'Sáng';
+  String get settingsThemeVibrant => 'Rực rỡ';
 
   @override
-  String get settingsThemeDark => 'Tối';
+  String get settingsThemeProfessional => 'Chuyên nghiệp';
 
   @override
   String get settingsLanguage => 'Ngôn ngữ';

@@ -47,9 +47,10 @@
   "settingsTitle": "Settings",
   "settingsAppearance": "Appearance",
   "settingsTheme": "Theme",
+  "settingsThemeDescription": "Pick a look for the app. System follows your device's light/dark setting.",
   "settingsThemeSystem": "System",
-  "settingsThemeLight": "Light",
-  "settingsThemeDark": "Dark",
+  "settingsThemeVibrant": "Vibrant",
+  "settingsThemeProfessional": "Professional",
   "settingsLanguage": "Language",
   "settingsLanguageDescription": "Choose your preferred language for the app interface.",
 

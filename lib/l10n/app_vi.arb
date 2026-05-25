@@ -32,9 +32,10 @@
   "settingsTitle": "Cài đặt",
   "settingsAppearance": "Giao diện",
   "settingsTheme": "Chủ đề",
+  "settingsThemeDescription": "Chọn giao diện cho ứng dụng. Theo hệ thống sẽ tự đổi sáng/tối theo thiết bị.",
   "settingsThemeSystem": "Theo hệ thống",
-  "settingsThemeLight": "Sáng",
-  "settingsThemeDark": "Tối",
+  "settingsThemeVibrant": "Rực rỡ",
+  "settingsThemeProfessional": "Chuyên nghiệp",
   "settingsLanguage": "Ngôn ngữ",
   "settingsLanguageDescription": "Chọn ngôn ngữ hiển thị cho ứng dụng.",
 

@@ -83,13 +83,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTheme => 'Theme';
 
   @override
+  String get settingsThemeDescription =>
+      'Pick a look for the app. System follows your device\'s light/dark setting.';
+
+  @override
   String get settingsThemeSystem => 'System';
 
   @override
-  String get settingsThemeLight => 'Light';
+  String get settingsThemeVibrant => 'Vibrant';
 
   @override
-  String get settingsThemeDark => 'Dark';
+  String get settingsThemeProfessional => 'Professional';
 
   @override
   String get settingsLanguage => 'Language';
