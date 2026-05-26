@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:dartz/dartz.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+import '../../../../core/error/failure.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import 'auth_state.dart';
@@ -34,10 +36,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }) async {
     state = const AuthState.loading();
     final result = await _repo.login(email: email, password: password);
-    result.fold(
-      (failure) => state = AuthState.unauthenticated(lastFailure: failure),
-      (user) => state = AuthState.authenticated(user),
-    );
+    _applyResult(result);
   }
 
   Future<void> signup({
@@ -51,10 +50,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
       password: password,
       displayName: displayName,
     );
-    result.fold(
-      (failure) => state = AuthState.unauthenticated(lastFailure: failure),
-      (user) => state = AuthState.authenticated(user),
-    );
+    _applyResult(result);
+  }
+
+  Future<void> signInWithGoogle() async {
+    state = const AuthState.loading();
+    final result = await _repo.signInWithGoogle();
+    _applyResult(result);
+  }
+
+  Future<void> signInWithApple() async {
+    state = const AuthState.loading();
+    final result = await _repo.signInWithApple();
+    _applyResult(result);
   }
 
   Future<void> logout() async {
@@ -69,6 +77,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> sendPasswordReset(String email) async {
     final result = await _repo.sendPasswordReset(email: email);
     return result.isRight();
+  }
+
+  /// Collapse a Failure/User result into the appropriate AuthState.
+  ///
+  /// Treats provider cancellation as a quiet return to unauthenticated so
+  /// the snackbar listener doesn't fire.
+  void _applyResult(Either<Failure, UserEntity> result) {
+    result.fold(
+      (failure) {
+        final isCancel = failure is AuthFailure &&
+            failure.code == AuthCancellation.code;
+        state = AuthState.unauthenticated(
+          lastFailure: isCancel ? null : failure,
+        );
+      },
+      (user) => state = AuthState.authenticated(user),
+    );
   }
 
   @override

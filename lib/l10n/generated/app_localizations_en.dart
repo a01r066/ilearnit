@@ -130,6 +130,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authHaveAccount => 'Already have an account?';
 
   @override
+  String get authOrContinueWith => 'or continue with';
+
+  @override
+  String get authContinueWithGoogle => 'Continue with Google';
+
+  @override
+  String get authContinueWithApple => 'Continue with Apple';
+
+  @override
   String get commonOk => 'OK';
 
   @override

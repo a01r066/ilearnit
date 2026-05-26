@@ -1,3 +1,6 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,9 +8,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 import '../providers/auth_providers.dart';
 import '../providers/auth_state.dart';
 import '../widgets/auth_text_field.dart';
+import '../widgets/social_sign_in_button.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -37,8 +42,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         );
   }
 
+  Future<void> _signInWithGoogle() =>
+      ref.read(authNotifierProvider.notifier).signInWithGoogle();
+
+  Future<void> _signInWithApple() =>
+      ref.read(authNotifierProvider.notifier).signInWithApple();
+
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+
     // Show snackbar on auth failure.
     ref.listen<AuthState>(authNotifierProvider, (prev, next) {
       final failure = next.failureOrNull;
@@ -46,6 +59,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     });
 
     final isLoading = ref.watch(authNotifierProvider).isLoading;
+    final showAppleButton = !kIsWeb && Platform.isIOS;
 
     return Scaffold(
       body: SafeArea(
@@ -68,7 +82,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   const SizedBox(height: 32),
                   AuthTextField(
                     controller: _email,
-                    label: 'Email',
+                    label: t.authEmail,
                     hint: 'you@email.com',
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
@@ -79,7 +93,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   const SizedBox(height: 16),
                   AuthTextField(
                     controller: _password,
-                    label: 'Password',
+                    label: t.authPassword,
                     obscureText: _obscure,
                     textInputAction: TextInputAction.done,
                     prefixIcon: Icons.lock_outline_rounded,
@@ -100,7 +114,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: isLoading ? null : _onForgot,
-                      child: const Text('Forgot password?'),
+                      child: Text(t.authForgotPassword),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -112,18 +126,32 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             width: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Sign in'),
+                        : Text(t.authSignIn),
                   ),
+                  const SizedBox(height: 24),
+                  _OrDivider(label: t.authOrContinueWith),
+                  const SizedBox(height: 16),
+                  SocialSignInButton.google(
+                    label: t.authContinueWithGoogle,
+                    onPressed: isLoading ? null : _signInWithGoogle,
+                  ),
+                  if (showAppleButton) ...[
+                    const SizedBox(height: 12),
+                    SocialSignInButton.apple(
+                      label: t.authContinueWithApple,
+                      onPressed: isLoading ? null : _signInWithApple,
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Don't have an account?"),
+                      Text(t.authNoAccount),
                       TextButton(
                         onPressed: isLoading
                             ? null
                             : () => context.goNamed(RouteNames.signup),
-                        child: const Text('Sign up'),
+                        child: Text(t.authSignUp),
                       ),
                     ],
                   ),
@@ -146,6 +174,31 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (!mounted) return;
     context.showSnack(
       ok ? 'Password reset email sent.' : 'Could not send reset email.',
+    );
+  }
+}
+
+/// Horizontal divider with a centered label — "─── or continue with ───".
+class _OrDivider extends StatelessWidget {
+  const _OrDivider({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.outlineVariant;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(child: Divider(color: color, height: 1)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+        Expanded(child: Divider(color: color, height: 1)),
+      ],
     );
   }
 }

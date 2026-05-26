@@ -63,6 +63,9 @@
   "authForgotPassword": "Forgot password?",
   "authNoAccount": "Don't have an account?",
   "authHaveAccount": "Already have an account?",
+  "authOrContinueWith": "or continue with",
+  "authContinueWithGoogle": "Continue with Google",
+  "authContinueWithApple": "Continue with Apple",
 
   "commonOk": "OK",
   "commonCancel": "Cancel",

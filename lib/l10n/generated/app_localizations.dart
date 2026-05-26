@@ -332,6 +332,24 @@ abstract class AppLocalizations {
   /// **'Already have an account?'**
   String get authHaveAccount;
 
+  /// No description provided for @authOrContinueWith.
+  ///
+  /// In en, this message translates to:
+  /// **'or continue with'**
+  String get authOrContinueWith;
+
+  /// No description provided for @authContinueWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get authContinueWithGoogle;
+
+  /// No description provided for @authContinueWithApple.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Apple'**
+  String get authContinueWithApple;
+
   /// No description provided for @commonOk.
   ///
   /// In en, this message translates to:

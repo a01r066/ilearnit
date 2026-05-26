@@ -130,6 +130,15 @@ class AppLocalizationsVi extends AppLocalizations {
   String get authHaveAccount => 'Đã có tài khoản?';
 
   @override
+  String get authOrContinueWith => 'hoặc đăng nhập bằng';
+
+  @override
+  String get authContinueWithGoogle => 'Tiếp tục với Google';
+
+  @override
+  String get authContinueWithApple => 'Tiếp tục với Apple';
+
+  @override
   String get commonOk => 'OK';
 
   @override

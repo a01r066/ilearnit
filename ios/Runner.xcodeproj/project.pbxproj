@@ -203,7 +203,6 @@
 				79E718F8521C4E425C4472BB /* Pods-RunnerTests.release.xcconfig */,
 				02AE3A8D5CF60E47527657D4 /* Pods-RunnerTests.profile.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -405,9 +404,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -422,9 +425,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -486,6 +493,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 101AE498CCB1418747F68678 /* prodDebug.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = ZQH587T855;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = "Debug-prod";
@@ -759,10 +767,53 @@
 			};
 			name = "Debug-prod";
 		};
+		70973B372FC49D580069CBBF /* Debug-dev */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = RunnerTests;
+			};
+			name = "Debug-dev";
+		};
+		70973B382FC49D580069CBBF /* Profile-dev */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = RunnerTests;
+			};
+			name = "Profile-dev";
+		};
+		70973B392FC49D580069CBBF /* Release-dev */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = RunnerTests;
+			};
+			name = "Release-dev";
+		};
+		70973B3A2FC49D580069CBBF /* Debug-prod */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = RunnerTests;
+			};
+			name = "Debug-prod";
+		};
+		70973B3B2FC49D580069CBBF /* Profile-prod */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = RunnerTests;
+			};
+			name = "Profile-prod";
+		};
+		70973B3C2FC49D580069CBBF /* Release-prod */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = RunnerTests;
+			};
+			name = "Release-prod";
+		};
 		72C2C536D3BBDBC34DA98EB6 /* Profile-dev */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C691FF5C5071194B7D3D1878 /* devProfile.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = ZQH587T855;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = "Profile-dev";
@@ -846,6 +897,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C25BC58A63BD32395B33BB80 /* devDebug.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = ZQH587T855;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = "Debug-dev";
@@ -1010,6 +1062,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AFB4BD2B0E038DBE7309D99B /* prodProfile.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = ZQH587T855;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = "Profile-prod";
@@ -1090,6 +1143,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 0C6828988275087472BAC762 /* prodRelease.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = ZQH587T855;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = "Release-prod";
@@ -1098,6 +1152,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 68159826F5F14314217555DE /* devRelease.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = ZQH587T855;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = "Release-dev";
@@ -1253,6 +1308,12 @@
 				331C8088294A63A400263BE5 /* Debug */,
 				331C8089294A63A400263BE5 /* Release */,
 				331C808A294A63A400263BE5 /* Profile */,
+				70973B372FC49D580069CBBF /* Debug-dev */,
+				70973B382FC49D580069CBBF /* Profile-dev */,
+				70973B392FC49D580069CBBF /* Release-dev */,
+				70973B3A2FC49D580069CBBF /* Debug-prod */,
+				70973B3B2FC49D580069CBBF /* Profile-prod */,
+				70973B3C2FC49D580069CBBF /* Release-prod */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -1,3 +1,6 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,9 +8,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 import '../providers/auth_providers.dart';
 import '../providers/auth_state.dart';
 import '../widgets/auth_text_field.dart';
+import '../widgets/social_sign_in_button.dart';
 
 class SignupPage extends ConsumerStatefulWidget {
   const SignupPage({super.key});
@@ -42,14 +47,23 @@ class _SignupPageState extends ConsumerState<SignupPage> {
         );
   }
 
+  Future<void> _signInWithGoogle() =>
+      ref.read(authNotifierProvider.notifier).signInWithGoogle();
+
+  Future<void> _signInWithApple() =>
+      ref.read(authNotifierProvider.notifier).signInWithApple();
+
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+
     ref.listen<AuthState>(authNotifierProvider, (prev, next) {
       final failure = next.failureOrNull;
       if (failure != null) context.showSnack(failure.displayMessage);
     });
 
     final isLoading = ref.watch(authNotifierProvider).isLoading;
+    final showAppleButton = !kIsWeb && Platform.isIOS;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Create account')),
@@ -84,7 +98,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                   const SizedBox(height: 16),
                   AuthTextField(
                     controller: _email,
-                    label: 'Email',
+                    label: t.authEmail,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
                     prefixIcon: Icons.alternate_email_rounded,
@@ -94,7 +108,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                   const SizedBox(height: 16),
                   AuthTextField(
                     controller: _password,
-                    label: 'Password',
+                    label: t.authPassword,
                     obscureText: _obscure,
                     textInputAction: TextInputAction.next,
                     prefixIcon: Icons.lock_outline_rounded,
@@ -112,7 +126,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                   const SizedBox(height: 16),
                   AuthTextField(
                     controller: _confirm,
-                    label: 'Confirm password',
+                    label: t.authConfirmPassword,
                     obscureText: _obscure,
                     textInputAction: TextInputAction.done,
                     prefixIcon: Icons.lock_outline_rounded,
@@ -134,16 +148,30 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                           )
                         : const Text('Create account'),
                   ),
+                  const SizedBox(height: 24),
+                  _OrDivider(label: t.authOrContinueWith),
+                  const SizedBox(height: 16),
+                  SocialSignInButton.google(
+                    label: t.authContinueWithGoogle,
+                    onPressed: isLoading ? null : _signInWithGoogle,
+                  ),
+                  if (showAppleButton) ...[
+                    const SizedBox(height: 12),
+                    SocialSignInButton.apple(
+                      label: t.authContinueWithApple,
+                      onPressed: isLoading ? null : _signInWithApple,
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Already have an account?'),
+                      Text(t.authHaveAccount),
                       TextButton(
                         onPressed: isLoading
                             ? null
                             : () => context.goNamed(RouteNames.login),
-                        child: const Text('Sign in'),
+                        child: Text(t.authSignIn),
                       ),
                     ],
                   ),
@@ -153,6 +181,31 @@ class _SignupPageState extends ConsumerState<SignupPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Horizontal divider with a centered label — same as the one on Login.
+class _OrDivider extends StatelessWidget {
+  const _OrDivider({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.outlineVariant;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(child: Divider(color: color, height: 1)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+        Expanded(child: Divider(color: color, height: 1)),
+      ],
     );
   }
 }

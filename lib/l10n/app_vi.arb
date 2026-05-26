@@ -48,6 +48,9 @@
   "authForgotPassword": "Quên mật khẩu?",
   "authNoAccount": "Chưa có tài khoản?",
   "authHaveAccount": "Đã có tài khoản?",
+  "authOrContinueWith": "hoặc đăng nhập bằng",
+  "authContinueWithGoogle": "Tiếp tục với Google",
+  "authContinueWithApple": "Tiếp tục với Apple",
 
   "commonOk": "OK",
   "commonCancel": "Huỷ",

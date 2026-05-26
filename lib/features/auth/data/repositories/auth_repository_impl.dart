@@ -8,6 +8,7 @@ import '../../../../core/typedefs/typedefs.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
+import '../models/user_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
@@ -56,10 +57,7 @@ class AuthRepositoryImpl implements AuthRepository {
     }
     try {
       final model = await _remote.login(email: email, password: password);
-      // Persist Firebase ID token for any non-Firebase backend calls.
-      final fb = _remote.currentFirebaseUser;
-      final token = await fb?.getIdToken();
-      if (token != null) await _storage.writeAccessToken(token);
+      await _persistToken();
       return Right(model.toEntity());
     } catch (e, st) {
       return Left(mapToFailure(e, st));
@@ -81,9 +79,34 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
         displayName: displayName,
       );
-      final fb = _remote.currentFirebaseUser;
-      final token = await fb?.getIdToken();
-      if (token != null) await _storage.writeAccessToken(token);
+      await _persistToken();
+      return Right(model.toEntity());
+    } catch (e, st) {
+      return Left(mapToFailure(e, st));
+    }
+  }
+
+  @override
+  ResultFuture<UserEntity> signInWithGoogle() => _runSocial(
+        () => _remote.signInWithGoogle(),
+      );
+
+  @override
+  ResultFuture<UserEntity> signInWithApple() => _runSocial(
+        () => _remote.signInWithApple(),
+      );
+
+  /// Shared envelope for the social flows: network gate, token persistence,
+  /// failure mapping.
+  ResultFuture<UserEntity> _runSocial(
+    Future<UserModel> Function() flow,
+  ) async {
+    if (!await _network.isConnected) {
+      return const Left(Failure.network());
+    }
+    try {
+      final model = await flow();
+      await _persistToken();
       return Right(model.toEntity());
     } catch (e, st) {
       return Left(mapToFailure(e, st));
@@ -112,5 +135,15 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e, st) {
       return Left(mapToFailure(e, st));
     }
+  }
+
+  // ---------- helpers -----------------------------------------------------
+
+  /// Persist the current Firebase ID token to secure storage so any
+  /// non-Firebase backend calls can attach an Authorization header.
+  Future<void> _persistToken() async {
+    final fb = _remote.currentFirebaseUser;
+    final token = await fb?.getIdToken();
+    if (token != null) await _storage.writeAccessToken(token);
   }
 }
