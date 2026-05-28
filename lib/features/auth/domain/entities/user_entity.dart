@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'user_role.dart';
+
 part 'user_entity.freezed.dart';
 
 /// Pure domain user — no JSON, no Firebase types. UI binds to this.
@@ -12,6 +14,8 @@ abstract class UserEntity with _$UserEntity {
     String? photoUrl,
     @Default(false) bool emailVerified,
     String? primaryInstrument, // e.g. 'guitar' | 'piano' | 'violin'
+    @Default(UserRole.student) UserRole role,
+    @Default(false) bool isSuspended,
     DateTime? createdAt,
   }) = _UserEntity;
 }

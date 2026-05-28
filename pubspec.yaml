@@ -42,6 +42,9 @@ dependencies:
   sign_in_with_apple: ^6.1.4
   crypto: ^3.0.6 # SHA-256 for the Apple Sign-In nonce
 
+  # Admin web portal — file picking on web
+  file_picker: ^8.1.4
+
   # Storage
   flutter_secure_storage: ^10.0.0
   shared_preferences: ^2.3.2

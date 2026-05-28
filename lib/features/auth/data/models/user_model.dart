@@ -3,11 +3,15 @@ import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../domain/entities/user_entity.dart';
+import '../../domain/entities/user_role.dart';
 
 part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
 /// Firestore-backed DTO for the `users` collection.
+///
+/// `role` is stored as the [UserRole.id] string so Firestore docs are stable
+/// across enum reorderings.
 @freezed
 abstract class UserModel with _$UserModel {
   const UserModel._();
@@ -19,6 +23,8 @@ abstract class UserModel with _$UserModel {
     String? photoUrl,
     @Default(false) bool emailVerified,
     String? primaryInstrument,
+    @Default('student') String role,
+    @Default(false) bool isSuspended,
     @TimestampConverter() DateTime? createdAt,
   }) = _UserModel;
 
@@ -46,6 +52,8 @@ abstract class UserModel with _$UserModel {
         photoUrl: photoUrl,
         emailVerified: emailVerified,
         primaryInstrument: primaryInstrument,
+        role: UserRole.fromId(role),
+        isSuspended: isSuspended,
         createdAt: createdAt,
       );
 }
