@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ilearnit/features/profile/presentation/providers/locale_provider.dart';
 import 'package:ilearnit/features/profile/presentation/providers/theme_provider.dart';
 
+import '../core/notifications/domain/notification_payload.dart';
+import '../core/notifications/presentation/notification_providers.dart';
 import '../core/routing/app_router.dart';
 import '../core/theme/app_theme.dart';
 import '../features/profile/presentation/providers/theme_state.dart';
@@ -19,6 +22,11 @@ class App extends ConsumerWidget {
 
     final themeState = ref.watch(themeStateNotifierProvider);
     final localeState = ref.watch(localeStateNotifierProvider);
+
+    // Listen for notification taps and deep-link via go_router.
+    ref.listen(notificationTapsProvider, (_, next) {
+      next.whenData((payload) => _handleTap(router, payload));
+    });
 
     final spec = _resolveTheme(themeState.themeType);
 
@@ -45,6 +53,31 @@ class App extends ConsumerWidget {
         );
       },
     );
+  }
+
+  /// Route the app to wherever a tapped notification points.
+  ///
+  /// If the payload carries a `route` we go there; otherwise we fall back
+  /// to a sensible default per [NotificationType].
+  static void _handleTap(GoRouter router, NotificationPayload payload) {
+    final explicit = payload.route;
+    if (explicit != null && explicit.isNotEmpty) {
+      router.go(explicit);
+      return;
+    }
+    switch (payload.type) {
+      case NotificationType.enrollmentCreated:
+        final id = payload.courseId;
+        if (id != null) router.go('/courses/$id');
+        break;
+      case NotificationType.applicationApproved:
+      case NotificationType.applicationRejected:
+      case NotificationType.broadcast:
+      case NotificationType.unknown:
+        // Default: open the home tab.
+        router.go('/');
+        break;
+    }
   }
 
   /// Resolve a [ThemeType] into the concrete `(light, dark, mode)` triple

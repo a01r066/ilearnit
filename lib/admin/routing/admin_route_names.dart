@@ -19,6 +19,7 @@ class AdminRoutes {
   static const String allCourses = 'admin-all-courses';
   static const String applications = 'admin-applications';
   static const String instructors = 'admin-instructors';
+  static const String notifications = 'admin-notifications';
 
   // Path templates
   static const String loginPath = '/login';
@@ -31,4 +32,5 @@ class AdminRoutes {
   static const String allCoursesPath = '/admin/courses';
   static const String applicationsPath = '/admin/applications';
   static const String instructorsPath = '/admin/instructors';
+  static const String notificationsPath = '/admin/notifications';
 }

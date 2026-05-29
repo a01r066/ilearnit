@@ -14,6 +14,7 @@ import '../instructors/presentation/admin_applications_page.dart';
 import '../instructors/presentation/admin_instructors_page.dart';
 import '../instructors/presentation/instructor_apply_page.dart';
 import '../instructors/presentation/instructor_pending_page.dart';
+import '../notifications/presentation/admin_notifications_page.dart';
 import '../shared/pages/unauthorized_page.dart';
 import '../shared/providers/admin_providers.dart';
 import '../shared/widgets/admin_scaffold.dart';
@@ -99,6 +100,11 @@ final adminGoRouterProvider = Provider<GoRouter>((ref) {
             name: AdminRoutes.instructors,
             builder: (_, __) => const AdminInstructorsPage(),
           ),
+          GoRoute(
+            path: AdminRoutes.notificationsPath,
+            name: AdminRoutes.notifications,
+            builder: (_, __) => const AdminNotificationsPage(),
+          ),
         ],
       ),
     ],
@@ -165,7 +171,8 @@ String? _redirect(Ref ref, String location) {
 bool _isAdminOnly(String location) =>
     location == AdminRoutes.allCoursesPath ||
     location == AdminRoutes.applicationsPath ||
-    location == AdminRoutes.instructorsPath;
+    location == AdminRoutes.instructorsPath ||
+    location == AdminRoutes.notificationsPath;
 
 String _landingFor(UserRole role) {
   switch (role) {

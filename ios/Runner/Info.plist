@@ -24,6 +24,19 @@
     <string>????</string>
     <key>CFBundleVersion</key>
     <string>$(FLUTTER_BUILD_NUMBER)</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <!-- PASTE the REVERSED_CLIENT_ID from your GoogleService-Info.plist here -->
+          <string>com.googleusercontent.apps.941373047874-tacfaqbvrfb3pgdo3jgrte8jjni1o7kr</string>
+          <string>com.googleusercontent.apps.539584702115-e6nhghh8d23uq1qvojlmn2p1df756id5</string>
+        </array>
+      </dict>
+    </array>
     <key>LSRequiresIPhoneOS</key>
     <true/>
     <key>UIApplicationSceneManifest</key>

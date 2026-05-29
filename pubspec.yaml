@@ -36,6 +36,10 @@ dependencies:
   firebase_auth: ^6.4.0
   cloud_firestore: ^6.3.0
   firebase_storage: ^13.3.0
+  firebase_messaging: ^16.2.0
+
+  # Local notifications — used to display FCM messages while app is foregrounded
+  flutter_local_notifications: ^17.2.4
 
   # Social sign-in (Firebase Auth providers)
   google_sign_in: ^6.3.0

@@ -120,6 +120,11 @@ class AdminScaffold extends ConsumerWidget {
           icon: Icons.people_outline,
           path: AdminRoutes.instructorsPath,
         ),
+        _NavItem(
+          label: 'Notifications',
+          icon: Icons.notifications_outlined,
+          path: AdminRoutes.notificationsPath,
+        ),
       ],
     ];
   }

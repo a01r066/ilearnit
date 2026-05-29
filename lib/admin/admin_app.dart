@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/notifications/presentation/notification_providers.dart';
 import '../core/theme/app_theme.dart';
 import '../features/profile/presentation/providers/locale_provider.dart';
 import '../flavors.dart';
@@ -21,6 +22,13 @@ class AdminApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(adminGoRouterProvider);
     final localeState = ref.watch(localeStateNotifierProvider);
+
+    // Forward notification taps into go_router. We don't deep-link to
+    // specific portal pages from a push — just bring the app to front and
+    // land on the dashboard (the role-based redirect handles the rest).
+    ref.listen(notificationTapsProvider, (_, next) {
+      next.whenData((_) => router.go('/'));
+    });
 
     return MaterialApp.router(
       title: '${F.title} · Admin',
