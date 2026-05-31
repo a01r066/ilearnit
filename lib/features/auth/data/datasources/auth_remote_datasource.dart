@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'dart:io' show Platform;
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
@@ -111,6 +111,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<UserModel> signInWithGoogle() async {
+    // On web, the `google_sign_in` plugin requires extra setup (Google
+    // Identity Services + Web Client ID meta tag). It's simpler — and
+    // future-proof against Google's UI deprecations — to delegate to
+    // Firebase's own `signInWithPopup` on web.
+    if (kIsWeb) {
+      return _signInWithGoogleWeb();
+    }
+    return _signInWithGoogleNative();
+  }
+
+  Future<UserModel> _signInWithGoogleNative() async {
     final GoogleSignInAccount? account;
     try {
       account = await _googleSignIn.signIn();
@@ -145,17 +156,54 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     return _upsertSocialUser(user);
   }
 
+  Future<UserModel> _signInWithGoogleWeb() async {
+    final provider = GoogleAuthProvider()
+      ..addScope('email')
+      ..addScope('profile');
+    try {
+      final result = await _auth.signInWithPopup(provider);
+      final user = result.user;
+      if (user == null) {
+        throw AuthException(message: 'Google sign-in returned no user.');
+      }
+      return _upsertSocialUser(user);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'popup-closed-by-user' ||
+          e.code == 'cancelled-popup-request' ||
+          e.code == 'user-cancelled') {
+        throw AuthException(
+          message: 'Sign-in cancelled.',
+          code: AuthCancellation.code,
+        );
+      }
+      throw AuthException(
+        message: e.message ?? 'Google sign-in failed.',
+        code: e.code,
+      );
+    }
+  }
+
   // ---------- Apple --------------------------------------------------------
 
   @override
   Future<UserModel> signInWithApple() async {
-    if (!Platform.isIOS && !Platform.isMacOS) {
+    if (kIsWeb) {
+      return _signInWithAppleWeb();
+    }
+    // Native: iOS + macOS only (Android falls through to the web flow if you
+    // ever wire that up — see `docs/social_auth_setup.md`).
+    final platform = defaultTargetPlatform;
+    if (platform != TargetPlatform.iOS &&
+        platform != TargetPlatform.macOS) {
       throw AuthException(
         message: 'Sign in with Apple is only available on Apple devices.',
         code: 'unsupported-platform',
       );
     }
+    return _signInWithAppleNative();
+  }
 
+  Future<UserModel> _signInWithAppleNative() async {
     // Apple requires a one-shot nonce; we send the SHA-256 hash up and pass
     // the raw nonce back to Firebase so the two can be cross-checked.
     final rawNonce = _generateNonce();
@@ -205,6 +253,37 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     return _upsertSocialUser(user);
   }
 
+  /// Web flow — Apple-on-web uses Firebase's `signInWithPopup` with the
+  /// `apple.com` OAuth provider. Requires a Service ID + return URL
+  /// configured in Apple Developer Console (see
+  /// `docs/social_auth_setup.md`).
+  Future<UserModel> _signInWithAppleWeb() async {
+    final provider = OAuthProvider('apple.com')
+      ..addScope('email')
+      ..addScope('name');
+    try {
+      final result = await _auth.signInWithPopup(provider);
+      final user = result.user;
+      if (user == null) {
+        throw AuthException(message: 'Apple sign-in returned no user.');
+      }
+      return _upsertSocialUser(user);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'popup-closed-by-user' ||
+          e.code == 'cancelled-popup-request' ||
+          e.code == 'user-cancelled') {
+        throw AuthException(
+          message: 'Sign-in cancelled.',
+          code: AuthCancellation.code,
+        );
+      }
+      throw AuthException(
+        message: e.message ?? 'Apple sign-in failed.',
+        code: e.code,
+      );
+    }
+  }
+
   // ---------- Shared helpers -----------------------------------------------
 
   /// Create or refresh the Firestore `users/{uid}` doc after a social
@@ -243,10 +322,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> logout() async {
     // Sign out of providers too, so a subsequent tap reopens the picker.
-    await Future.wait([
-      _auth.signOut(),
-      _googleSignIn.signOut().catchError((_) {}),
-    ]);
+    // On web we only sign out of Firebase — the popup flow doesn't hold
+    // any plugin-level session.
+    await _auth.signOut();
+    if (!kIsWeb) {
+      await _googleSignIn.signOut().catchError((Object _) => null);
+    }
   }
 
   @override

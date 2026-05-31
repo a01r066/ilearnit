@@ -4,10 +4,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/utils/validators.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/auth/presentation/providers/auth_state.dart';
+import '../../features/auth/presentation/widgets/social_sign_in_button.dart';
 
-/// Email/password sign-in for the admin portal. Reuses the existing
-/// [AuthNotifier] — the role-based redirect in `admin_router.dart` decides
-/// where the user lands after a successful sign-in.
+/// Email/password + Google + Apple sign-in for the admin portal.
+///
+/// Reuses [AuthNotifier] — the role-based redirect in `admin_router.dart`
+/// decides where the user lands after a successful sign-in:
+///   • student → /apply
+///   • instructor or admin → /
+///   • suspended → /unauthorized
+///
+/// All three flows go through the same notifier, so the failure-snackbar
+/// listener handles every error path uniformly.
 class AdminLoginPage extends ConsumerStatefulWidget {
   const AdminLoginPage({super.key});
 
@@ -36,6 +44,12 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
         );
   }
 
+  Future<void> _google() =>
+      ref.read(authNotifierProvider.notifier).signInWithGoogle();
+
+  Future<void> _apple() =>
+      ref.read(authNotifierProvider.notifier).signInWithApple();
+
   @override
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authNotifierProvider, (_, next) {
@@ -54,7 +68,7 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(32),
             child: Form(
               key: _formKey,
@@ -120,7 +134,25 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
                           )
                         : const Text('Sign in'),
                   ),
+
+                  // --- Social sign-in -----------------------------------
+                  const SizedBox(height: 24),
+                  const _OrDivider(label: 'or continue with'),
+                  const SizedBox(height: 16),
+                  SocialSignInButton.google(
+                    label: 'Continue with Google',
+                    onPressed: isLoading ? null : _google,
+                  ),
                   const SizedBox(height: 12),
+                  // Apple via signInWithPopup works in any browser — admins
+                  // on macOS/iPadOS will get the smoother native sheet, but
+                  // the same code path serves everyone.
+                  SocialSignInButton.apple(
+                    label: 'Continue with Apple',
+                    onPressed: isLoading ? null : _apple,
+                  ),
+
+                  const SizedBox(height: 24),
                   Text(
                     'New here? Use the mobile app to create an account, '
                     'then come back to apply as an instructor.',
@@ -135,6 +167,29 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Inline copy of the divider widget used by the consumer login — kept here
+/// rather than imported so the admin module stays self-contained.
+class _OrDivider extends StatelessWidget {
+  const _OrDivider({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.outlineVariant;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(child: Divider(color: color, height: 1)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(label, style: Theme.of(context).textTheme.bodySmall),
+        ),
+        Expanded(child: Divider(color: color, height: 1)),
+      ],
     );
   }
 }
