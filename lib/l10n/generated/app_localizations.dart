@@ -439,6 +439,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Free preview'**
   String get lectureFreePreview;
+
+  /// No description provided for @subscriptionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription'**
+  String get subscriptionTitle;
+
+  /// No description provided for @subscriptionActivePlans.
+  ///
+  /// In en, this message translates to:
+  /// **'Active plans'**
+  String get subscriptionActivePlans;
+
+  /// No description provided for @subscriptionNoneActive.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have any active subscriptions'**
+  String get subscriptionNoneActive;
+
+  /// No description provided for @subscriptionAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription plans available'**
+  String get subscriptionAvailable;
+
+  /// No description provided for @personalPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal plan'**
+  String get personalPlan;
+
+  /// No description provided for @personalPlanIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'New opportunities await. Sign up for Personal Plan to get all this and more:'**
+  String get personalPlanIntro;
+
+  /// No description provided for @personalPlanFeature1.
+  ///
+  /// In en, this message translates to:
+  /// **'Access to all classical music courses'**
+  String get personalPlanFeature1;
+
+  /// No description provided for @personalPlanFeature2.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses in guitar, piano, and violin'**
+  String get personalPlanFeature2;
+
+  /// No description provided for @personalPlanFeature3.
+  ///
+  /// In en, this message translates to:
+  /// **'Sheet music, exercises, and Q&A'**
+  String get personalPlanFeature3;
+
+  /// No description provided for @personalPlanLearnMoreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About the Personal Plan'**
+  String get personalPlanLearnMoreTitle;
+
+  /// No description provided for @personalPlanLearnMoreBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The Personal Plan gives you unlimited access to every course on iLearnIt for a single monthly or yearly price. Switch instruments any time, study at your own pace, and cancel whenever.'**
+  String get personalPlanLearnMoreBody;
+
+  /// No description provided for @startSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Start subscription'**
+  String get startSubscription;
+
+  /// No description provided for @learnMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn more'**
+  String get learnMore;
+
+  /// No description provided for @startingAtPerMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting at {price} per month. Cancel any time.'**
+  String startingAtPerMonth(String price);
+
+  /// No description provided for @subscriptionRenewsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Renews on {date}'**
+  String subscriptionRenewsOn(String date);
+
+  /// No description provided for @subscriptionCancelsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancels on {date}'**
+  String subscriptionCancelsOn(String date);
+
+  /// No description provided for @planBilledYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Billed yearly'**
+  String get planBilledYearly;
+
+  /// No description provided for @planBilledMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Billed monthly'**
+  String get planBilledMonthly;
+
+  /// No description provided for @checkoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get checkoutTitle;
+
+  /// No description provided for @yearlyAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly access'**
+  String get yearlyAccess;
+
+  /// No description provided for @monthlyAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly access'**
+  String get monthlyAccess;
+
+  /// No description provided for @billedYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'billed yearly'**
+  String get billedYearly;
+
+  /// No description provided for @billedMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'billed monthly'**
+  String get billedMonthly;
+
+  /// No description provided for @saveAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Save {amount}'**
+  String saveAmount(String amount);
+
+  /// No description provided for @checkoutFeature1.
+  ///
+  /// In en, this message translates to:
+  /// **'Access to every iLearnIt course, anytime'**
+  String get checkoutFeature1;
+
+  /// No description provided for @checkoutFeature2.
+  ///
+  /// In en, this message translates to:
+  /// **'Hands-on lessons across guitar, piano, and violin'**
+  String get checkoutFeature2;
+
+  /// No description provided for @checkoutFeature3.
+  ///
+  /// In en, this message translates to:
+  /// **'Course recommendations based on your goals'**
+  String get checkoutFeature3;
+
+  /// No description provided for @summary.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get summary;
+
+  /// No description provided for @totalDueToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Total due today:'**
+  String get totalDueToday;
+
+  /// No description provided for @checkoutBillingDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel anytime by visiting the Subscriptions page in your account. Your subscription begins at checkout and a charge of {total} (plus applicable taxes) will apply immediately and automatically each billing period until you cancel. By placing this order, you agree to our Terms of Use and authorize this recurring charge. No refunds unless required by law.'**
+  String checkoutBillingDisclaimer(String total);
 }
 
 class _AppLocalizationsDelegate

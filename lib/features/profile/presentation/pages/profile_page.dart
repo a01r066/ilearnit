@@ -10,6 +10,7 @@ import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../auth/presentation/providers/auth_state.dart';
 import 'package:ilearnit/features/auth/domain/entities/user_entity.dart';
 import '../../../purchases/presentation/widgets/restore_purchases_tile.dart';
+import '../../../subscriptions/presentation/providers/subscription_providers.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -26,6 +27,7 @@ class ProfilePage extends ConsumerWidget {
   }
 
   ListView _buildBody(UserEntity? user, BuildContext context, bool isLoading, WidgetRef ref) {
+    final hasSubscription = ref.watch(hasActiveSubscriptionProvider);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -65,6 +67,15 @@ class ProfilePage extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 32),
+        ListTile(
+          leading: const Icon(Icons.workspace_premium_outlined),
+          title: const Text('Subscription'),
+          subtitle: hasSubscription
+              ? const Text('Personal Plan · active')
+              : const Text('Unlock all courses with Personal Plan'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.goNamed(RouteNames.subscription),
+        ),
         ListTile(
           leading: const Icon(Icons.bookmark_outline),
           title: const Text('Saved courses'),

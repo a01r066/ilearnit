@@ -12,6 +12,7 @@ import 'core/notifications/data/fcm_service.dart';
 import 'core/notifications/presentation/notification_providers.dart';
 import 'core/storage/prefs_service.dart';
 import 'features/purchases/presentation/providers/purchases_providers.dart';
+import 'features/subscriptions/presentation/providers/subscription_providers.dart';
 import 'firebase_options_dev.dart' as dev_opts;
 import 'firebase_options_prod.dart' as prod_opts;
 import 'flavors.dart';
@@ -55,6 +56,10 @@ Future<void> bootstrap() async {
   // OS delivers before any UI renders are still captured. Reading the
   // provider triggers its constructor → subscribes to purchaseStream.
   container.read(purchasesNotifierProvider);
+
+  // Same reasoning for the subscription notifier — it listens to the IAP
+  // stream and writes entitlements to Firestore.
+  container.read(subscriptionNotifierProvider);
 
   // Eagerly init the notification bootstrap so the FCM/local stack is up
   // and listening before the first UI render.

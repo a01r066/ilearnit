@@ -15,6 +15,8 @@ import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/instructors/presentation/pages/instructor_detail_page.dart';
 import '../../features/instructors/presentation/pages/instructors_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/subscriptions/presentation/pages/subscription_checkout_page.dart';
+import '../../features/subscriptions/presentation/pages/subscription_page.dart';
 import 'route_names.dart';
 import 'shell_scaffold.dart';
 
@@ -154,8 +156,24 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 name: RouteNames.profile,
                 builder: (_, __) => const ProfilePage(),
                 routes: [
-                  GoRoute(path: RoutePaths.settings, name: RouteNames.setting, builder: (_, __) => SettingsPage()),
-                ]
+                  GoRoute(
+                    path: RoutePaths.settings,
+                    name: RouteNames.setting,
+                    builder: (_, __) => SettingsPage(),
+                  ),
+                  GoRoute(
+                    path: RoutePaths.subscription,
+                    name: RouteNames.subscription,
+                    builder: (_, __) => const SubscriptionPage(),
+                    routes: [
+                      GoRoute(
+                        path: RoutePaths.subscriptionCheckout,
+                        name: RouteNames.subscriptionCheckout,
+                        builder: (_, __) => const SubscriptionCheckoutPage(),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),

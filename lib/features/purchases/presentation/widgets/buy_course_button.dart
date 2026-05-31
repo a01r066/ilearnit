@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../courses/domain/entities/course_entity.dart';
+import '../../../subscriptions/presentation/providers/subscription_providers.dart';
 import '../providers/purchases_providers.dart';
 import '../providers/purchases_state.dart';
 
@@ -29,6 +30,7 @@ class BuyCourseButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isOwned = ref.watch(isCoursePurchasedProvider(course.id));
+    final hasSubscription = ref.watch(hasActiveSubscriptionProvider);
     final purchases = ref.watch(purchasesNotifierProvider);
     final notifier = ref.read(purchasesNotifierProvider.notifier);
 
@@ -45,11 +47,30 @@ class BuyCourseButton extends ConsumerWidget {
       return _UnavailableNotice();
     }
 
-    if (isOwned) {
-      return FilledButton.icon(
-        onPressed: onStart,
-        icon: const Icon(Icons.play_arrow_rounded),
-        label: const Text('Continue course'),
+    // Subscription bypass — the user has unlimited access. Same CTA as
+    // owned, with a subtle "included in subscription" affordance below.
+    if (hasSubscription || isOwned) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          FilledButton.icon(
+            onPressed: onStart,
+            icon: const Icon(Icons.play_arrow_rounded),
+            label: const Text('Continue course'),
+          ),
+          if (hasSubscription && !isOwned) ...[
+            const SizedBox(height: 8),
+            Center(
+              child: Text(
+                'Included in your Personal Plan',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ),
+          ],
+        ],
       );
     }
 

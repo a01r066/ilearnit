@@ -89,5 +89,61 @@
   "purchaseRestored": "Purchases restored.",
 
   "lectureLocked": "This lecture is locked. Purchase the course to unlock.",
-  "lectureFreePreview": "Free preview"
+  "lectureFreePreview": "Free preview",
+
+  "subscriptionTitle": "Subscription",
+  "subscriptionActivePlans": "Active plans",
+  "subscriptionNoneActive": "You don't have any active subscriptions",
+  "subscriptionAvailable": "Subscription plans available",
+  "personalPlan": "Personal plan",
+  "personalPlanIntro": "New opportunities await. Sign up for Personal Plan to get all this and more:",
+  "personalPlanFeature1": "Access to all classical music courses",
+  "personalPlanFeature2": "Courses in guitar, piano, and violin",
+  "personalPlanFeature3": "Sheet music, exercises, and Q&A",
+  "personalPlanLearnMoreTitle": "About the Personal Plan",
+  "personalPlanLearnMoreBody": "The Personal Plan gives you unlimited access to every course on iLearnIt for a single monthly or yearly price. Switch instruments any time, study at your own pace, and cancel whenever.",
+  "startSubscription": "Start subscription",
+  "learnMore": "Learn more",
+  "startingAtPerMonth": "Starting at {price} per month. Cancel any time.",
+  "@startingAtPerMonth": {
+    "placeholders": {
+      "price": { "type": "String", "example": "₫250.000" }
+    }
+  },
+  "subscriptionRenewsOn": "Renews on {date}",
+  "@subscriptionRenewsOn": {
+    "placeholders": {
+      "date": { "type": "String", "example": "Jun 1, 2026" }
+    }
+  },
+  "subscriptionCancelsOn": "Cancels on {date}",
+  "@subscriptionCancelsOn": {
+    "placeholders": {
+      "date": { "type": "String", "example": "Jun 1, 2026" }
+    }
+  },
+  "planBilledYearly": "Billed yearly",
+  "planBilledMonthly": "Billed monthly",
+  "checkoutTitle": "Checkout",
+  "yearlyAccess": "Yearly access",
+  "monthlyAccess": "Monthly access",
+  "billedYearly": "billed yearly",
+  "billedMonthly": "billed monthly",
+  "saveAmount": "Save {amount}",
+  "@saveAmount": {
+    "placeholders": {
+      "amount": { "type": "String", "example": "₫6.600.000" }
+    }
+  },
+  "checkoutFeature1": "Access to every iLearnIt course, anytime",
+  "checkoutFeature2": "Hands-on lessons across guitar, piano, and violin",
+  "checkoutFeature3": "Course recommendations based on your goals",
+  "summary": "Summary",
+  "totalDueToday": "Total due today:",
+  "checkoutBillingDisclaimer": "Cancel anytime by visiting the Subscriptions page in your account. Your subscription begins at checkout and a charge of {total} (plus applicable taxes) will apply immediately and automatically each billing period until you cancel. By placing this order, you agree to our Terms of Use and authorize this recurring charge. No refunds unless required by law.",
+  "@checkoutBillingDisclaimer": {
+    "placeholders": {
+      "total": { "type": "String", "example": "₫3.000.000" }
+    }
+  }
 }

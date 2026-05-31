@@ -22,6 +22,10 @@ class RouteNames {
 
   // Settings (within profile)
   static const String setting = 'settings';
+
+  // Subscription (within profile)
+  static const String subscription = 'subscription';
+  static const String subscriptionCheckout = 'subscription-checkout';
 }
 
 class RoutePaths {
@@ -42,4 +46,8 @@ class RoutePaths {
   // Nested under courseDetail → /courses/:id/lectures/:lectureId
   static const String lecturePlayer = 'lectures/:lectureId';
   static const String settings = '/settings';
+
+  // Subscription (nested under profile)
+  static const String subscription = 'subscription';
+  static const String subscriptionCheckout = 'checkout';
 }

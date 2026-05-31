@@ -185,4 +185,108 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lectureFreePreview => 'Free preview';
+
+  @override
+  String get subscriptionTitle => 'Subscription';
+
+  @override
+  String get subscriptionActivePlans => 'Active plans';
+
+  @override
+  String get subscriptionNoneActive =>
+      'You don\'t have any active subscriptions';
+
+  @override
+  String get subscriptionAvailable => 'Subscription plans available';
+
+  @override
+  String get personalPlan => 'Personal plan';
+
+  @override
+  String get personalPlanIntro =>
+      'New opportunities await. Sign up for Personal Plan to get all this and more:';
+
+  @override
+  String get personalPlanFeature1 => 'Access to all classical music courses';
+
+  @override
+  String get personalPlanFeature2 => 'Courses in guitar, piano, and violin';
+
+  @override
+  String get personalPlanFeature3 => 'Sheet music, exercises, and Q&A';
+
+  @override
+  String get personalPlanLearnMoreTitle => 'About the Personal Plan';
+
+  @override
+  String get personalPlanLearnMoreBody =>
+      'The Personal Plan gives you unlimited access to every course on iLearnIt for a single monthly or yearly price. Switch instruments any time, study at your own pace, and cancel whenever.';
+
+  @override
+  String get startSubscription => 'Start subscription';
+
+  @override
+  String get learnMore => 'Learn more';
+
+  @override
+  String startingAtPerMonth(String price) {
+    return 'Starting at $price per month. Cancel any time.';
+  }
+
+  @override
+  String subscriptionRenewsOn(String date) {
+    return 'Renews on $date';
+  }
+
+  @override
+  String subscriptionCancelsOn(String date) {
+    return 'Cancels on $date';
+  }
+
+  @override
+  String get planBilledYearly => 'Billed yearly';
+
+  @override
+  String get planBilledMonthly => 'Billed monthly';
+
+  @override
+  String get checkoutTitle => 'Checkout';
+
+  @override
+  String get yearlyAccess => 'Yearly access';
+
+  @override
+  String get monthlyAccess => 'Monthly access';
+
+  @override
+  String get billedYearly => 'billed yearly';
+
+  @override
+  String get billedMonthly => 'billed monthly';
+
+  @override
+  String saveAmount(String amount) {
+    return 'Save $amount';
+  }
+
+  @override
+  String get checkoutFeature1 => 'Access to every iLearnIt course, anytime';
+
+  @override
+  String get checkoutFeature2 =>
+      'Hands-on lessons across guitar, piano, and violin';
+
+  @override
+  String get checkoutFeature3 => 'Course recommendations based on your goals';
+
+  @override
+  String get summary => 'Summary';
+
+  @override
+  String get totalDueToday => 'Total due today:';
+
+  @override
+  String checkoutBillingDisclaimer(String total) {
+    return 'Cancel anytime by visiting the Subscriptions page in your account. Your subscription begins at checkout and a charge of $total (plus applicable taxes) will apply immediately and automatically each billing period until you cancel. By placing this order, you agree to our Terms of Use and authorize this recurring charge. No refunds unless required by law.';
+  }
 }

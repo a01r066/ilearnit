@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../../shared/providers/firebase_providers.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../subscriptions/presentation/providers/subscription_providers.dart';
 import '../../data/datasources/iap_remote_datasource.dart';
 import '../../data/datasources/purchases_firestore_datasource.dart';
 import '../../data/repositories/purchases_repository_impl.dart';
@@ -51,4 +52,14 @@ final isCoursePurchasedProvider =
   final owned =
       ref.watch(ownedCourseIdsProvider).value ?? const <String>{};
   return owned.contains(courseId);
+});
+
+/// True iff the user has access to [courseId] — either via an individual
+/// course purchase OR an active Personal Plan subscription. The course
+/// detail page reads this to decide whether to show the buy CTA or the
+/// "Included in your subscription" badge.
+final hasUnlockedAccessProvider =
+    Provider.family.autoDispose<bool, String>((ref, courseId) {
+  if (ref.watch(hasActiveSubscriptionProvider)) return true;
+  return ref.watch(isCoursePurchasedProvider(courseId));
 });

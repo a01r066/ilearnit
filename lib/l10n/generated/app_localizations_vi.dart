@@ -185,4 +185,108 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lectureFreePreview => 'Xem thử miễn phí';
+
+  @override
+  String get subscriptionTitle => 'Gói đăng ký';
+
+  @override
+  String get subscriptionActivePlans => 'Gói đang hoạt động';
+
+  @override
+  String get subscriptionNoneActive => 'Bạn chưa đăng ký gói nào';
+
+  @override
+  String get subscriptionAvailable => 'Các gói đăng ký có sẵn';
+
+  @override
+  String get personalPlan => 'Gói cá nhân';
+
+  @override
+  String get personalPlanIntro =>
+      'Cơ hội mới đang chờ đón. Đăng ký Gói Cá Nhân để nhận tất cả những điều này và hơn thế nữa:';
+
+  @override
+  String get personalPlanFeature1 => 'Truy cập tất cả khoá học nhạc cổ điển';
+
+  @override
+  String get personalPlanFeature2 => 'Khoá học guitar, piano và violin';
+
+  @override
+  String get personalPlanFeature3 => 'Bản nhạc, bài tập và hỏi đáp';
+
+  @override
+  String get personalPlanLearnMoreTitle => 'Về Gói Cá Nhân';
+
+  @override
+  String get personalPlanLearnMoreBody =>
+      'Gói Cá Nhân cho bạn truy cập không giới hạn mọi khoá học trên iLearnIt với một mức giá hàng tháng hoặc hàng năm. Đổi nhạc cụ bất kỳ lúc nào, học theo tốc độ riêng, huỷ bất cứ khi nào.';
+
+  @override
+  String get startSubscription => 'Bắt đầu đăng ký';
+
+  @override
+  String get learnMore => 'Tìm hiểu thêm';
+
+  @override
+  String startingAtPerMonth(String price) {
+    return 'Chỉ từ $price mỗi tháng. Huỷ bất cứ lúc nào.';
+  }
+
+  @override
+  String subscriptionRenewsOn(String date) {
+    return 'Gia hạn vào $date';
+  }
+
+  @override
+  String subscriptionCancelsOn(String date) {
+    return 'Sẽ huỷ vào $date';
+  }
+
+  @override
+  String get planBilledYearly => 'Thanh toán hàng năm';
+
+  @override
+  String get planBilledMonthly => 'Thanh toán hàng tháng';
+
+  @override
+  String get checkoutTitle => 'Thanh toán';
+
+  @override
+  String get yearlyAccess => 'Gói năm';
+
+  @override
+  String get monthlyAccess => 'Gói tháng';
+
+  @override
+  String get billedYearly => 'thanh toán hàng năm';
+
+  @override
+  String get billedMonthly => 'thanh toán hàng tháng';
+
+  @override
+  String saveAmount(String amount) {
+    return 'Tiết kiệm $amount';
+  }
+
+  @override
+  String get checkoutFeature1 =>
+      'Truy cập mọi khoá học iLearnIt, bất cứ lúc nào';
+
+  @override
+  String get checkoutFeature2 =>
+      'Bài học thực hành cho guitar, piano và violin';
+
+  @override
+  String get checkoutFeature3 => 'Gợi ý khoá học theo mục tiêu của bạn';
+
+  @override
+  String get summary => 'Tóm tắt';
+
+  @override
+  String get totalDueToday => 'Tổng thanh toán hôm nay:';
+
+  @override
+  String checkoutBillingDisclaimer(String total) {
+    return 'Huỷ bất cứ lúc nào tại trang Gói đăng ký trong tài khoản của bạn. Đăng ký bắt đầu ngay khi thanh toán và khoản phí $total (cộng thuế áp dụng) sẽ được tính ngay và tự động vào mỗi chu kỳ thanh toán cho đến khi bạn huỷ. Khi đặt đơn này, bạn đồng ý với Điều khoản Sử dụng và cho phép khoản phí định kỳ này. Không hoàn tiền trừ khi luật yêu cầu.';
+  }
 }
