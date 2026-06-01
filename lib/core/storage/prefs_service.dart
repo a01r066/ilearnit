@@ -47,5 +47,23 @@ class PrefsService {
   Future<void> clearRecentSearches() =>
       _prefs.remove(AppConstants.kRecentSearches);
 
+  // Recently viewed songbooks (MRU list of songbook ids).
+  List<String> get recentSongbookIds =>
+      _prefs.getStringList(AppConstants.kRecentSongbooks) ?? const [];
+
+  Future<void> pushRecentSongbook(String id) {
+    if (id.isEmpty) return Future.value();
+    final list = [...recentSongbookIds];
+    list.removeWhere((x) => x == id);
+    list.insert(0, id);
+    if (list.length > AppConstants.recentSongbooksLimit) {
+      list.removeRange(AppConstants.recentSongbooksLimit, list.length);
+    }
+    return _prefs.setStringList(AppConstants.kRecentSongbooks, list);
+  }
+
+  Future<void> clearRecentSongbooks() =>
+      _prefs.remove(AppConstants.kRecentSongbooks);
+
   Future<void> clearAll() => _prefs.clear();
 }

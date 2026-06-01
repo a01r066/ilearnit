@@ -161,5 +161,24 @@
   "searchTryDifferent": "Try a different term or adjust your filters.",
   "badgeBestseller": "Bestseller",
   "badgeHighestRated": "Highest rated",
-  "badgeNew": "New"
+  "badgeNew": "New",
+
+  "songbooksTitle": "Songbooks",
+  "songbooksSearchHint": "Search for Songbooks",
+  "songbooksRecentlyViewed": "Recently Viewed",
+  "songbooksBestsellers": "Bestsellers",
+  "songbooksTrialTitle": "Start 7-day free trial",
+  "songbooksTrialSubtitle": "Tap to unlock your 7-day free trial",
+  "songbookGet": "Get Songbook",
+  "songbookSave": "Save",
+  "songbookSample": "Sample",
+  "songbookIncludes": "Includes",
+  "songbookViewAll": "view all",
+  "songbookInstrument": "INSTRUMENT",
+  "songbookTopics": "TOPICS",
+  "songbookPublisher": "PUBLISHER",
+  "songbookReviews": "Reviews",
+  "songbookYouMightAlsoLike": "You might also like",
+  "songbookNotFound": "Songbook not found.",
+  "songbookNoReviewsYet": "No reviews yet."
 }

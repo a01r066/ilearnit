@@ -27,6 +27,11 @@ class ShellScaffold extends StatelessWidget {
       label: 'Instructors',
     ),
     _NavItem(
+      icon: Icons.menu_book_outlined,
+      activeIcon: Icons.menu_book_rounded,
+      label: 'Songbooks',
+    ),
+    _NavItem(
       icon: Icons.account_circle_outlined,
       activeIcon: Icons.account_circle_rounded,
       label: 'Profile',

@@ -322,4 +322,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get badgeNew => 'New';
+
+  @override
+  String get songbooksTitle => 'Songbooks';
+
+  @override
+  String get songbooksSearchHint => 'Search for Songbooks';
+
+  @override
+  String get songbooksRecentlyViewed => 'Recently Viewed';
+
+  @override
+  String get songbooksBestsellers => 'Bestsellers';
+
+  @override
+  String get songbooksTrialTitle => 'Start 7-day free trial';
+
+  @override
+  String get songbooksTrialSubtitle => 'Tap to unlock your 7-day free trial';
+
+  @override
+  String get songbookGet => 'Get Songbook';
+
+  @override
+  String get songbookSave => 'Save';
+
+  @override
+  String get songbookSample => 'Sample';
+
+  @override
+  String get songbookIncludes => 'Includes';
+
+  @override
+  String get songbookViewAll => 'view all';
+
+  @override
+  String get songbookInstrument => 'INSTRUMENT';
+
+  @override
+  String get songbookTopics => 'TOPICS';
+
+  @override
+  String get songbookPublisher => 'PUBLISHER';
+
+  @override
+  String get songbookReviews => 'Reviews';
+
+  @override
+  String get songbookYouMightAlsoLike => 'You might also like';
+
+  @override
+  String get songbookNotFound => 'Songbook not found.';
+
+  @override
+  String get songbookNoReviewsYet => 'No reviews yet.';
 }

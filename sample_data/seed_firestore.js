@@ -196,12 +196,18 @@ async function wipeAllSections() {
     fs.readFileSync(path.join(here, 'courses.json'), 'utf-8'),
   );
 
+  const songbooks = JSON.parse(
+      fs.readFileSync(path.join(here, 'songbooks.json'), 'utf-8'),
+    );
+
   // sections.json is optional (for backward compat), but when present we
   // write the curriculum subcollection.
   const sectionsPath = path.join(here, 'sections.json');
   const sectionsByCourse = fs.existsSync(sectionsPath)
     ? JSON.parse(fs.readFileSync(sectionsPath, 'utf-8'))
     : null;
+
+    const songbooksPath = path.join(here, 'songbooks.json');
 
   console.log(`iLearnIt Firestore seed — flavor=${flavor} dry=${isDry} wipe=${shouldWipe}`);
 
@@ -218,6 +224,10 @@ async function wipeAllSections() {
       const n = await deleteCollection('instructors');
       console.log(`✗ wiped instructors (${n} docs)`);
     }
+    if (!onlyCollection || onlyCollection === 'songbooks') {
+          const n = await deleteCollection('songbooks');
+          console.log(`✗ wiped songbooks (${n} docs)`);
+        }
   }
 
   if (!onlyCollection || onlyCollection === 'instructors') {
@@ -229,6 +239,10 @@ async function wipeAllSections() {
   if (sectionsByCourse && (!onlyCollection || onlyCollection === 'sections')) {
     await writeSections(sectionsByCourse);
   }
+
+  if (!onlyCollection || onlyCollection === 'songbooks') {
+      await writeCollection('songbooks', songbooks);
+    }
 
   console.log('✅ Done.');
   process.exit(0);

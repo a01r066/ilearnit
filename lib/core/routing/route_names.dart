@@ -11,7 +11,11 @@ class RouteNames {
   static const String home = 'home';
   static const String courses = 'courses';
   static const String instructors = 'instructors';
+  static const String songbooks = 'songbooks';
   static const String profile = 'profile';
+
+  // Songbook detail (within songbooks tab)
+  static const String songbookDetail = 'songbook-detail';
 
   // Detail (within shell)
   static const String courseDetail = 'course-detail';
@@ -41,7 +45,11 @@ class RoutePaths {
   static const String home = '/home';
   static const String courses = '/courses';
   static const String instructors = '/instructors';
+  static const String songbooks = '/songbooks';
   static const String profile = '/profile';
+
+  // Sub-routes (nested under songbooks)
+  static const String songbookDetail = ':id';
 
   // Sub-routes
   static const String courseDetail = ':id';

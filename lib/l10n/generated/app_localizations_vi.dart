@@ -321,4 +321,58 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get badgeNew => 'Mới';
+
+  @override
+  String get songbooksTitle => 'Songbooks';
+
+  @override
+  String get songbooksSearchHint => 'Tìm Songbook';
+
+  @override
+  String get songbooksRecentlyViewed => 'Đã xem gần đây';
+
+  @override
+  String get songbooksBestsellers => 'Bán chạy nhất';
+
+  @override
+  String get songbooksTrialTitle => 'Dùng thử miễn phí 7 ngày';
+
+  @override
+  String get songbooksTrialSubtitle => 'Chạm để mở khoá dùng thử 7 ngày';
+
+  @override
+  String get songbookGet => 'Mở khoá Songbook';
+
+  @override
+  String get songbookSave => 'Lưu';
+
+  @override
+  String get songbookSample => 'Xem thử';
+
+  @override
+  String get songbookIncludes => 'Bao gồm';
+
+  @override
+  String get songbookViewAll => 'xem tất cả';
+
+  @override
+  String get songbookInstrument => 'NHẠC CỤ';
+
+  @override
+  String get songbookTopics => 'CHỦ ĐỀ';
+
+  @override
+  String get songbookPublisher => 'NHÀ XUẤT BẢN';
+
+  @override
+  String get songbookReviews => 'Đánh giá';
+
+  @override
+  String get songbookYouMightAlsoLike => 'Bạn có thể cũng thích';
+
+  @override
+  String get songbookNotFound => 'Không tìm thấy songbook.';
+
+  @override
+  String get songbookNoReviewsYet => 'Chưa có đánh giá.';
 }

@@ -21,7 +21,10 @@ class AppConstants {
   static const String kThemeMode = 'theme_mode';
   static const String kLocale = 'locale';
   static const String kRecentSearches = 'recent_searches';
+  static const String kRecentSongbooks = 'recent_songbooks';
 
   // Search
   static const int recentSearchesLimit = 8;
+  // Songbooks
+  static const int recentSongbooksLimit = 12;
 }

@@ -679,6 +679,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New'**
   String get badgeNew;
+
+  /// No description provided for @songbooksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Songbooks'**
+  String get songbooksTitle;
+
+  /// No description provided for @songbooksSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for Songbooks'**
+  String get songbooksSearchHint;
+
+  /// No description provided for @songbooksRecentlyViewed.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently Viewed'**
+  String get songbooksRecentlyViewed;
+
+  /// No description provided for @songbooksBestsellers.
+  ///
+  /// In en, this message translates to:
+  /// **'Bestsellers'**
+  String get songbooksBestsellers;
+
+  /// No description provided for @songbooksTrialTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start 7-day free trial'**
+  String get songbooksTrialTitle;
+
+  /// No description provided for @songbooksTrialSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to unlock your 7-day free trial'**
+  String get songbooksTrialSubtitle;
+
+  /// No description provided for @songbookGet.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Songbook'**
+  String get songbookGet;
+
+  /// No description provided for @songbookSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get songbookSave;
+
+  /// No description provided for @songbookSample.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample'**
+  String get songbookSample;
+
+  /// No description provided for @songbookIncludes.
+  ///
+  /// In en, this message translates to:
+  /// **'Includes'**
+  String get songbookIncludes;
+
+  /// No description provided for @songbookViewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'view all'**
+  String get songbookViewAll;
+
+  /// No description provided for @songbookInstrument.
+  ///
+  /// In en, this message translates to:
+  /// **'INSTRUMENT'**
+  String get songbookInstrument;
+
+  /// No description provided for @songbookTopics.
+  ///
+  /// In en, this message translates to:
+  /// **'TOPICS'**
+  String get songbookTopics;
+
+  /// No description provided for @songbookPublisher.
+  ///
+  /// In en, this message translates to:
+  /// **'PUBLISHER'**
+  String get songbookPublisher;
+
+  /// No description provided for @songbookReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get songbookReviews;
+
+  /// No description provided for @songbookYouMightAlsoLike.
+  ///
+  /// In en, this message translates to:
+  /// **'You might also like'**
+  String get songbookYouMightAlsoLike;
+
+  /// No description provided for @songbookNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Songbook not found.'**
+  String get songbookNotFound;
+
+  /// No description provided for @songbookNoReviewsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet.'**
+  String get songbookNoReviewsYet;
 }
 
 class _AppLocalizationsDelegate

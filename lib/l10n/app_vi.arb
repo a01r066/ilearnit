@@ -110,5 +110,24 @@
   "searchTryDifferent": "Thử từ khác hoặc điều chỉnh bộ lọc.",
   "badgeBestseller": "Bán chạy",
   "badgeHighestRated": "Đánh giá cao",
-  "badgeNew": "Mới"
+  "badgeNew": "Mới",
+
+  "songbooksTitle": "Songbooks",
+  "songbooksSearchHint": "Tìm Songbook",
+  "songbooksRecentlyViewed": "Đã xem gần đây",
+  "songbooksBestsellers": "Bán chạy nhất",
+  "songbooksTrialTitle": "Dùng thử miễn phí 7 ngày",
+  "songbooksTrialSubtitle": "Chạm để mở khoá dùng thử 7 ngày",
+  "songbookGet": "Mở khoá Songbook",
+  "songbookSave": "Lưu",
+  "songbookSample": "Xem thử",
+  "songbookIncludes": "Bao gồm",
+  "songbookViewAll": "xem tất cả",
+  "songbookInstrument": "NHẠC CỤ",
+  "songbookTopics": "CHỦ ĐỀ",
+  "songbookPublisher": "NHÀ XUẤT BẢN",
+  "songbookReviews": "Đánh giá",
+  "songbookYouMightAlsoLike": "Bạn có thể cũng thích",
+  "songbookNotFound": "Không tìm thấy songbook.",
+  "songbookNoReviewsYet": "Chưa có đánh giá."
 }

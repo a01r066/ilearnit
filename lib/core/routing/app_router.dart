@@ -16,6 +16,8 @@ import '../../features/instructors/presentation/pages/instructor_detail_page.dar
 import '../../features/instructors/presentation/pages/instructors_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/search/presentation/pages/search_page.dart';
+import '../../features/songbooks/presentation/pages/songbook_detail_page.dart';
+import '../../features/songbooks/presentation/pages/songbooks_page.dart';
 import '../../features/subscriptions/presentation/pages/subscription_checkout_page.dart';
 import '../../features/subscriptions/presentation/pages/subscription_page.dart';
 import 'route_names.dart';
@@ -25,6 +27,7 @@ final _rootKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final _homeKey = GlobalKey<NavigatorState>(debugLabel: 'home');
 final _coursesKey = GlobalKey<NavigatorState>(debugLabel: 'courses');
 final _instructorsKey = GlobalKey<NavigatorState>(debugLabel: 'instructors');
+final _songbooksKey = GlobalKey<NavigatorState>(debugLabel: 'songbooks');
 final _profileKey = GlobalKey<NavigatorState>(debugLabel: 'profile');
 
 /// Provides a [GoRouter] that redirects based on auth state.
@@ -150,6 +153,26 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                     name: RouteNames.instructorDetail,
                     builder: (_, s) => InstructorDetailPage(
                       instructorId: s.pathParameters['id']!,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // Songbooks
+          StatefulShellBranch(
+            navigatorKey: _songbooksKey,
+            routes: [
+              GoRoute(
+                path: RoutePaths.songbooks,
+                name: RouteNames.songbooks,
+                builder: (_, __) => const SongbooksPage(),
+                routes: [
+                  GoRoute(
+                    path: RoutePaths.songbookDetail,
+                    name: RouteNames.songbookDetail,
+                    builder: (_, s) => SongbookDetailPage(
+                      id: s.pathParameters['id']!,
                     ),
                   ),
                 ],
