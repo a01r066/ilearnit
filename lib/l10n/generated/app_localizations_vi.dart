@@ -289,4 +289,36 @@ class AppLocalizationsVi extends AppLocalizations {
   String checkoutBillingDisclaimer(String total) {
     return 'Huỷ bất cứ lúc nào tại trang Gói đăng ký trong tài khoản của bạn. Đăng ký bắt đầu ngay khi thanh toán và khoản phí $total (cộng thuế áp dụng) sẽ được tính ngay và tự động vào mỗi chu kỳ thanh toán cho đến khi bạn huỷ. Khi đặt đơn này, bạn đồng ý với Điều khoản Sử dụng và cho phép khoản phí định kỳ này. Không hoàn tiền trừ khi luật yêu cầu.';
   }
+
+  @override
+  String get searchHint => 'Tìm khoá học';
+
+  @override
+  String get searchCancel => 'Huỷ';
+
+  @override
+  String get searchRecentSearches => 'Tìm kiếm gần đây';
+
+  @override
+  String get searchClear => 'Xoá';
+
+  @override
+  String get searchEmptyState => 'Tìm khoá học, giảng viên hoặc chủ đề.';
+
+  @override
+  String searchNoMatchesForQuery(String query) {
+    return 'Không có kết quả cho \"$query\"';
+  }
+
+  @override
+  String get searchTryDifferent => 'Thử từ khác hoặc điều chỉnh bộ lọc.';
+
+  @override
+  String get badgeBestseller => 'Bán chạy';
+
+  @override
+  String get badgeHighestRated => 'Đánh giá cao';
+
+  @override
+  String get badgeNew => 'Mới';
 }

@@ -15,6 +15,7 @@ import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/instructors/presentation/pages/instructor_detail_page.dart';
 import '../../features/instructors/presentation/pages/instructors_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/search/presentation/pages/search_page.dart';
 import '../../features/subscriptions/presentation/pages/subscription_checkout_page.dart';
 import '../../features/subscriptions/presentation/pages/subscription_page.dart';
 import 'route_names.dart';
@@ -82,6 +83,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: RoutePaths.signup,
         name: RouteNames.signup,
         builder: (_, __) => const SignupPage(),
+      ),
+      GoRoute(
+        path: RoutePaths.search,
+        name: RouteNames.search,
+        // Push above the shell so the bottom nav isn't visible during
+        // search — mirrors the attached design (full-screen search).
+        parentNavigatorKey: _rootKey,
+        builder: (_, __) => const SearchPage(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (_, __, shell) => ShellScaffold(navigationShell: shell),

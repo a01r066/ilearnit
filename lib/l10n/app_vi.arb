@@ -99,5 +99,16 @@
   "checkoutFeature3": "Gợi ý khoá học theo mục tiêu của bạn",
   "summary": "Tóm tắt",
   "totalDueToday": "Tổng thanh toán hôm nay:",
-  "checkoutBillingDisclaimer": "Huỷ bất cứ lúc nào tại trang Gói đăng ký trong tài khoản của bạn. Đăng ký bắt đầu ngay khi thanh toán và khoản phí {total} (cộng thuế áp dụng) sẽ được tính ngay và tự động vào mỗi chu kỳ thanh toán cho đến khi bạn huỷ. Khi đặt đơn này, bạn đồng ý với Điều khoản Sử dụng và cho phép khoản phí định kỳ này. Không hoàn tiền trừ khi luật yêu cầu."
+  "checkoutBillingDisclaimer": "Huỷ bất cứ lúc nào tại trang Gói đăng ký trong tài khoản của bạn. Đăng ký bắt đầu ngay khi thanh toán và khoản phí {total} (cộng thuế áp dụng) sẽ được tính ngay và tự động vào mỗi chu kỳ thanh toán cho đến khi bạn huỷ. Khi đặt đơn này, bạn đồng ý với Điều khoản Sử dụng và cho phép khoản phí định kỳ này. Không hoàn tiền trừ khi luật yêu cầu.",
+
+  "searchHint": "Tìm khoá học",
+  "searchCancel": "Huỷ",
+  "searchRecentSearches": "Tìm kiếm gần đây",
+  "searchClear": "Xoá",
+  "searchEmptyState": "Tìm khoá học, giảng viên hoặc chủ đề.",
+  "searchNoMatchesForQuery": "Không có kết quả cho \"{query}\"",
+  "searchTryDifferent": "Thử từ khác hoặc điều chỉnh bộ lọc.",
+  "badgeBestseller": "Bán chạy",
+  "badgeHighestRated": "Đánh giá cao",
+  "badgeNew": "Mới"
 }

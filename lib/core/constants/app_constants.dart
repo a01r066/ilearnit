@@ -20,4 +20,8 @@ class AppConstants {
   static const String kOnboardingDone = 'onboarding_done';
   static const String kThemeMode = 'theme_mode';
   static const String kLocale = 'locale';
+  static const String kRecentSearches = 'recent_searches';
+
+  // Search
+  static const int recentSearchesLimit = 8;
 }

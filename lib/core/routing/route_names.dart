@@ -26,6 +26,9 @@ class RouteNames {
   // Subscription (within profile)
   static const String subscription = 'subscription';
   static const String subscriptionCheckout = 'subscription-checkout';
+
+  // Search (top-level, opens above shell)
+  static const String search = 'search';
 }
 
 class RoutePaths {
@@ -50,4 +53,7 @@ class RoutePaths {
   // Subscription (nested under profile)
   static const String subscription = 'subscription';
   static const String subscriptionCheckout = 'checkout';
+
+  // Search (top-level, modal-style above the shell)
+  static const String search = '/search';
 }

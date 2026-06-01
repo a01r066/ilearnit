@@ -145,5 +145,21 @@
     "placeholders": {
       "total": { "type": "String", "example": "₫3.000.000" }
     }
-  }
+  },
+
+  "searchHint": "Search courses",
+  "searchCancel": "Cancel",
+  "searchRecentSearches": "Recent searches",
+  "searchClear": "Clear",
+  "searchEmptyState": "Search for courses, instructors, or topics.",
+  "searchNoMatchesForQuery": "No matches for \"{query}\"",
+  "@searchNoMatchesForQuery": {
+    "placeholders": {
+      "query": { "type": "String", "example": "fingerstyle" }
+    }
+  },
+  "searchTryDifferent": "Try a different term or adjust your filters.",
+  "badgeBestseller": "Bestseller",
+  "badgeHighestRated": "Highest rated",
+  "badgeNew": "New"
 }

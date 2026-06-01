@@ -289,4 +289,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String checkoutBillingDisclaimer(String total) {
     return 'Cancel anytime by visiting the Subscriptions page in your account. Your subscription begins at checkout and a charge of $total (plus applicable taxes) will apply immediately and automatically each billing period until you cancel. By placing this order, you agree to our Terms of Use and authorize this recurring charge. No refunds unless required by law.';
   }
+
+  @override
+  String get searchHint => 'Search courses';
+
+  @override
+  String get searchCancel => 'Cancel';
+
+  @override
+  String get searchRecentSearches => 'Recent searches';
+
+  @override
+  String get searchClear => 'Clear';
+
+  @override
+  String get searchEmptyState => 'Search for courses, instructors, or topics.';
+
+  @override
+  String searchNoMatchesForQuery(String query) {
+    return 'No matches for \"$query\"';
+  }
+
+  @override
+  String get searchTryDifferent =>
+      'Try a different term or adjust your filters.';
+
+  @override
+  String get badgeBestseller => 'Bestseller';
+
+  @override
+  String get badgeHighestRated => 'Highest rated';
+
+  @override
+  String get badgeNew => 'New';
 }

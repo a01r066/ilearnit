@@ -27,6 +27,19 @@ class HomePage extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(vertical: 16),
           children: [
             Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 8, 8),
+              child: Row(
+                children: [
+                  const Spacer(),
+                  IconButton(
+                    tooltip: 'Search',
+                    icon: const Icon(Icons.search),
+                    onPressed: () => context.goNamed(RouteNames.search),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

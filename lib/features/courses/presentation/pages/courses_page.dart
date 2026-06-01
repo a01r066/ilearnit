@@ -53,6 +53,11 @@ class _CoursesPageState extends ConsumerState<CoursesPage> {
         title: const Text('Courses'),
         actions: [
           IconButton(
+            tooltip: 'Search',
+            icon: const Icon(Icons.search),
+            onPressed: () => context.goNamed(RouteNames.search),
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh_rounded),
             onPressed: notifier.refresh,
           ),

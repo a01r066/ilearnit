@@ -619,6 +619,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel anytime by visiting the Subscriptions page in your account. Your subscription begins at checkout and a charge of {total} (plus applicable taxes) will apply immediately and automatically each billing period until you cancel. By placing this order, you agree to our Terms of Use and authorize this recurring charge. No refunds unless required by law.'**
   String checkoutBillingDisclaimer(String total);
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search courses'**
+  String get searchHint;
+
+  /// No description provided for @searchCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get searchCancel;
+
+  /// No description provided for @searchRecentSearches.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent searches'**
+  String get searchRecentSearches;
+
+  /// No description provided for @searchClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get searchClear;
+
+  /// No description provided for @searchEmptyState.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for courses, instructors, or topics.'**
+  String get searchEmptyState;
+
+  /// No description provided for @searchNoMatchesForQuery.
+  ///
+  /// In en, this message translates to:
+  /// **'No matches for \"{query}\"'**
+  String searchNoMatchesForQuery(String query);
+
+  /// No description provided for @searchTryDifferent.
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different term or adjust your filters.'**
+  String get searchTryDifferent;
+
+  /// No description provided for @badgeBestseller.
+  ///
+  /// In en, this message translates to:
+  /// **'Bestseller'**
+  String get badgeBestseller;
+
+  /// No description provided for @badgeHighestRated.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest rated'**
+  String get badgeHighestRated;
+
+  /// No description provided for @badgeNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get badgeNew;
 }
 
 class _AppLocalizationsDelegate
