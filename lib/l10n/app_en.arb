@@ -180,5 +180,31 @@
   "songbookReviews": "Reviews",
   "songbookYouMightAlsoLike": "You might also like",
   "songbookNotFound": "Songbook not found.",
-  "songbookNoReviewsYet": "No reviews yet."
+  "songbookNoReviewsYet": "No reviews yet.",
+
+  "instructorTitle": "Instructor",
+  "instructorTotalStudents": "Total students",
+  "instructorReviews": "Reviews",
+  "instructorAboutMe": "About me",
+  "instructorAboutName": "About {name}",
+  "@instructorAboutName": {
+    "placeholders": {
+      "name": { "type": "String", "example": "Legacy Learning Systems" }
+    }
+  },
+  "instructorShowMore": "Show more",
+  "instructorShowLess": "Show less",
+  "instructorMyCoursesCount": "My courses ({count})",
+  "@instructorMyCoursesCount": {
+    "placeholders": {
+      "count": { "type": "int", "example": "2" }
+    }
+  },
+  "instructorNoCoursesYet": "No published courses yet.",
+  "instructorNotFound": "Instructor not found.",
+  "instructorLinkWebsite": "Website",
+  "instructorLinkFacebook": "Facebook",
+  "instructorLinkTwitter": "X / Twitter",
+  "instructorLinkYouTube": "YouTube",
+  "instructorLinkInstagram": "Instagram"
 }

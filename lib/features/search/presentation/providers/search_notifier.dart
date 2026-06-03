@@ -63,7 +63,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
     state = state.copyWith(
       query: value,
       mode: SearchMode.suggestions,
-      clearFailure: true,
+      lastFailure: null,
     );
     _debounce?.cancel();
     _debounce = Timer(_debounceDuration, _refreshSuggestions);
@@ -79,7 +79,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
       query: q,
       mode: SearchMode.results,
       isLoading: true,
-      clearFailure: true,
+      lastFailure: null,
     );
 
     await _prefs.pushRecentSearch(q);
@@ -105,7 +105,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
       mode: SearchMode.suggestions,
       results: const [],
       badges: const {},
-      clearFailure: true,
+      lastFailure: null,
     );
     _refreshSuggestions();
   }

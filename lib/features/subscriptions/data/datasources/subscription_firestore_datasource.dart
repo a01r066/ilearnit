@@ -23,7 +23,7 @@ class SubscriptionFirestoreDataSource {
       _users.doc(uid).snapshots().map((doc) {
         final data = doc.data() ?? const <String, dynamic>{};
         final raw = data['subscription'];
-        if (raw is! Map) return SubscriptionStatus.none();
+        if (raw is! Map) return const SubscriptionStatus();
         return SubscriptionModel.fromJson(Map<String, dynamic>.from(raw))
             .toEntity();
       });
@@ -74,7 +74,7 @@ class SubscriptionFirestoreDataSource {
   Future<SubscriptionStatus> fetch(String uid) async {
     final doc = await _users.doc(uid).get();
     final raw = (doc.data() ?? {})['subscription'];
-    if (raw is! Map) return SubscriptionStatus.none();
+    if (raw is! Map) return const SubscriptionStatus();
     return SubscriptionModel.fromJson(Map<String, dynamic>.from(raw))
         .toEntity();
   }

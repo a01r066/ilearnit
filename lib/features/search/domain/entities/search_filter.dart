@@ -1,35 +1,27 @@
-import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../courses/domain/entities/instrument_category.dart';
+
+part 'search_filter.freezed.dart';
 
 /// Filters applied on top of the keyword search.
 ///
 /// All fields are optional / multi-select. Empty sets mean "no constraint".
-@immutable
-class SearchFilter {
-  const SearchFilter({
-    this.categories = const {},
-    this.levels = const {},
-    this.minRating = 0,
-    this.maxPriceVnd,
-  });
+/// Default-constructed instance ([SearchFilter.none]) is the "no filter"
+/// baseline used by the notifier on init.
+@freezed
+abstract class SearchFilter with _$SearchFilter {
+  const SearchFilter._();
+
+  const factory SearchFilter({
+    @Default(<InstrumentCategory>{}) Set<InstrumentCategory> categories,
+    @Default(<CourseLevel>{}) Set<CourseLevel> levels,
+    @Default(0) double minRating,
+    int? maxPriceVnd,
+  }) = _SearchFilter;
 
   /// Empty filter — used as the initial state.
   static const SearchFilter none = SearchFilter();
-
-  /// Which instrument categories to include (empty = all).
-  final Set<InstrumentCategory> categories;
-
-  /// Which difficulty levels to include (empty = all).
-  final Set<CourseLevel> levels;
-
-  /// Minimum rating to include (0 = no constraint).
-  final double minRating;
-
-  /// Maximum price in VND (null = no constraint). For USD-locale users we
-  /// convert at display time only — the filter unit stays VND for parity
-  /// with the catalogue.
-  final int? maxPriceVnd;
 
   bool get isEmpty =>
       categories.isEmpty &&
@@ -47,35 +39,4 @@ class SearchFilter {
     if (maxPriceVnd != null) n++;
     return n;
   }
-
-  SearchFilter copyWith({
-    Set<InstrumentCategory>? categories,
-    Set<CourseLevel>? levels,
-    double? minRating,
-    int? maxPriceVnd,
-    bool clearMaxPrice = false,
-  }) {
-    return SearchFilter(
-      categories: categories ?? this.categories,
-      levels: levels ?? this.levels,
-      minRating: minRating ?? this.minRating,
-      maxPriceVnd: clearMaxPrice ? null : (maxPriceVnd ?? this.maxPriceVnd),
-    );
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      other is SearchFilter &&
-      setEquals(other.categories, categories) &&
-      setEquals(other.levels, levels) &&
-      other.minRating == minRating &&
-      other.maxPriceVnd == maxPriceVnd;
-
-  @override
-  int get hashCode => Object.hash(
-        Object.hashAllUnordered(categories),
-        Object.hashAllUnordered(levels),
-        minRating,
-        maxPriceVnd,
-      );
 }

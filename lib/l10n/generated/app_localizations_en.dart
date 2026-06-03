@@ -376,4 +376,53 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get songbookNoReviewsYet => 'No reviews yet.';
+
+  @override
+  String get instructorTitle => 'Instructor';
+
+  @override
+  String get instructorTotalStudents => 'Total students';
+
+  @override
+  String get instructorReviews => 'Reviews';
+
+  @override
+  String get instructorAboutMe => 'About me';
+
+  @override
+  String instructorAboutName(String name) {
+    return 'About $name';
+  }
+
+  @override
+  String get instructorShowMore => 'Show more';
+
+  @override
+  String get instructorShowLess => 'Show less';
+
+  @override
+  String instructorMyCoursesCount(int count) {
+    return 'My courses ($count)';
+  }
+
+  @override
+  String get instructorNoCoursesYet => 'No published courses yet.';
+
+  @override
+  String get instructorNotFound => 'Instructor not found.';
+
+  @override
+  String get instructorLinkWebsite => 'Website';
+
+  @override
+  String get instructorLinkFacebook => 'Facebook';
+
+  @override
+  String get instructorLinkTwitter => 'X / Twitter';
+
+  @override
+  String get instructorLinkYouTube => 'YouTube';
+
+  @override
+  String get instructorLinkInstagram => 'Instagram';
 }

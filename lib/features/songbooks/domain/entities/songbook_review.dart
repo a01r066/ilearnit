@@ -1,18 +1,14 @@
-import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-@immutable
-class SongbookReview {
-  const SongbookReview({
-    required this.id,
-    required this.userName,
-    required this.rating,
-    required this.body,
-    this.createdAt,
-  });
+part 'songbook_review.freezed.dart';
 
-  final String id;
-  final String userName;
-  final double rating;
-  final String body;
-  final DateTime? createdAt;
+@freezed
+abstract class SongbookReview with _$SongbookReview {
+  const factory SongbookReview({
+    required String id,
+    required String userName,
+    required double rating,
+    required String body,
+    DateTime? createdAt,
+  }) = _SongbookReview;
 }

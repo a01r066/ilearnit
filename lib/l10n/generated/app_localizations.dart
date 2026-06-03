@@ -787,6 +787,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No reviews yet.'**
   String get songbookNoReviewsYet;
+
+  /// No description provided for @instructorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructor'**
+  String get instructorTitle;
+
+  /// No description provided for @instructorTotalStudents.
+  ///
+  /// In en, this message translates to:
+  /// **'Total students'**
+  String get instructorTotalStudents;
+
+  /// No description provided for @instructorReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get instructorReviews;
+
+  /// No description provided for @instructorAboutMe.
+  ///
+  /// In en, this message translates to:
+  /// **'About me'**
+  String get instructorAboutMe;
+
+  /// No description provided for @instructorAboutName.
+  ///
+  /// In en, this message translates to:
+  /// **'About {name}'**
+  String instructorAboutName(String name);
+
+  /// No description provided for @instructorShowMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Show more'**
+  String get instructorShowMore;
+
+  /// No description provided for @instructorShowLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get instructorShowLess;
+
+  /// No description provided for @instructorMyCoursesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'My courses ({count})'**
+  String instructorMyCoursesCount(int count);
+
+  /// No description provided for @instructorNoCoursesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No published courses yet.'**
+  String get instructorNoCoursesYet;
+
+  /// No description provided for @instructorNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructor not found.'**
+  String get instructorNotFound;
+
+  /// No description provided for @instructorLinkWebsite.
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get instructorLinkWebsite;
+
+  /// No description provided for @instructorLinkFacebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Facebook'**
+  String get instructorLinkFacebook;
+
+  /// No description provided for @instructorLinkTwitter.
+  ///
+  /// In en, this message translates to:
+  /// **'X / Twitter'**
+  String get instructorLinkTwitter;
+
+  /// No description provided for @instructorLinkYouTube.
+  ///
+  /// In en, this message translates to:
+  /// **'YouTube'**
+  String get instructorLinkYouTube;
+
+  /// No description provided for @instructorLinkInstagram.
+  ///
+  /// In en, this message translates to:
+  /// **'Instagram'**
+  String get instructorLinkInstagram;
 }
 
 class _AppLocalizationsDelegate

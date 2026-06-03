@@ -129,5 +129,21 @@
   "songbookReviews": "Đánh giá",
   "songbookYouMightAlsoLike": "Bạn có thể cũng thích",
   "songbookNotFound": "Không tìm thấy songbook.",
-  "songbookNoReviewsYet": "Chưa có đánh giá."
+  "songbookNoReviewsYet": "Chưa có đánh giá.",
+
+  "instructorTitle": "Giảng viên",
+  "instructorTotalStudents": "Tổng số học viên",
+  "instructorReviews": "Đánh giá",
+  "instructorAboutMe": "Về tôi",
+  "instructorAboutName": "Về {name}",
+  "instructorShowMore": "Xem thêm",
+  "instructorShowLess": "Thu gọn",
+  "instructorMyCoursesCount": "Khoá học của tôi ({count})",
+  "instructorNoCoursesYet": "Chưa có khoá học nào.",
+  "instructorNotFound": "Không tìm thấy giảng viên.",
+  "instructorLinkWebsite": "Website",
+  "instructorLinkFacebook": "Facebook",
+  "instructorLinkTwitter": "X / Twitter",
+  "instructorLinkYouTube": "YouTube",
+  "instructorLinkInstagram": "Instagram"
 }

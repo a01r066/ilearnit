@@ -375,4 +375,53 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get songbookNoReviewsYet => 'Chưa có đánh giá.';
+
+  @override
+  String get instructorTitle => 'Giảng viên';
+
+  @override
+  String get instructorTotalStudents => 'Tổng số học viên';
+
+  @override
+  String get instructorReviews => 'Đánh giá';
+
+  @override
+  String get instructorAboutMe => 'Về tôi';
+
+  @override
+  String instructorAboutName(String name) {
+    return 'Về $name';
+  }
+
+  @override
+  String get instructorShowMore => 'Xem thêm';
+
+  @override
+  String get instructorShowLess => 'Thu gọn';
+
+  @override
+  String instructorMyCoursesCount(int count) {
+    return 'Khoá học của tôi ($count)';
+  }
+
+  @override
+  String get instructorNoCoursesYet => 'Chưa có khoá học nào.';
+
+  @override
+  String get instructorNotFound => 'Không tìm thấy giảng viên.';
+
+  @override
+  String get instructorLinkWebsite => 'Website';
+
+  @override
+  String get instructorLinkFacebook => 'Facebook';
+
+  @override
+  String get instructorLinkTwitter => 'X / Twitter';
+
+  @override
+  String get instructorLinkYouTube => 'YouTube';
+
+  @override
+  String get instructorLinkInstagram => 'Instagram';
 }

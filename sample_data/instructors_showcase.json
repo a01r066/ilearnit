@@ -1,0 +1,23 @@
+{
+  "ins_legacy_learning_systems": {
+    "id": "ins_legacy_learning_systems",
+    "name": "Legacy Learning Systems",
+    "tagline": "Bringing Dreams Within Reach",
+    "primaryInstrument": "guitar",
+    "bio": "In a world of cheap, over-hyped, \"Learn This Overnight\" instructional videos, Legacy Learning Systems was founded to produce truly comprehensive multimedia training courses for those who want serious instruction in the comfort of their own homes. We believe that learning should be fun, unintimidating and systematic, with each new skill building on the last. Our courses cover guitar, piano, sign language and more — every program is recorded in a professional studio with award-winning instructors, broken down into byte-sized lessons, and shipped with workbooks and play-along tracks so students never have to wonder \"what comes next?\"",
+    "specialties": ["guitar", "sign-language", "structured-curriculum"],
+    "yearsExperience": 20,
+    "country": "United States",
+    "photoUrl": "https://picsum.photos/seed/legacy/400/400",
+    "rating": 4.7,
+    "reviewCount": 3504,
+    "studentCount": 24339,
+    "joinedAt": "2018-01-15T00:00:00.000Z",
+    "featuredCourseIds": [],
+    "websiteUrl": "https://legacylearningsystems.example.com",
+    "facebookUrl": "https://facebook.com/legacylearningsystems",
+    "twitterUrl": null,
+    "youtubeUrl": "https://youtube.com/@legacylearningsystems",
+    "instagramUrl": null
+  }
+}

@@ -28,7 +28,7 @@ class InstructorApplicationDataSource {
   /// applied.
   Stream<InstructorApplication?> watchMine(String userId) =>
       _applications.doc(userId).snapshots().map(
-            (doc) => doc.exists ? _fromDoc(doc) : null,
+            (doc) => doc.exists ? InstructorApplication.fromDoc(doc) : null,
           );
 
   /// Stream every pending application (admin view).
@@ -36,21 +36,29 @@ class InstructorApplicationDataSource {
       .where('status', isEqualTo: ApplicationStatus.pending.id)
       .orderBy('appliedAt')
       .snapshots()
-      .map((s) => s.docs.map(_fromDoc).toList());
+      .map((s) => s.docs.map(InstructorApplication.fromDoc).toList());
 
   /// Stream all applications regardless of status (admin history view).
   Stream<List<InstructorApplication>> watchAll() => _applications
       .orderBy('appliedAt', descending: true)
       .snapshots()
-      .map((s) => s.docs.map(_fromDoc).toList());
+      .map((s) => s.docs.map(InstructorApplication.fromDoc).toList());
 
   // ---------- mutations ---------------------------------------------------
 
   /// Submit a new application. Overwrites any prior `rejected` application
   /// from the same user so they can re-apply.
   Future<void> submit(InstructorApplication app) async {
+    // Use the freezed-generated toJson, then drop fields the server owns
+    // (id is the doc id; appliedAt/decided* are server-managed).
+    final json = app.toJson()
+      ..remove('id')
+      ..remove('appliedAt')
+      ..remove('decidedAt')
+      ..remove('decidedBy')
+      ..remove('rejectionReason');
     await _applications.doc(app.userId).set({
-      ..._toJson(app),
+      ...json,
       'status': ApplicationStatus.pending.id,
       'appliedAt': FieldValue.serverTimestamp(),
       'decidedAt': null,
@@ -96,35 +104,4 @@ class InstructorApplicationDataSource {
     });
   }
 
-  // ---------- mapping -----------------------------------------------------
-
-  InstructorApplication _fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final d = doc.data() ?? <String, dynamic>{};
-    return InstructorApplication(
-      id: doc.id,
-      userId: d['userId'] as String? ?? doc.id,
-      displayName: d['displayName'] as String? ?? '',
-      email: d['email'] as String? ?? '',
-      bio: d['bio'] as String? ?? '',
-      instruments:
-          (d['instruments'] as List?)?.whereType<String>().toList() ?? const [],
-      years: (d['years'] as num?)?.toInt(),
-      portfolioUrl: d['portfolioUrl'] as String?,
-      status: ApplicationStatus.fromId(d['status'] as String?),
-      rejectionReason: d['rejectionReason'] as String?,
-      appliedAt: (d['appliedAt'] as Timestamp?)?.toDate(),
-      decidedAt: (d['decidedAt'] as Timestamp?)?.toDate(),
-      decidedBy: d['decidedBy'] as String?,
-    );
-  }
-
-  Map<String, dynamic> _toJson(InstructorApplication a) => {
-        'userId': a.userId,
-        'displayName': a.displayName,
-        'email': a.email,
-        'bio': a.bio,
-        'instruments': a.instruments,
-        'years': a.years,
-        'portfolioUrl': a.portfolioUrl,
-      };
 }

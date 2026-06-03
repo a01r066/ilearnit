@@ -80,7 +80,7 @@ class SubscriptionNotifier extends StateNotifier<SubscriptionState> {
   /// write happens later, when the purchase stream emits `purchased`.
   Future<void> buy(SubscriptionPlan plan) async {
     if (state.purchaseInFlight) return;
-    state = state.copyWith(purchaseInFlight: true, clearFailure: true);
+    state = state.copyWith(purchaseInFlight: true, lastFailure: null);
     try {
       await _iap.buyNonConsumable(
         productId: plan.productId,
@@ -97,7 +97,7 @@ class SubscriptionNotifier extends StateNotifier<SubscriptionState> {
   /// Replay past purchases from the store. Used when a user reinstalls
   /// the app — the store re-emits their active subscription.
   Future<void> restore() async {
-    state = state.copyWith(clearFailure: true);
+    state = state.copyWith(lastFailure: null);
     try {
       await _iap.restorePurchases();
     } catch (e, st) {
@@ -120,7 +120,7 @@ class SubscriptionNotifier extends StateNotifier<SubscriptionState> {
 
   void clearFailure() {
     if (state.lastFailure == null) return;
-    state = state.copyWith(clearFailure: true);
+    state = state.copyWith(lastFailure: null);
   }
 
   // ---------- purchase stream handler ------------------------------------

@@ -1,44 +1,65 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+import '../../../../features/auth/data/models/user_model.dart'
+    show TimestampConverter;
 import 'application_status.dart';
+
+part 'instructor_application.freezed.dart';
+part 'instructor_application.g.dart';
 
 /// A user's application to become an instructor on the platform.
 ///
 /// The Firestore doc lives at `instructor_applications/{uid}` — keyed by the
 /// applicant's auth uid so they can only have one open application at a time.
-class InstructorApplication {
-  const InstructorApplication({
-    required this.id,
-    required this.userId,
-    required this.displayName,
-    required this.email,
-    required this.bio,
-    required this.instruments,
-    required this.status,
-    this.years,
-    this.portfolioUrl,
-    this.rejectionReason,
-    this.appliedAt,
-    this.decidedAt,
-    this.decidedBy,
-  });
+@freezed
+abstract class InstructorApplication with _$InstructorApplication {
+  const InstructorApplication._();
 
-  final String id;
-  final String userId;
-  final String displayName;
-  final String email;
-  final String bio;
+  const factory InstructorApplication({
+    required String id,
+    required String userId,
+    @Default('') String displayName,
+    @Default('') String email,
+    @Default('') String bio,
 
-  /// Instrument category ids the applicant wants to teach (`guitar`, `piano`,
-  /// `violin`).
-  final List<String> instruments;
-  final int? years;
-  final String? portfolioUrl;
+    /// Instrument category ids the applicant wants to teach (`guitar`,
+    /// `piano`, `violin`).
+    @Default(<String>[]) List<String> instruments,
+    int? years,
+    String? portfolioUrl,
+    @Default(ApplicationStatus.pending)
+    @ApplicationStatusConverter()
+    ApplicationStatus status,
+    String? rejectionReason,
+    @TimestampConverter() DateTime? appliedAt,
+    @TimestampConverter() DateTime? decidedAt,
 
-  final ApplicationStatus status;
-  final String? rejectionReason;
+    /// uid of the admin who approved / rejected.
+    String? decidedBy,
+  }) = _InstructorApplication;
 
-  final DateTime? appliedAt;
-  final DateTime? decidedAt;
+  factory InstructorApplication.fromJson(Map<String, dynamic> json) =>
+      _$InstructorApplicationFromJson(json);
 
-  /// uid of the admin who approved / rejected.
-  final String? decidedBy;
+  factory InstructorApplication.fromDoc(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
+    final data = doc.data() ?? <String, dynamic>{};
+    return InstructorApplication.fromJson({...data, 'id': doc.id});
+  }
+}
+
+/// Bridges the [ApplicationStatus] enum's string id to/from JSON so the
+/// generated freezed/json_serializable code round-trips it as a literal
+/// (`"pending"`, `"approved"`, `"rejected"`).
+class ApplicationStatusConverter
+    implements JsonConverter<ApplicationStatus, String?> {
+  const ApplicationStatusConverter();
+
+  @override
+  ApplicationStatus fromJson(String? json) => ApplicationStatus.fromId(json);
+
+  @override
+  String toJson(ApplicationStatus object) => object.id;
 }

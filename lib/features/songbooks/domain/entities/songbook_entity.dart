@@ -1,63 +1,45 @@
-import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'songbook_entity.freezed.dart';
 
 /// Domain entity for one songbook in the Songbooks tab.
 ///
 /// Songbooks are a separate content type from courses — they're sheet-music
 /// books (often from publishers like Hal Leonard) that the user can sample
 /// in-app and unlock via subscription or one-off purchase.
-@immutable
-class SongbookEntity {
-  const SongbookEntity({
-    required this.id,
-    required this.title,
-    required this.coverUrl,
-    required this.bannerUrl,
-    required this.description,
-    required this.includes,
-    required this.instrument,
-    required this.topics,
-    required this.publisher,
-    required this.rating,
-    required this.ratingCount,
-    required this.productId,
-    required this.isBestseller,
-    required this.samplePages,
-    this.publishedAt,
-  });
+@freezed
+abstract class SongbookEntity with _$SongbookEntity {
+  const factory SongbookEntity({
+    required String id,
+    required String title,
 
-  final String id;
-  final String title;
+    /// Portrait cover image (~3:4) shown in carousels + grid.
+    required String coverUrl,
 
-  /// Portrait cover image (~3:4) shown in carousels + grid.
-  final String coverUrl;
+    /// Wide banner image shown at the top of the detail page (~16:9).
+    /// Falls back to [coverUrl] when empty (resolved at the model layer).
+    required String bannerUrl,
+    required String description,
 
-  /// Wide banner image shown at the top of the detail page (~16:9).
-  /// Falls back to [coverUrl] if empty.
-  final String bannerUrl;
+    /// List of song titles included in the book.
+    required List<String> includes,
 
-  final String description;
+    /// e.g. "Piano", "Guitar", "Mixed"
+    required String instrument,
 
-  /// List of song titles included in the book.
-  final List<String> includes;
+    /// Free-form tags (e.g. "weekly Specials", "Beginner", "Pop").
+    required List<String> topics,
+    required String publisher,
+    required double rating,
+    required int ratingCount,
 
-  /// e.g. "Piano", "Guitar", "Mixed"
-  final String instrument;
+    /// Maps to an IAP product (per-songbook purchase) — same `PriceTier`
+    /// pattern as courses.
+    required String productId,
+    required bool isBestseller,
 
-  /// Free-form tags (e.g. "weekly Specials", "Beginner", "Pop").
-  final List<String> topics;
-
-  final String publisher;
-  final double rating;
-  final int ratingCount;
-
-  /// Maps to an IAP product (per-songbook purchase) — same `PriceTier`
-  /// pattern as courses.
-  final String productId;
-
-  final bool isBestseller;
-
-  /// URLs to sample PDF pages the user can preview without purchase.
-  final List<String> samplePages;
-
-  final DateTime? publishedAt;
+    /// URLs to sample PDF pages the user can preview without purchase.
+    required List<String> samplePages,
+    DateTime? publishedAt,
+  }) = _SongbookEntity;
 }

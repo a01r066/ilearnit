@@ -1,0 +1,141 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================================
+    // Helpers
+    // ============================================================
+
+    function isSignedIn() { return request.auth != null; }
+    function uid()        { return request.auth.uid; }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(uid())).data;
+    }
+    function role()       { return userDoc().role; }
+    function isSuspended() {
+      // Default to `false` if the field is missing.
+      return userDoc().get('isSuspended', false) == true;
+    }
+    function isAdmin() {
+      return isSignedIn() && role() == 'admin' && !isSuspended();
+    }
+    function isInstructor() {
+      return isSignedIn()
+        && (role() == 'instructor' || role() == 'admin')
+        && !isSuspended();
+    }
+
+    // ============================================================
+    // users/{userId}
+    // ============================================================
+    match /users/{userId} {
+      // Owner reads own doc; admins read all.
+      allow read: if isSignedIn() && (uid() == userId || isAdmin());
+
+      // Owner creates own doc on first sign-in.
+      allow create: if isSignedIn() && uid() == userId;
+
+      // Owner can write their own non-privileged fields — explicitly
+      // NOT role / isSuspended.
+      allow update: if isSignedIn()
+        && uid() == userId
+        && !(request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny(['role', 'isSuspended']));
+
+      // Admins can update anything (including role + isSuspended).
+      allow update: if isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // instructor_applications/{userId}
+    // ============================================================
+    match /instructor_applications/{userId} {
+      allow read: if isSignedIn() && (uid() == userId || isAdmin());
+
+      // Applicant submits / re-applies their own pending application.
+      allow create, update: if isSignedIn()
+        && uid() == userId
+        && request.resource.data.status == 'pending';
+
+      // Admins decide.
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // Catalogue — public read, admin/instructor write
+    // ============================================================
+
+    match /courses/{courseId} {
+      allow read: if true;
+      allow create: if isInstructor()
+        && (isAdmin() || request.resource.data.instructorId == uid());
+      allow update, delete: if isAdmin()
+        || (isInstructor() && resource.data.instructorId == uid());
+
+      match /sections/{sectionId} {
+        allow read: if true;
+        allow write: if isAdmin()
+          || (isInstructor()
+              && get(/databases/$(database)/documents/courses/$(courseId))
+                   .data.instructorId == uid());
+
+        match /lectures/{lectureId} {
+          allow read: if true;
+          allow write: if isAdmin()
+            || (isInstructor()
+                && get(/databases/$(database)/documents/courses/$(courseId))
+                     .data.instructorId == uid());
+        }
+      }
+    }
+
+    match /instructors/{instructorId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /songbooks/{songbookId} {
+      allow read: if true;
+      allow write: if isAdmin();
+
+      match /reviews/{reviewId} {
+        allow read: if true;
+        allow create: if isSignedIn()
+          && request.resource.data.userId == uid();
+        allow update, delete: if isAdmin()
+          || (isSignedIn() && resource.data.userId == uid());
+      }
+    }
+
+    // ============================================================
+    // enrollments/{enrollmentId}
+    // ============================================================
+    match /enrollments/{enrollmentId} {
+      allow read: if isSignedIn()
+        && (resource.data.userId == uid() || isAdmin());
+      allow create: if isSignedIn()
+        && request.resource.data.userId == uid();
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // notification_broadcasts/{broadcastId}
+    // ============================================================
+    // Admin queues a broadcast. The Cloud Function picks it up and writes
+    // the result back; the function uses the Admin SDK and bypasses these
+    // rules entirely.
+    match /notification_broadcasts/{broadcastId} {
+      allow read:   if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.createdBy == uid()
+        && request.resource.data.status == 'pending';
+      allow update: if false; // only the Function (Admin SDK) writes
+      allow delete: if isAdmin();
+    }
+  }
+}
