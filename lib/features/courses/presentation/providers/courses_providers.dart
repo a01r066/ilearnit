@@ -6,6 +6,7 @@ import '../../../../shared/providers/firebase_providers.dart';
 import '../../data/datasources/courses_remote_datasource.dart';
 import '../../data/repositories/courses_repository_impl.dart';
 import '../../domain/entities/course_entity.dart';
+import '../../domain/entities/instrument_category.dart';
 import '../../domain/repositories/courses_repository.dart';
 import 'course_detail_notifier.dart';
 import 'course_detail_state.dart';
@@ -59,3 +60,27 @@ final curriculumNotifierProvider = StateNotifierProvider.autoDispose
     courseId: courseId,
   ),
 );
+
+/// Popular courses for a given [InstrumentCategory] — drives the
+/// "Popular Guitar Courses" / "Popular Piano Courses" / "Popular Violin
+/// Courses" carousels on the Home tab.
+///
+/// We fetch the first 30 courses for the category (ordered by `publishedAt`
+/// from the existing query) and sort client-side by `enrollmentCount` to
+/// avoid needing a composite Firestore index
+/// (`category + enrollmentCount`).
+final popularByInstrumentProvider = FutureProvider.autoDispose
+    .family<List<CourseEntity>, InstrumentCategory>((ref, category) async {
+  final result = await ref.watch(coursesRepositoryProvider).fetchCourses(
+        category: category,
+        limit: 30,
+      );
+  return result.fold(
+    (failure) => throw failure,
+    (page) {
+      final items = [...page.items]
+        ..sort((a, b) => b.enrollmentCount.compareTo(a.enrollmentCount));
+      return items.take(8).toList();
+    },
+  );
+});

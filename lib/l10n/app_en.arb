@@ -33,6 +33,14 @@
   "homeFeaturedCourses": "Featured courses",
   "homeSeeAll": "See all",
   "homeNoFeaturedYet": "No featured courses yet.",
+  "homePopularInstrument": "Popular {instrument} Courses",
+  "@homePopularInstrument": {
+    "description": "Section heading on the Home tab for popular courses of a single instrument.",
+    "placeholders": {
+      "instrument": { "type": "String", "example": "Guitar" }
+    }
+  },
+  "homeNoPopularYet": "No popular courses yet.",
 
   "instrumentGuitar": "Guitar",
   "instrumentPiano": "Piano",

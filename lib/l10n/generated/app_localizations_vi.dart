@@ -53,6 +53,14 @@ class AppLocalizationsVi extends AppLocalizations {
   String get homeNoFeaturedYet => 'Chưa có khoá học nổi bật.';
 
   @override
+  String homePopularInstrument(String instrument) {
+    return 'Khoá học $instrument phổ biến';
+  }
+
+  @override
+  String get homeNoPopularYet => 'Chưa có khoá học phổ biến.';
+
+  @override
   String get instrumentGuitar => 'Guitar';
 
   @override

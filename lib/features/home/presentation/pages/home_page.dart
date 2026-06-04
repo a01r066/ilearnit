@@ -8,6 +8,7 @@ import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/loading_indicator.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../courses/domain/entities/course_entity.dart';
 import '../../../courses/domain/entities/instrument_category.dart';
 import '../../../courses/presentation/providers/courses_providers.dart';
 import '../../../courses/presentation/widgets/course_card.dart';
@@ -110,9 +111,76 @@ class HomePage extends ConsumerWidget {
                 );
               },
             ),
+            // ----- One "Popular {Instrument} Courses" section per instrument
+            for (final c in InstrumentCategory.values) ...[
+              const SizedBox(height: 24),
+              _PopularInstrumentSection(category: c),
+            ],
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Horizontal carousel of popular courses for a single [InstrumentCategory].
+/// Reuses the same [CourseCard] + 320px height as the Featured carousel for
+/// visual consistency.
+class _PopularInstrumentSection extends ConsumerWidget {
+  const _PopularInstrumentSection({required this.category});
+  final InstrumentCategory category;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = AppLocalizations.of(context);
+    final async = ref.watch(popularByInstrumentProvider(category));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionHeader(
+          title: t.homePopularInstrument(category.label),
+          actionLabel: t.homeSeeAll,
+          onAction: () => context.goNamed(RouteNames.courses),
+        ),
+        const SizedBox(height: 12),
+        async.when(
+          loading: () => const SizedBox(
+            height: 220,
+            child: LoadingIndicator(),
+          ),
+          error: (e, _) => SizedBox(
+            height: 220,
+            child: Center(child: Text(e.toString())),
+          ),
+          data: (List<CourseEntity> items) {
+            if (items.isEmpty) {
+              return SizedBox(
+                height: 220,
+                child: Center(child: Text(t.homeNoPopularYet)),
+              );
+            }
+            return SizedBox(
+              height: 320,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: items.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                itemBuilder: (_, i) => SizedBox(
+                  width: 280,
+                  child: CourseCard(
+                    course: items[i],
+                    onTap: () => context.goNamed(
+                      RouteNames.courseDetail,
+                      pathParameters: {'id': items[i].id},
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }

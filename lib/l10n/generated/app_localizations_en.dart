@@ -53,6 +53,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeNoFeaturedYet => 'No featured courses yet.';
 
   @override
+  String homePopularInstrument(String instrument) {
+    return 'Popular $instrument Courses';
+  }
+
+  @override
+  String get homeNoPopularYet => 'No popular courses yet.';
+
+  @override
   String get instrumentGuitar => 'Guitar';
 
   @override

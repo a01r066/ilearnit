@@ -18,6 +18,8 @@
   "homeFeaturedCourses": "Khoá học nổi bật",
   "homeSeeAll": "Xem tất cả",
   "homeNoFeaturedYet": "Chưa có khoá học nổi bật.",
+  "homePopularInstrument": "Khoá học {instrument} phổ biến",
+  "homeNoPopularYet": "Chưa có khoá học phổ biến.",
 
   "instrumentGuitar": "Guitar",
   "instrumentPiano": "Piano",

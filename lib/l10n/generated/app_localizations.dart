@@ -182,6 +182,18 @@ abstract class AppLocalizations {
   /// **'No featured courses yet.'**
   String get homeNoFeaturedYet;
 
+  /// Section heading on the Home tab for popular courses of a single instrument.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular {instrument} Courses'**
+  String homePopularInstrument(String instrument);
+
+  /// No description provided for @homeNoPopularYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No popular courses yet.'**
+  String get homeNoPopularYet;
+
   /// No description provided for @instrumentGuitar.
   ///
   /// In en, this message translates to:
