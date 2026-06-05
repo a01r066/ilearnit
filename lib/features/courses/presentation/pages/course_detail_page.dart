@@ -14,6 +14,7 @@ import '../../domain/entities/lecture_entity.dart';
 import '../providers/course_detail_state.dart';
 import '../providers/courses_providers.dart';
 import '../providers/curriculum_state.dart';
+import '../widgets/course_reviews_section.dart';
 import '../widgets/section_tile.dart';
 
 class CourseDetailPage extends ConsumerWidget {
@@ -160,6 +161,12 @@ class _Loaded extends ConsumerWidget {
           isEnrolled: isEnrolled,
           onRetry: curriculumNotifier.load,
           onLectureTap: (l) => _openLecture(context, l),
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 32, 16, 0),
+            child: CourseReviewsSection(courseId: course.id),
+          ),
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 32)),
       ],

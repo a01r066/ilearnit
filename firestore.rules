@@ -76,6 +76,34 @@ service cloud.firestore {
         && (isAdmin() || request.resource.data.instructorId == uid());
       allow update, delete: if isAdmin()
         || (isInstructor() && resource.data.instructorId == uid());
+      // The reviews aggregator (rating + reviewCount) is rewritten by the
+      // client when a review is created/deleted. Allow signed-in users to
+      // bump those two fields without granting them a full update.
+      allow update: if isSignedIn()
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['rating', 'reviewCount']);
+
+      // --- Reviews -------------------------------------------------------
+      // Read: public. Write: only the author (doc id == uid). The UI gates
+      // who can open the WriteReviewSheet via `hasUnlockedAccessProvider`
+      // (purchased OR active subscription); this rule trusts that gate but
+      // still constrains shape + ownership.
+      //
+      // Note: rules cannot yet enforce "purchased OR subscribed" because
+      // the enrollment doc id format isn't deterministic. Once enrollments
+      // are written at `enrollments/{uid}_{courseId}`, swap this rule to
+      // include an `exists(...)` check on that path.
+      match /reviews/{userId} {
+        allow read: if true;
+        allow create, update: if isSignedIn()
+          && uid() == userId
+          && request.resource.data.userId == uid()
+          && request.resource.data.rating is int
+          && request.resource.data.rating >= 1
+          && request.resource.data.rating <= 5;
+        allow delete: if isAdmin()
+          || (isSignedIn() && uid() == userId);
+      }
 
       match /sections/{sectionId} {
         allow read: if true;
