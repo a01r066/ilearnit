@@ -31,6 +31,20 @@ class AdminDashboardPage extends ConsumerWidget {
             .watchPending()
         : null;
 
+    final allSongbooksStream = role.isAdmin
+        ? ref.watch(adminSongbooksDataSourceProvider).watchAll()
+        : null;
+
+    final activeSubscriptionsStream = role.isAdmin
+        ? ref.watch(adminSubscriptionsDataSourceProvider).watchAll().map(
+              (rows) => rows
+                  .where((r) =>
+                      r.subscription.expiresAt != null &&
+                      r.subscription.expiresAt!.isAfter(DateTime.now()))
+                  .length,
+            )
+        : null;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -75,6 +89,21 @@ class AdminDashboardPage extends ConsumerWidget {
                   stream: pendingApplicationsStream.map((l) => l.length),
                   onTap: () =>
                       context.goNamed(AdminRoutes.applications),
+                ),
+              if (allSongbooksStream != null)
+                _StatTile(
+                  label: 'Songbooks',
+                  icon: Icons.menu_book_outlined,
+                  stream: allSongbooksStream.map((l) => l.length),
+                  onTap: () => context.goNamed(AdminRoutes.songbooks),
+                ),
+              if (activeSubscriptionsStream != null)
+                _StatTile(
+                  label: 'Active subscriptions',
+                  icon: Icons.workspace_premium_outlined,
+                  stream: activeSubscriptionsStream,
+                  onTap: () =>
+                      context.goNamed(AdminRoutes.subscriptions),
                 ),
             ],
           ),

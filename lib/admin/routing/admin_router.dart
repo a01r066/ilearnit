@@ -16,6 +16,9 @@ import '../instructors/presentation/instructor_apply_page.dart';
 import '../instructors/presentation/instructor_pending_page.dart';
 import '../notifications/presentation/admin_notifications_page.dart';
 import '../shared/pages/unauthorized_page.dart';
+import '../songbooks/presentation/admin_songbooks_page.dart';
+import '../songbooks/presentation/songbook_editor_page.dart';
+import '../subscriptions/presentation/admin_subscriptions_page.dart';
 import '../shared/providers/admin_providers.dart';
 import '../shared/widgets/admin_scaffold.dart';
 import 'admin_route_names.dart';
@@ -105,6 +108,25 @@ final adminGoRouterProvider = Provider<GoRouter>((ref) {
             name: AdminRoutes.notifications,
             builder: (_, __) => const AdminNotificationsPage(),
           ),
+          GoRoute(
+            path: AdminRoutes.songbooksPath,
+            name: AdminRoutes.songbooks,
+            builder: (_, __) => const AdminSongbooksPage(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                name: AdminRoutes.songbookEditor,
+                builder: (_, s) => SongbookEditorPage(
+                  songbookId: s.pathParameters['id']!,
+                ),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: AdminRoutes.subscriptionsPath,
+            name: AdminRoutes.subscriptions,
+            builder: (_, __) => const AdminSubscriptionsPage(),
+          ),
         ],
       ),
     ],
@@ -172,7 +194,9 @@ bool _isAdminOnly(String location) =>
     location == AdminRoutes.allCoursesPath ||
     location == AdminRoutes.applicationsPath ||
     location == AdminRoutes.instructorsPath ||
-    location == AdminRoutes.notificationsPath;
+    location == AdminRoutes.notificationsPath ||
+    location.startsWith(AdminRoutes.songbooksPath) ||
+    location == AdminRoutes.subscriptionsPath;
 
 String _landingFor(UserRole role) {
   switch (role) {

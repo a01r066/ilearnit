@@ -64,6 +64,28 @@ class AdminStorageService {
     return _runUpload(ref, bytes, contentType);
   }
 
+  /// Upload a songbook portrait cover (~3:4) shown in carousels + grid.
+  Stream<UploadProgress> uploadSongbookCover({
+    required String songbookId,
+    required String filename,
+    required Uint8List bytes,
+    required String contentType,
+  }) {
+    final ref = _storage.ref('songbooks/$songbookId/cover/$filename');
+    return _runUpload(ref, bytes, contentType);
+  }
+
+  /// Upload a songbook wide banner (~16:9) shown on the detail page.
+  Stream<UploadProgress> uploadSongbookBanner({
+    required String songbookId,
+    required String filename,
+    required Uint8List bytes,
+    required String contentType,
+  }) {
+    final ref = _storage.ref('songbooks/$songbookId/banner/$filename');
+    return _runUpload(ref, bytes, contentType);
+  }
+
   /// Upload the main media file (video / audio / pdf) for a lecture.
   Stream<UploadProgress> uploadLectureMedia({
     required String courseId,

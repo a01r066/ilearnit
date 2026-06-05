@@ -20,6 +20,9 @@ class AdminRoutes {
   static const String applications = 'admin-applications';
   static const String instructors = 'admin-instructors';
   static const String notifications = 'admin-notifications';
+  static const String songbooks = 'admin-songbooks';
+  static const String songbookEditor = 'admin-songbook-editor';
+  static const String subscriptions = 'admin-subscriptions';
 
   // Path templates
   static const String loginPath = '/login';
@@ -33,4 +36,7 @@ class AdminRoutes {
   static const String applicationsPath = '/admin/applications';
   static const String instructorsPath = '/admin/instructors';
   static const String notificationsPath = '/admin/notifications';
+  static const String songbooksPath = '/admin/songbooks';
+  static const String songbookEditorPath = '/admin/songbooks/:id';
+  static const String subscriptionsPath = '/admin/subscriptions';
 }
