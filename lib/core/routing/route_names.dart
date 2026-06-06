@@ -33,6 +33,12 @@ class RouteNames {
 
   // Search (top-level, opens above shell)
   static const String search = 'search';
+
+  // Legal (top-level, opens above shell — reachable from auth + profile)
+  static const String legal = 'legal';
+
+  // Delete account (within profile)
+  static const String deleteAccount = 'delete-account';
 }
 
 class RoutePaths {
@@ -64,4 +70,11 @@ class RoutePaths {
 
   // Search (top-level, modal-style above the shell)
   static const String search = '/search';
+
+  // Legal (top-level, modal-style above the shell) — `/legal/privacy`,
+  // `/legal/terms`.
+  static const String legal = '/legal/:slug';
+
+  // Delete account (nested under profile)
+  static const String deleteAccount = 'delete-account';
 }

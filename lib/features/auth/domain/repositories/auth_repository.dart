@@ -37,6 +37,31 @@ abstract interface class AuthRepository {
   ResultVoid logout();
 
   ResultVoid sendPasswordReset({required String email});
+
+  /// Re-authenticate the currently signed-in user with their email and
+  /// password. Required by Firebase Auth before destructive actions like
+  /// [deleteAccount].
+  ///
+  /// No-op for users who signed in with Google or Apple — they should
+  /// re-run [reauthenticateWithGoogle] or [reauthenticateWithApple]
+  /// instead.
+  ResultVoid reauthenticateWithPassword({required String password});
+
+  /// Re-trigger the Google sign-in flow so Firebase Auth receives a fresh
+  /// credential. Used before destructive actions when the user signed in
+  /// with Google.
+  ResultVoid reauthenticateWithGoogle();
+
+  /// Re-trigger Apple sign-in for a fresh credential.
+  ResultVoid reauthenticateWithApple();
+
+  /// Permanently delete the currently signed-in user and everything tied
+  /// to them via the `deleteAccount` callable Cloud Function.
+  ///
+  /// The caller is responsible for re-authenticating first (Firebase Auth
+  /// rejects token-aged deletions with `requires-recent-login`). On
+  /// success the client should sign out and route to `/login`.
+  ResultVoid deleteAccount();
 }
 
 /// Shared code used by social sign-in implementations to signal that the user

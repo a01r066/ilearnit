@@ -147,5 +147,30 @@
   "instructorLinkFacebook": "Facebook",
   "instructorLinkTwitter": "X / Twitter",
   "instructorLinkYouTube": "YouTube",
-  "instructorLinkInstagram": "Instagram"
+  "instructorLinkInstagram": "Instagram",
+
+  "legalPrivacyPolicyTitle": "Chính sách bảo mật",
+  "legalTermsOfServiceTitle": "Điều khoản sử dụng",
+  "legalLoadFailed": "Không thể tải tài liệu này. Vui lòng thử lại.",
+  "legalAgreementPrefix": "Bằng việc tiếp tục, bạn đồng ý với ",
+  "legalAgreementAnd": " và ",
+  "legalAgreementPeriod": ".",
+  "legalAbout": "Về iLearnIt",
+
+  "deleteAccountTitle": "Xoá tài khoản",
+  "deleteAccountWarningHeader": "Hành động này sẽ xoá vĩnh viễn tài khoản của bạn",
+  "deleteAccountWarningBody": "Chúng tôi sẽ xoá hồ sơ, danh sách khoá học đã đăng ký, các đánh giá bạn đã viết, đơn ứng tuyển giảng viên và mọi tệp bạn đã tải lên. Không thể khôi phục.",
+  "deleteAccountSubscriptionNote": "Gói đăng ký do App Store hoặc Google Play quản lý và phải được huỷ riêng. Xoá tài khoản tại đây sẽ không huỷ gói đăng ký có phí.",
+  "deleteAccountReauthIntro": "Vui lòng xác nhận mật khẩu để tiếp tục.",
+  "deleteAccountReauthIntroSocial": "Vui lòng đăng nhập lại để xác nhận danh tính.",
+  "deleteAccountReauthGoogle": "Đăng nhập lại với Google",
+  "deleteAccountReauthApple": "Đăng nhập lại với Apple",
+  "deleteAccountConfirmCheckbox": "Tôi hiểu rằng hành động này là vĩnh viễn.",
+  "deleteAccountConfirmTitle": "Xoá tài khoản của bạn?",
+  "deleteAccountConfirmBody": "Nhập DELETE để xác nhận. Chúng tôi không thể khôi phục dữ liệu sau khi xoá.",
+  "deleteAccountConfirmHint": "DELETE",
+  "deleteAccountSubmit": "Xoá tài khoản",
+  "deleteAccountInProgress": "Đang xoá tài khoản…",
+  "deleteAccountSuccess": "Tài khoản của bạn đã được xoá.",
+  "deleteAccountFailed": "Không thể xoá tài khoản. Vui lòng thử lại hoặc liên hệ hỗ trợ."
 }

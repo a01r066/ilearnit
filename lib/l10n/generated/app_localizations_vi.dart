@@ -432,4 +432,81 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get instructorLinkInstagram => 'Instagram';
+
+  @override
+  String get legalPrivacyPolicyTitle => 'Chính sách bảo mật';
+
+  @override
+  String get legalTermsOfServiceTitle => 'Điều khoản sử dụng';
+
+  @override
+  String get legalLoadFailed => 'Không thể tải tài liệu này. Vui lòng thử lại.';
+
+  @override
+  String get legalAgreementPrefix => 'Bằng việc tiếp tục, bạn đồng ý với ';
+
+  @override
+  String get legalAgreementAnd => ' và ';
+
+  @override
+  String get legalAgreementPeriod => '.';
+
+  @override
+  String get legalAbout => 'Về iLearnIt';
+
+  @override
+  String get deleteAccountTitle => 'Xoá tài khoản';
+
+  @override
+  String get deleteAccountWarningHeader =>
+      'Hành động này sẽ xoá vĩnh viễn tài khoản của bạn';
+
+  @override
+  String get deleteAccountWarningBody =>
+      'Chúng tôi sẽ xoá hồ sơ, danh sách khoá học đã đăng ký, các đánh giá bạn đã viết, đơn ứng tuyển giảng viên và mọi tệp bạn đã tải lên. Không thể khôi phục.';
+
+  @override
+  String get deleteAccountSubscriptionNote =>
+      'Gói đăng ký do App Store hoặc Google Play quản lý và phải được huỷ riêng. Xoá tài khoản tại đây sẽ không huỷ gói đăng ký có phí.';
+
+  @override
+  String get deleteAccountReauthIntro =>
+      'Vui lòng xác nhận mật khẩu để tiếp tục.';
+
+  @override
+  String get deleteAccountReauthIntroSocial =>
+      'Vui lòng đăng nhập lại để xác nhận danh tính.';
+
+  @override
+  String get deleteAccountReauthGoogle => 'Đăng nhập lại với Google';
+
+  @override
+  String get deleteAccountReauthApple => 'Đăng nhập lại với Apple';
+
+  @override
+  String get deleteAccountConfirmCheckbox =>
+      'Tôi hiểu rằng hành động này là vĩnh viễn.';
+
+  @override
+  String get deleteAccountConfirmTitle => 'Xoá tài khoản của bạn?';
+
+  @override
+  String get deleteAccountConfirmBody =>
+      'Nhập DELETE để xác nhận. Chúng tôi không thể khôi phục dữ liệu sau khi xoá.';
+
+  @override
+  String get deleteAccountConfirmHint => 'DELETE';
+
+  @override
+  String get deleteAccountSubmit => 'Xoá tài khoản';
+
+  @override
+  String get deleteAccountInProgress => 'Đang xoá tài khoản…';
+
+  @override
+  String get deleteAccountSuccess => 'Tài khoản của bạn đã được xoá.';
+
+  @override
+  String get deleteAccountFailed =>
+      'Không thể xoá tài khoản. Vui lòng thử lại hoặc liên hệ hỗ trợ.';
 }

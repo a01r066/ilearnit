@@ -214,5 +214,30 @@
   "instructorLinkFacebook": "Facebook",
   "instructorLinkTwitter": "X / Twitter",
   "instructorLinkYouTube": "YouTube",
-  "instructorLinkInstagram": "Instagram"
+  "instructorLinkInstagram": "Instagram",
+
+  "legalPrivacyPolicyTitle": "Privacy Policy",
+  "legalTermsOfServiceTitle": "Terms of Service",
+  "legalLoadFailed": "Could not load this document. Please try again.",
+  "legalAgreementPrefix": "By continuing you agree to our ",
+  "legalAgreementAnd": " and ",
+  "legalAgreementPeriod": ".",
+  "legalAbout": "About iLearnIt",
+
+  "deleteAccountTitle": "Delete account",
+  "deleteAccountWarningHeader": "This will permanently delete your account",
+  "deleteAccountWarningBody": "We will delete your profile, enrollments, reviews you authored, instructor application, and any files you uploaded. This cannot be undone.",
+  "deleteAccountSubscriptionNote": "Subscriptions are managed by the App Store or Google Play and must be canceled separately. Deleting your account here does not cancel a paid subscription.",
+  "deleteAccountReauthIntro": "Please confirm your password to continue.",
+  "deleteAccountReauthIntroSocial": "Please re-sign in to confirm your identity.",
+  "deleteAccountReauthGoogle": "Re-sign in with Google",
+  "deleteAccountReauthApple": "Re-sign in with Apple",
+  "deleteAccountConfirmCheckbox": "I understand that this action is permanent.",
+  "deleteAccountConfirmTitle": "Delete your account?",
+  "deleteAccountConfirmBody": "Type DELETE to confirm. We cannot recover your data once this is done.",
+  "deleteAccountConfirmHint": "DELETE",
+  "deleteAccountSubmit": "Delete my account",
+  "deleteAccountInProgress": "Deleting your account…",
+  "deleteAccountSuccess": "Your account has been deleted.",
+  "deleteAccountFailed": "We could not delete your account. Please try again or contact support."
 }

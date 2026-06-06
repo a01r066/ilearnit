@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -38,6 +39,22 @@ abstract interface class AuthRemoteDataSource {
   Future<void> sendPasswordReset({required String email});
 
   Future<UserModel?> fetchUserDoc(String uid);
+
+  /// Re-auth the current user with their password. Throws [AuthException]
+  /// on `wrong-password`, `too-many-requests`, etc.
+  Future<void> reauthenticateWithPassword({required String password});
+
+  /// Re-auth the current user by re-running Google sign-in and feeding
+  /// the credential through `reauthenticateWithCredential`.
+  Future<void> reauthenticateWithGoogle();
+
+  /// Re-auth the current user by re-running Apple sign-in.
+  Future<void> reauthenticateWithApple();
+
+  /// Invoke the `deleteAccount` callable Cloud Function. Throws on
+  /// `requires-recent-login` so the UI can route the user back through
+  /// re-auth.
+  Future<void> deleteAccount();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -45,13 +62,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required FirebaseAuth auth,
     required FirebaseFirestore firestore,
     GoogleSignIn? googleSignIn,
+    FirebaseFunctions? functions,
   })  : _auth = auth,
         _firestore = firestore,
-        _googleSignIn = googleSignIn ?? GoogleSignIn();
+        _googleSignIn = googleSignIn ?? GoogleSignIn(),
+        _functions = functions ?? FirebaseFunctions.instance;
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
   final GoogleSignIn _googleSignIn;
+  final FirebaseFunctions _functions;
 
   CollectionReference<Map<String, dynamic>> get _users =>
       _firestore.collection(FirestoreCollections.users);
@@ -355,5 +375,149 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   static String _sha256ofString(String input) {
     return sha256.convert(utf8.encode(input)).toString();
+  }
+
+  // ---------- Re-auth + delete --------------------------------------------
+
+  /// Returns the currently signed-in Firebase user or throws an
+  /// [AuthException] if none is present. Centralises the null-check so the
+  /// re-auth and delete flows can read concisely.
+  User _requireUser() {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw AuthException(
+        message: 'You are not signed in.',
+        code: 'no-current-user',
+      );
+    }
+    return user;
+  }
+
+  @override
+  Future<void> reauthenticateWithPassword({required String password}) async {
+    final user = _requireUser();
+    final email = user.email;
+    if (email == null || email.isEmpty) {
+      throw AuthException(
+        message: 'Your account has no email — try Google or Apple re-auth.',
+        code: 'no-email',
+      );
+    }
+    try {
+      final cred = EmailAuthProvider.credential(
+        email: email,
+        password: password,
+      );
+      await user.reauthenticateWithCredential(cred);
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(
+        message: e.message ?? 'Re-authentication failed.',
+        code: e.code,
+      );
+    }
+  }
+
+  @override
+  Future<void> reauthenticateWithGoogle() async {
+    final user = _requireUser();
+
+    if (kIsWeb) {
+      final provider = GoogleAuthProvider()
+        ..addScope('email')
+        ..addScope('profile');
+      await user.reauthenticateWithPopup(provider);
+      return;
+    }
+
+    // Run the native picker but feed the resulting credential through
+    // reauthenticateWithCredential rather than signInWithCredential. This
+    // preserves the existing uid; signing in would replace it.
+    final GoogleSignInAccount? account = await _googleSignIn.signIn();
+    if (account == null) {
+      throw AuthException(
+        message: 'Re-authentication cancelled.',
+        code: AuthCancellation.code,
+      );
+    }
+    final googleAuth = await account.authentication;
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+    await user.reauthenticateWithCredential(credential);
+  }
+
+  @override
+  Future<void> reauthenticateWithApple() async {
+    final user = _requireUser();
+
+    if (kIsWeb) {
+      final provider = OAuthProvider('apple.com')
+        ..addScope('email')
+        ..addScope('name');
+      await user.reauthenticateWithPopup(provider);
+      return;
+    }
+
+    final platform = defaultTargetPlatform;
+    if (platform != TargetPlatform.iOS && platform != TargetPlatform.macOS) {
+      throw AuthException(
+        message: 'Sign in with Apple is only available on Apple devices.',
+        code: 'unsupported-platform',
+      );
+    }
+
+    final rawNonce = _generateNonce();
+    final hashedNonce = _sha256ofString(rawNonce);
+    final AuthorizationCredentialAppleID appleCredential;
+    try {
+      appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: hashedNonce,
+      );
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled) {
+        throw AuthException(
+          message: 'Re-authentication cancelled.',
+          code: AuthCancellation.code,
+        );
+      }
+      throw AuthException(message: e.message, code: e.code.name);
+    }
+
+    final oauth = OAuthProvider('apple.com').credential(
+      idToken: appleCredential.identityToken,
+      rawNonce: rawNonce,
+    );
+    await user.reauthenticateWithCredential(oauth);
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    _requireUser();
+    try {
+      final callable = _functions.httpsCallable('deleteAccount');
+      await callable.call<Map<String, dynamic>>();
+    } on FirebaseFunctionsException catch (e) {
+      // `unauthenticated` should never bubble up — we just confirmed the
+      // user exists above — but treat it explicitly anyway.
+      throw AuthException(
+        message: e.message ?? 'Account deletion failed.',
+        code: e.code,
+      );
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(
+        message: e.message ?? 'Account deletion failed.',
+        code: e.code,
+      );
+    }
+
+    // The server already deleted the auth user, but the client SDK still
+    // holds a stale token. Force a local sign-out so subsequent navigation
+    // sees `currentUser == null`.
+    await _auth.signOut().catchError((Object _) => null);
   }
 }

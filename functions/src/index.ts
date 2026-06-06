@@ -18,14 +18,19 @@
  */
 
 import {initializeApp} from 'firebase-admin/app';
+import {getAuth} from 'firebase-admin/auth';
 import {getFirestore, FieldValue} from 'firebase-admin/firestore';
 import {getMessaging, MulticastMessage, TopicMessage} from 'firebase-admin/messaging';
+import {getStorage} from 'firebase-admin/storage';
 import {onDocumentCreated, onDocumentUpdated} from 'firebase-functions/v2/firestore';
+import {HttpsError, onCall} from 'firebase-functions/v2/https';
 import {logger} from 'firebase-functions/v2';
 
 initializeApp();
 const db = getFirestore();
 const fcm = getMessaging();
+const auth = getAuth();
+const storage = getStorage();
 
 // ---------- payload helpers ------------------------------------------------
 
@@ -242,3 +247,158 @@ export const onNotificationBroadcast = onDocumentCreated(
     }
   },
 );
+
+// ---------- 4. account deletion -------------------------------------------
+
+/**
+ * Hard-delete a user and everything they own.
+ *
+ * Apple §5.1.1(v) requires apps that allow account creation to also expose
+ * an in-app deletion path. This callable is invoked from
+ * `Profile → Settings → Delete account` after the client has re-authenticated.
+ *
+ * What is removed:
+ *   • users/{uid}                            (profile + embedded subscription)
+ *   • instructor_applications/{uid}          (application, if any)
+ *   • enrollments where userId == uid        (and their /progress subcoll)
+ *   • courses/{*}/reviews/{uid}              (every authored review)
+ *   • songbooks/{*}/reviews/{*}              (where userId == uid)
+ *   • Storage objects under users/{uid}/     (avatars, uploads)
+ *   • Auth user record                       (admin.auth().deleteUser)
+ *
+ * Aggregated counters (courses.rating, courses.reviewCount, …) are not
+ * back-recomputed here — the per-review trigger recompute step does that.
+ *
+ * What is NOT touched:
+ *   • App Store / Play Store auto-renewing subscriptions. The client copy
+ *     and the docs warn the user that the subscription must be canceled
+ *     separately through the store.
+ *   • Anonymous aggregate analytics (e.g. "total reviews on course X").
+ *
+ * The function returns `{ ok: true }` on success. Any unexpected throw is
+ * surfaced as `HttpsError('internal', …)` so the client can show a generic
+ * failure snackbar without leaking server internals.
+ */
+export const deleteAccount = onCall(async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError(
+      'unauthenticated',
+      'You must be signed in to delete your account.',
+    );
+  }
+
+  logger.info(`deleteAccount: starting for uid=${uid}`);
+
+  try {
+    // 1. User profile + instructor application (single batch).
+    const batch = db.batch();
+    batch.delete(db.collection('users').doc(uid));
+    batch.delete(db.collection('instructor_applications').doc(uid));
+    await batch.commit();
+
+    // 2. Enrollments + nested progress.
+    await deleteEnrollments(uid);
+
+    // 3. Authored reviews on courses + songbooks.
+    await deleteAuthoredCourseReviews(uid);
+    await deleteAuthoredSongbookReviews(uid);
+
+    // 4. Storage objects under users/{uid}/.
+    try {
+      await storage.bucket().deleteFiles({prefix: `users/${uid}/`});
+    } catch (e) {
+      // Storage deletion is best-effort — log and keep going so the user is
+      // still removed from Auth + Firestore even if the bucket is empty or
+      // not configured.
+      logger.warn(`deleteAccount: storage cleanup failed for ${uid}: ${e}`);
+    }
+
+    // 5. Auth record — must be last because losing the token mid-flow would
+    //    prevent the function from completing.
+    await auth.deleteUser(uid);
+
+    logger.info(`deleteAccount: completed for uid=${uid}`);
+    return {ok: true};
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    logger.error(`deleteAccount failed for ${uid}: ${reason}`);
+    throw new HttpsError(
+      'internal',
+      'We could not complete the deletion. Please try again later.',
+      {reason},
+    );
+  }
+});
+
+/** Delete the user's enrollments and their /progress subcollection. */
+async function deleteEnrollments(uid: string): Promise<void> {
+  const snap = await db
+    .collection('enrollments')
+    .where('userId', '==', uid)
+    .get();
+  if (snap.empty) return;
+
+  for (const doc of snap.docs) {
+    await deleteSubcollection(doc.ref.collection('progress'));
+    await doc.ref.delete();
+  }
+  logger.info(`deleteEnrollments: removed ${snap.size} for ${uid}`);
+}
+
+/**
+ * Delete every `courses/{*}/reviews/{uid}` doc.
+ *
+ * The review doc id equals the author uid (we enforce one review per user
+ * per course at the data layer), so we can target them directly via a
+ * collection-group query.
+ */
+async function deleteAuthoredCourseReviews(uid: string): Promise<void> {
+  const snap = await db.collectionGroup('reviews').where('userId', '==', uid).get();
+  if (snap.empty) return;
+
+  const batch = db.batch();
+  for (const doc of snap.docs) {
+    // Make sure we only touch reviews under `courses/*/reviews/*` —
+    // collectionGroup will also match songbook reviews; those are handled
+    // separately.
+    if (doc.ref.path.startsWith('courses/')) {
+      batch.delete(doc.ref);
+    }
+  }
+  await batch.commit();
+  logger.info(`deleteAuthoredCourseReviews: cleaned for ${uid}`);
+}
+
+/** Delete `songbooks/{*}/reviews/{*}` docs where `userId == uid`. */
+async function deleteAuthoredSongbookReviews(uid: string): Promise<void> {
+  const snap = await db.collectionGroup('reviews').where('userId', '==', uid).get();
+  if (snap.empty) return;
+
+  const batch = db.batch();
+  for (const doc of snap.docs) {
+    if (doc.ref.path.startsWith('songbooks/')) {
+      batch.delete(doc.ref);
+    }
+  }
+  await batch.commit();
+  logger.info(`deleteAuthoredSongbookReviews: cleaned for ${uid}`);
+}
+
+/**
+ * Delete every doc in a subcollection in batches of 200.
+ * Firestore caps batch writes at 500 — 200 leaves room for the parent
+ * delete + any retries.
+ */
+async function deleteSubcollection(
+  ref: FirebaseFirestore.CollectionReference,
+): Promise<void> {
+  while (true) {
+    const snap = await ref.limit(200).get();
+    if (snap.empty) return;
+    const batch = db.batch();
+    snap.docs.forEach((d) => batch.delete(d.ref));
+    await batch.commit();
+    if (snap.size < 200) return;
+  }
+}

@@ -9,6 +9,7 @@ import '../../../../core/routing/route_names.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../legal/presentation/widgets/legal_agreement_footer.dart';
 import '../providers/auth_providers.dart';
 import '../providers/auth_state.dart';
 import '../widgets/auth_text_field.dart';
@@ -175,6 +176,9 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 8),
+                  const LegalAgreementFooter(),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),

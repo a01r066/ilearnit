@@ -433,4 +433,82 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get instructorLinkInstagram => 'Instagram';
+
+  @override
+  String get legalPrivacyPolicyTitle => 'Privacy Policy';
+
+  @override
+  String get legalTermsOfServiceTitle => 'Terms of Service';
+
+  @override
+  String get legalLoadFailed =>
+      'Could not load this document. Please try again.';
+
+  @override
+  String get legalAgreementPrefix => 'By continuing you agree to our ';
+
+  @override
+  String get legalAgreementAnd => ' and ';
+
+  @override
+  String get legalAgreementPeriod => '.';
+
+  @override
+  String get legalAbout => 'About iLearnIt';
+
+  @override
+  String get deleteAccountTitle => 'Delete account';
+
+  @override
+  String get deleteAccountWarningHeader =>
+      'This will permanently delete your account';
+
+  @override
+  String get deleteAccountWarningBody =>
+      'We will delete your profile, enrollments, reviews you authored, instructor application, and any files you uploaded. This cannot be undone.';
+
+  @override
+  String get deleteAccountSubscriptionNote =>
+      'Subscriptions are managed by the App Store or Google Play and must be canceled separately. Deleting your account here does not cancel a paid subscription.';
+
+  @override
+  String get deleteAccountReauthIntro =>
+      'Please confirm your password to continue.';
+
+  @override
+  String get deleteAccountReauthIntroSocial =>
+      'Please re-sign in to confirm your identity.';
+
+  @override
+  String get deleteAccountReauthGoogle => 'Re-sign in with Google';
+
+  @override
+  String get deleteAccountReauthApple => 'Re-sign in with Apple';
+
+  @override
+  String get deleteAccountConfirmCheckbox =>
+      'I understand that this action is permanent.';
+
+  @override
+  String get deleteAccountConfirmTitle => 'Delete your account?';
+
+  @override
+  String get deleteAccountConfirmBody =>
+      'Type DELETE to confirm. We cannot recover your data once this is done.';
+
+  @override
+  String get deleteAccountConfirmHint => 'DELETE';
+
+  @override
+  String get deleteAccountSubmit => 'Delete my account';
+
+  @override
+  String get deleteAccountInProgress => 'Deleting your account…';
+
+  @override
+  String get deleteAccountSuccess => 'Your account has been deleted.';
+
+  @override
+  String get deleteAccountFailed =>
+      'We could not delete your account. Please try again or contact support.';
 }

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:ilearnit/core/routing/route_names.dart';
+import 'package:ilearnit/core/theme/app_colors.dart';
+import 'package:ilearnit/features/legal/presentation/pages/legal_document_page.dart';
 import 'package:ilearnit/features/profile/presentation/providers/locale_provider.dart';
 import 'package:ilearnit/features/profile/presentation/providers/locale_state.dart';
 import 'package:ilearnit/features/profile/presentation/providers/theme_provider.dart';
@@ -55,6 +59,44 @@ class SettingsPage extends ConsumerWidget {
               ref.read(localeStateNotifierProvider.notifier).setLanguage(v);
             },
           ),
+
+        const Divider(height: 1),
+
+        // --- Legal ---
+        _SectionHeader(label: t.legalAbout),
+        ListTile(
+          leading: const Icon(Icons.privacy_tip_outlined),
+          title: Text(t.legalPrivacyPolicyTitle),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.pushNamed(
+            RouteNames.legal,
+            pathParameters: {'slug': LegalDocument.privacyPolicy.slug},
+          ),
+        ),
+        ListTile(
+          leading: const Icon(Icons.gavel_outlined),
+          title: Text(t.legalTermsOfServiceTitle),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.pushNamed(
+            RouteNames.legal,
+            pathParameters: {'slug': LegalDocument.termsOfService.slug},
+          ),
+        ),
+
+        const Divider(height: 32),
+
+        // --- Danger zone ---
+        ListTile(
+          leading: const Icon(Icons.delete_forever_rounded,
+              color: AppColors.error),
+          title: Text(
+            t.deleteAccountTitle,
+            style: const TextStyle(color: AppColors.error),
+          ),
+          trailing: const Icon(Icons.chevron_right, color: AppColors.error),
+          onTap: () => context.pushNamed(RouteNames.deleteAccount),
+        ),
+        const SizedBox(height: 24),
       ],
     );
   }

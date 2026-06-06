@@ -137,6 +137,56 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  @override
+  ResultVoid reauthenticateWithPassword({required String password}) async {
+    if (!await _network.isConnected) {
+      return const Left(Failure.network());
+    }
+    try {
+      await _remote.reauthenticateWithPassword(password: password);
+      return const Right(null);
+    } catch (e, st) {
+      return Left(mapToFailure(e, st));
+    }
+  }
+
+  @override
+  ResultVoid reauthenticateWithGoogle() =>
+      _runReauthSocial(() => _remote.reauthenticateWithGoogle());
+
+  @override
+  ResultVoid reauthenticateWithApple() =>
+      _runReauthSocial(() => _remote.reauthenticateWithApple());
+
+  @override
+  ResultVoid deleteAccount() async {
+    if (!await _network.isConnected) {
+      return const Left(Failure.network());
+    }
+    try {
+      await _remote.deleteAccount();
+      await _storage.clearTokens();
+      return const Right(null);
+    } catch (e, st) {
+      return Left(mapToFailure(e, st));
+    }
+  }
+
+  /// Shared envelope for the social re-auth flows. Cancellation surfaces as
+  /// an [AuthFailure] with `code == AuthCancellation.code` so the UI can
+  /// suppress error toasts.
+  ResultVoid _runReauthSocial(Future<void> Function() flow) async {
+    if (!await _network.isConnected) {
+      return const Left(Failure.network());
+    }
+    try {
+      await flow();
+      return const Right(null);
+    } catch (e, st) {
+      return Left(mapToFailure(e, st));
+    }
+  }
+
   // ---------- helpers -----------------------------------------------------
 
   /// Persist the current Firebase ID token to secure storage so any

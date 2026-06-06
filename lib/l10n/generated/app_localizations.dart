@@ -889,6 +889,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Instagram'**
   String get instructorLinkInstagram;
+
+  /// No description provided for @legalPrivacyPolicyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get legalPrivacyPolicyTitle;
+
+  /// No description provided for @legalTermsOfServiceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get legalTermsOfServiceTitle;
+
+  /// No description provided for @legalLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load this document. Please try again.'**
+  String get legalLoadFailed;
+
+  /// No description provided for @legalAgreementPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'By continuing you agree to our '**
+  String get legalAgreementPrefix;
+
+  /// No description provided for @legalAgreementAnd.
+  ///
+  /// In en, this message translates to:
+  /// **' and '**
+  String get legalAgreementAnd;
+
+  /// No description provided for @legalAgreementPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'.'**
+  String get legalAgreementPeriod;
+
+  /// No description provided for @legalAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About iLearnIt'**
+  String get legalAbout;
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccountWarningHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently delete your account'**
+  String get deleteAccountWarningHeader;
+
+  /// No description provided for @deleteAccountWarningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We will delete your profile, enrollments, reviews you authored, instructor application, and any files you uploaded. This cannot be undone.'**
+  String get deleteAccountWarningBody;
+
+  /// No description provided for @deleteAccountSubscriptionNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscriptions are managed by the App Store or Google Play and must be canceled separately. Deleting your account here does not cancel a paid subscription.'**
+  String get deleteAccountSubscriptionNote;
+
+  /// No description provided for @deleteAccountReauthIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Please confirm your password to continue.'**
+  String get deleteAccountReauthIntro;
+
+  /// No description provided for @deleteAccountReauthIntroSocial.
+  ///
+  /// In en, this message translates to:
+  /// **'Please re-sign in to confirm your identity.'**
+  String get deleteAccountReauthIntroSocial;
+
+  /// No description provided for @deleteAccountReauthGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-sign in with Google'**
+  String get deleteAccountReauthGoogle;
+
+  /// No description provided for @deleteAccountReauthApple.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-sign in with Apple'**
+  String get deleteAccountReauthApple;
+
+  /// No description provided for @deleteAccountConfirmCheckbox.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand that this action is permanent.'**
+  String get deleteAccountConfirmCheckbox;
+
+  /// No description provided for @deleteAccountConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account?'**
+  String get deleteAccountConfirmTitle;
+
+  /// No description provided for @deleteAccountConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Type DELETE to confirm. We cannot recover your data once this is done.'**
+  String get deleteAccountConfirmBody;
+
+  /// No description provided for @deleteAccountConfirmHint.
+  ///
+  /// In en, this message translates to:
+  /// **'DELETE'**
+  String get deleteAccountConfirmHint;
+
+  /// No description provided for @deleteAccountSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete my account'**
+  String get deleteAccountSubmit;
+
+  /// No description provided for @deleteAccountInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting your account…'**
+  String get deleteAccountInProgress;
+
+  /// No description provided for @deleteAccountSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been deleted.'**
+  String get deleteAccountSuccess;
+
+  /// No description provided for @deleteAccountFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not delete your account. Please try again or contact support.'**
+  String get deleteAccountFailed;
 }
 
 class _AppLocalizationsDelegate

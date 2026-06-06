@@ -14,6 +14,8 @@ import '../../features/courses/presentation/pages/lecture_player_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/instructors/presentation/pages/instructor_detail_page.dart';
 import '../../features/instructors/presentation/pages/instructors_page.dart';
+import '../../features/legal/presentation/pages/legal_document_page.dart';
+import '../../features/profile/presentation/pages/delete_account_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/search/presentation/pages/search_page.dart';
 import '../../features/songbooks/presentation/pages/songbook_detail_page.dart';
@@ -67,8 +69,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // 3. Signed out — only login / signup are reachable.
-      if (isOnLoginOrSignup) return null;
+      // 3. Signed out — login, signup, and legal pages are reachable.
+      final isOnLegal = loc.startsWith('/legal/');
+      if (isOnLoginOrSignup || isOnLegal) return null;
       return RoutePaths.login;
     },
     routes: [
@@ -94,6 +97,20 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         // search — mirrors the attached design (full-screen search).
         parentNavigatorKey: _rootKey,
         builder: (_, __) => const SearchPage(),
+      ),
+      // ----- Legal (privacy / terms) ------------------------------------
+      // Reachable from auth + profile + checkout. Routed top-level so the
+      // sign-up / login pages (outside the shell) can push it.
+      GoRoute(
+        path: RoutePaths.legal,
+        name: RouteNames.legal,
+        parentNavigatorKey: _rootKey,
+        builder: (_, state) {
+          final slug = state.pathParameters['slug'] ?? '';
+          final doc = LegalDocument.fromSlug(slug) ??
+              LegalDocument.privacyPolicy;
+          return LegalDocumentPage(document: doc);
+        },
       ),
       StatefulShellRoute.indexedStack(
         builder: (_, __, shell) => ShellScaffold(navigationShell: shell),
@@ -192,6 +209,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                     path: RoutePaths.settings,
                     name: RouteNames.setting,
                     builder: (_, __) => SettingsPage(),
+                  ),
+                  GoRoute(
+                    path: RoutePaths.deleteAccount,
+                    name: RouteNames.deleteAccount,
+                    builder: (_, __) => const DeleteAccountPage(),
                   ),
                   GoRoute(
                     path: RoutePaths.subscription,
