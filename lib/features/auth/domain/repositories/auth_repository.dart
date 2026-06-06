@@ -62,6 +62,17 @@ abstract interface class AuthRepository {
   /// rejects token-aged deletions with `requires-recent-login`). On
   /// success the client should sign out and route to `/login`.
   ResultVoid deleteAccount();
+
+  /// Partial update for the current user's Firestore doc.
+  ///
+  /// Used by the onboarding flow (and any future profile-edit screen) to
+  /// write a small subset of fields without touching role / isSuspended /
+  /// subscription. Passing `null` for a field leaves it unchanged.
+  ResultVoid updateProfile({
+    String? primaryInstrument,
+    String? skillLevel,
+    String? displayName,
+  });
 }
 
 /// Shared code used by social sign-in implementations to signal that the user

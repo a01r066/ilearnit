@@ -15,6 +15,7 @@ import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/instructors/presentation/pages/instructor_detail_page.dart';
 import '../../features/instructors/presentation/pages/instructors_page.dart';
 import '../../features/legal/presentation/pages/legal_document_page.dart';
+import '../../features/onboarding/presentation/pages/onboarding_page.dart';
 import '../../features/profile/presentation/pages/delete_account_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/search/presentation/pages/search_page.dart';
@@ -22,6 +23,7 @@ import '../../features/songbooks/presentation/pages/songbook_detail_page.dart';
 import '../../features/songbooks/presentation/pages/songbooks_page.dart';
 import '../../features/subscriptions/presentation/pages/subscription_checkout_page.dart';
 import '../../features/subscriptions/presentation/pages/subscription_page.dart';
+import '../../shared/providers/storage_providers.dart';
 import 'route_names.dart';
 import 'shell_scaffold.dart';
 
@@ -43,6 +45,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     authNotifierProvider,
     (_, next) => notifier.value = next,
   );
+  // Cached PrefsService reference — same instance used by every redirect
+  // tick. `onboardingDone` is read synchronously off SharedPreferences.
+  final prefs = ref.read(prefsProvider);
 
   return GoRouter(
     navigatorKey: _rootKey,
@@ -56,6 +61,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isOnSplash = loc == RoutePaths.splash;
       final isOnLoginOrSignup =
           loc == RoutePaths.login || loc == RoutePaths.signup;
+      final isOnOnboarding = loc == RoutePaths.onboarding;
 
       // 1. Auth not yet resolved — keep showing splash, but do not
       //    push splash on every redirect (avoids loops).
@@ -63,9 +69,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         return isOnSplash ? null : RoutePaths.splash;
       }
 
-      // 2. Signed in — kick out of splash / login / signup → home.
+      // 2. Signed in.
       if (auth.isAuthenticated) {
-        if (isOnSplash || isOnLoginOrSignup) return RoutePaths.home;
+        // Gate the entire shell behind onboarding for first-time installs.
+        if (!prefs.onboardingDone) {
+          return isOnOnboarding ? null : RoutePaths.onboarding;
+        }
+        // Onboarding is one-shot — once done, kick out of /onboarding.
+        if (isOnOnboarding ||
+            isOnSplash ||
+            isOnLoginOrSignup) {
+          return RoutePaths.home;
+        }
         return null;
       }
 
@@ -89,6 +104,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: RoutePaths.signup,
         name: RouteNames.signup,
         builder: (_, __) => const SignupPage(),
+      ),
+      // Onboarding — top-level so it can replace the shell during the
+      // first-run flow. The redirect above gates it behind auth +
+      // `!prefs.onboardingDone`.
+      GoRoute(
+        path: RoutePaths.onboarding,
+        name: RouteNames.onboarding,
+        parentNavigatorKey: _rootKey,
+        builder: (_, __) => const OnboardingPage(),
       ),
       GoRoute(
         path: RoutePaths.search,

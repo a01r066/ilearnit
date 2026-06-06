@@ -6,6 +6,7 @@ class RouteNames {
   static const String splash = 'splash';
   static const String login = 'login';
   static const String signup = 'signup';
+  static const String onboarding = 'onboarding';
 
   // Shell tabs
   static const String home = 'home';
@@ -47,6 +48,7 @@ class RoutePaths {
   static const String splash = '/splash';
   static const String login = '/login';
   static const String signup = '/signup';
+  static const String onboarding = '/onboarding';
 
   static const String home = '/home';
   static const String courses = '/courses';

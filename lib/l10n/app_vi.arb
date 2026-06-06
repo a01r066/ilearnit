@@ -184,5 +184,30 @@
   },
   "courseProgressFinished": "Đã hoàn thành khoá học",
   "courseProgressResume": "Tiếp tục",
-  "courseProgressUntitled": "Khoá học chưa đặt tên"
+  "courseProgressUntitled": "Khoá học chưa đặt tên",
+
+  "onboardingSkip": "Bỏ qua",
+  "onboardingContinue": "Tiếp tục",
+  "onboardingDone": "Xong",
+  "onboardingEnableNotifications": "Bật thông báo",
+
+  "onboardingInstrumentTitle": "Bạn chơi nhạc cụ gì?",
+  "onboardingInstrumentSubtitle": "Chọn nhạc cụ chính của bạn. Có thể thay đổi sau trong Cài đặt.",
+
+  "onboardingLevelTitle": "Trình độ của bạn?",
+  "onboardingLevelSubtitle": "Chúng tôi sẽ tinh chỉnh gợi ý cho phù hợp.",
+  "onboardingLevelBeginner": "Mới bắt đầu",
+  "onboardingLevelBeginnerBlurb": "Mới làm quen với nhạc cụ — bắt đầu với những kiến thức cơ bản.",
+  "onboardingLevelIntermediate": "Trung cấp",
+  "onboardingLevelIntermediateBlurb": "Đã nắm vững cơ bản — sẵn sàng học kỹ thuật và bài bản mới.",
+  "onboardingLevelAdvanced": "Nâng cao",
+  "onboardingLevelAdvancedBlurb": "Nhiều năm tập luyện — tập trung vào thành thục và biểu diễn.",
+
+  "onboardingNotificationsTitle": "Giữ vững thói quen",
+  "onboardingNotificationsSubtitle": "Bật thông báo để iLearnIt giúp bạn duy trì việc tập luyện.",
+  "onboardingNotificationsReason1": "Nhận tin khi giảng viên ra bài học mới.",
+  "onboardingNotificationsReason2": "Cập nhật khoá học mới cho nhạc cụ bạn yêu thích.",
+  "onboardingNotificationsReason3": "Nhận lời nhắc thân thiện để tập mỗi ngày.",
+  "onboardingNotificationsThanks": "Cảm ơn bạn — đã sẵn sàng.",
+  "onboardingNotificationsCanChange": "Không sao. Bạn có thể bật thông báo bất cứ lúc nào trong Cài đặt."
 }

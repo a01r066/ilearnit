@@ -1057,6 +1057,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Untitled course'**
   String get courseProgressUntitled;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get onboardingContinue;
+
+  /// No description provided for @onboardingDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get onboardingDone;
+
+  /// No description provided for @onboardingEnableNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable notifications'**
+  String get onboardingEnableNotifications;
+
+  /// No description provided for @onboardingInstrumentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you play?'**
+  String get onboardingInstrumentTitle;
+
+  /// No description provided for @onboardingInstrumentSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick your primary instrument. You can change this anytime in Settings.'**
+  String get onboardingInstrumentSubtitle;
+
+  /// No description provided for @onboardingLevelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Where are you in your journey?'**
+  String get onboardingLevelTitle;
+
+  /// No description provided for @onboardingLevelSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll tune your recommendations to match.'**
+  String get onboardingLevelSubtitle;
+
+  /// No description provided for @onboardingLevelBeginner.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner'**
+  String get onboardingLevelBeginner;
+
+  /// No description provided for @onboardingLevelBeginnerBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'New to the instrument — start with the fundamentals.'**
+  String get onboardingLevelBeginnerBlurb;
+
+  /// No description provided for @onboardingLevelIntermediate.
+  ///
+  /// In en, this message translates to:
+  /// **'Intermediate'**
+  String get onboardingLevelIntermediate;
+
+  /// No description provided for @onboardingLevelIntermediateBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'Comfortable with basics — ready to explore technique and repertoire.'**
+  String get onboardingLevelIntermediateBlurb;
+
+  /// No description provided for @onboardingLevelAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get onboardingLevelAdvanced;
+
+  /// No description provided for @onboardingLevelAdvancedBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'Years of practice — focused on mastery and performance.'**
+  String get onboardingLevelAdvancedBlurb;
+
+  /// No description provided for @onboardingNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay on track'**
+  String get onboardingNotificationsTitle;
+
+  /// No description provided for @onboardingNotificationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable notifications so iLearnIt can keep your practice habit going.'**
+  String get onboardingNotificationsSubtitle;
+
+  /// No description provided for @onboardingNotificationsReason1.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified when your instructors release new lessons.'**
+  String get onboardingNotificationsReason1;
+
+  /// No description provided for @onboardingNotificationsReason2.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear about new courses in the instruments you love.'**
+  String get onboardingNotificationsReason2;
+
+  /// No description provided for @onboardingNotificationsReason3.
+  ///
+  /// In en, this message translates to:
+  /// **'Get friendly daily reminders to practice.'**
+  String get onboardingNotificationsReason3;
+
+  /// No description provided for @onboardingNotificationsThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks — you\'re all set.'**
+  String get onboardingNotificationsThanks;
+
+  /// No description provided for @onboardingNotificationsCanChange.
+  ///
+  /// In en, this message translates to:
+  /// **'No worries. You can enable notifications anytime from Settings.'**
+  String get onboardingNotificationsCanChange;
 }
 
 class _AppLocalizationsDelegate

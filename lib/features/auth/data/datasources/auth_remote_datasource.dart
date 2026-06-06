@@ -55,6 +55,14 @@ abstract interface class AuthRemoteDataSource {
   /// `requires-recent-login` so the UI can route the user back through
   /// re-auth.
   Future<void> deleteAccount();
+
+  /// Partial Firestore update for the current user. See
+  /// [AuthRepository.updateProfile].
+  Future<void> updateProfile({
+    String? primaryInstrument,
+    String? skillLevel,
+    String? displayName,
+  });
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -519,5 +527,35 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     // holds a stale token. Force a local sign-out so subsequent navigation
     // sees `currentUser == null`.
     await _auth.signOut().catchError((Object _) => null);
+  }
+
+  @override
+  Future<void> updateProfile({
+    String? primaryInstrument,
+    String? skillLevel,
+    String? displayName,
+  }) async {
+    final user = _requireUser();
+    final payload = <String, dynamic>{};
+    if (primaryInstrument != null) {
+      payload['primaryInstrument'] = primaryInstrument;
+    }
+    if (skillLevel != null) payload['skillLevel'] = skillLevel;
+    if (displayName != null) payload['displayName'] = displayName;
+    if (payload.isEmpty) return;
+
+    // Merge so we don't have to read-then-write the rest of the doc.
+    await _users.doc(user.uid).set(payload, SetOptions(merge: true));
+
+    // Mirror displayName onto the Firebase Auth record so getDisplayName()
+    // calls elsewhere see the updated value without a Firestore read.
+    if (displayName != null && displayName != user.displayName) {
+      try {
+        await user.updateDisplayName(displayName);
+      } catch (_) {
+        // Auth update is best-effort; the Firestore doc is the source of
+        // truth for everything that matters in our UI.
+      }
+    }
   }
 }

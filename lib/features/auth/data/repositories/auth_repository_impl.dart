@@ -172,6 +172,27 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  @override
+  ResultVoid updateProfile({
+    String? primaryInstrument,
+    String? skillLevel,
+    String? displayName,
+  }) async {
+    if (!await _network.isConnected) {
+      return const Left(Failure.network());
+    }
+    try {
+      await _remote.updateProfile(
+        primaryInstrument: primaryInstrument,
+        skillLevel: skillLevel,
+        displayName: displayName,
+      );
+      return const Right(null);
+    } catch (e, st) {
+      return Left(mapToFailure(e, st));
+    }
+  }
+
   /// Shared envelope for the social re-auth flows. Cancellation surfaces as
   /// an [AuthFailure] with `code == AuthCancellation.code` so the UI can
   /// suppress error toasts.

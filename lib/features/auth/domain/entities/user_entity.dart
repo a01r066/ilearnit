@@ -14,6 +14,7 @@ abstract class UserEntity with _$UserEntity {
     String? photoUrl,
     @Default(false) bool emailVerified,
     String? primaryInstrument, // e.g. 'guitar' | 'piano' | 'violin'
+    String? skillLevel, // 'beginner' | 'intermediate' | 'advanced'
     @Default(UserRole.student) UserRole role,
     @Default(false) bool isSuspended,
     DateTime? createdAt,

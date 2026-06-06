@@ -528,4 +528,77 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get courseProgressUntitled => 'Untitled course';
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingContinue => 'Continue';
+
+  @override
+  String get onboardingDone => 'Done';
+
+  @override
+  String get onboardingEnableNotifications => 'Enable notifications';
+
+  @override
+  String get onboardingInstrumentTitle => 'What do you play?';
+
+  @override
+  String get onboardingInstrumentSubtitle =>
+      'Pick your primary instrument. You can change this anytime in Settings.';
+
+  @override
+  String get onboardingLevelTitle => 'Where are you in your journey?';
+
+  @override
+  String get onboardingLevelSubtitle =>
+      'We\'ll tune your recommendations to match.';
+
+  @override
+  String get onboardingLevelBeginner => 'Beginner';
+
+  @override
+  String get onboardingLevelBeginnerBlurb =>
+      'New to the instrument — start with the fundamentals.';
+
+  @override
+  String get onboardingLevelIntermediate => 'Intermediate';
+
+  @override
+  String get onboardingLevelIntermediateBlurb =>
+      'Comfortable with basics — ready to explore technique and repertoire.';
+
+  @override
+  String get onboardingLevelAdvanced => 'Advanced';
+
+  @override
+  String get onboardingLevelAdvancedBlurb =>
+      'Years of practice — focused on mastery and performance.';
+
+  @override
+  String get onboardingNotificationsTitle => 'Stay on track';
+
+  @override
+  String get onboardingNotificationsSubtitle =>
+      'Enable notifications so iLearnIt can keep your practice habit going.';
+
+  @override
+  String get onboardingNotificationsReason1 =>
+      'Get notified when your instructors release new lessons.';
+
+  @override
+  String get onboardingNotificationsReason2 =>
+      'Hear about new courses in the instruments you love.';
+
+  @override
+  String get onboardingNotificationsReason3 =>
+      'Get friendly daily reminders to practice.';
+
+  @override
+  String get onboardingNotificationsThanks => 'Thanks — you\'re all set.';
+
+  @override
+  String get onboardingNotificationsCanChange =>
+      'No worries. You can enable notifications anytime from Settings.';
 }

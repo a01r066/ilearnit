@@ -255,5 +255,30 @@
   },
   "courseProgressFinished": "Course completed",
   "courseProgressResume": "Resume",
-  "courseProgressUntitled": "Untitled course"
+  "courseProgressUntitled": "Untitled course",
+
+  "onboardingSkip": "Skip",
+  "onboardingContinue": "Continue",
+  "onboardingDone": "Done",
+  "onboardingEnableNotifications": "Enable notifications",
+
+  "onboardingInstrumentTitle": "What do you play?",
+  "onboardingInstrumentSubtitle": "Pick your primary instrument. You can change this anytime in Settings.",
+
+  "onboardingLevelTitle": "Where are you in your journey?",
+  "onboardingLevelSubtitle": "We'll tune your recommendations to match.",
+  "onboardingLevelBeginner": "Beginner",
+  "onboardingLevelBeginnerBlurb": "New to the instrument — start with the fundamentals.",
+  "onboardingLevelIntermediate": "Intermediate",
+  "onboardingLevelIntermediateBlurb": "Comfortable with basics — ready to explore technique and repertoire.",
+  "onboardingLevelAdvanced": "Advanced",
+  "onboardingLevelAdvancedBlurb": "Years of practice — focused on mastery and performance.",
+
+  "onboardingNotificationsTitle": "Stay on track",
+  "onboardingNotificationsSubtitle": "Enable notifications so iLearnIt can keep your practice habit going.",
+  "onboardingNotificationsReason1": "Get notified when your instructors release new lessons.",
+  "onboardingNotificationsReason2": "Hear about new courses in the instruments you love.",
+  "onboardingNotificationsReason3": "Get friendly daily reminders to practice.",
+  "onboardingNotificationsThanks": "Thanks — you're all set.",
+  "onboardingNotificationsCanChange": "No worries. You can enable notifications anytime from Settings."
 }

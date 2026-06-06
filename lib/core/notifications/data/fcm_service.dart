@@ -173,6 +173,22 @@ class FcmService {
     );
   }
 
+  /// Re-request notification permission outside of [init].
+  ///
+  /// The onboarding "soft ask" step calls this after showing a friendly
+  /// rationale screen. Returns the resulting [AuthorizationStatus] so the
+  /// UI can branch on allow / deny without inspecting the FCM service's
+  /// own field.
+  Future<AuthorizationStatus> requestPermission() async {
+    final settings = await _messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    permissionStatus = settings.authorizationStatus;
+    return permissionStatus;
+  }
+
   // ---------- Topic management -------------------------------------------
 
   Future<void> subscribeToTopic(String topic) =>

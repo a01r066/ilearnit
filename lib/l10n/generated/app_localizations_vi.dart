@@ -526,4 +526,77 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get courseProgressUntitled => 'Khoá học chưa đặt tên';
+
+  @override
+  String get onboardingSkip => 'Bỏ qua';
+
+  @override
+  String get onboardingContinue => 'Tiếp tục';
+
+  @override
+  String get onboardingDone => 'Xong';
+
+  @override
+  String get onboardingEnableNotifications => 'Bật thông báo';
+
+  @override
+  String get onboardingInstrumentTitle => 'Bạn chơi nhạc cụ gì?';
+
+  @override
+  String get onboardingInstrumentSubtitle =>
+      'Chọn nhạc cụ chính của bạn. Có thể thay đổi sau trong Cài đặt.';
+
+  @override
+  String get onboardingLevelTitle => 'Trình độ của bạn?';
+
+  @override
+  String get onboardingLevelSubtitle =>
+      'Chúng tôi sẽ tinh chỉnh gợi ý cho phù hợp.';
+
+  @override
+  String get onboardingLevelBeginner => 'Mới bắt đầu';
+
+  @override
+  String get onboardingLevelBeginnerBlurb =>
+      'Mới làm quen với nhạc cụ — bắt đầu với những kiến thức cơ bản.';
+
+  @override
+  String get onboardingLevelIntermediate => 'Trung cấp';
+
+  @override
+  String get onboardingLevelIntermediateBlurb =>
+      'Đã nắm vững cơ bản — sẵn sàng học kỹ thuật và bài bản mới.';
+
+  @override
+  String get onboardingLevelAdvanced => 'Nâng cao';
+
+  @override
+  String get onboardingLevelAdvancedBlurb =>
+      'Nhiều năm tập luyện — tập trung vào thành thục và biểu diễn.';
+
+  @override
+  String get onboardingNotificationsTitle => 'Giữ vững thói quen';
+
+  @override
+  String get onboardingNotificationsSubtitle =>
+      'Bật thông báo để iLearnIt giúp bạn duy trì việc tập luyện.';
+
+  @override
+  String get onboardingNotificationsReason1 =>
+      'Nhận tin khi giảng viên ra bài học mới.';
+
+  @override
+  String get onboardingNotificationsReason2 =>
+      'Cập nhật khoá học mới cho nhạc cụ bạn yêu thích.';
+
+  @override
+  String get onboardingNotificationsReason3 =>
+      'Nhận lời nhắc thân thiện để tập mỗi ngày.';
+
+  @override
+  String get onboardingNotificationsThanks => 'Cảm ơn bạn — đã sẵn sàng.';
+
+  @override
+  String get onboardingNotificationsCanChange =>
+      'Không sao. Bạn có thể bật thông báo bất cứ lúc nào trong Cài đặt.';
 }
