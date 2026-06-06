@@ -172,5 +172,17 @@
   "deleteAccountSubmit": "Xoá tài khoản",
   "deleteAccountInProgress": "Đang xoá tài khoản…",
   "deleteAccountSuccess": "Tài khoản của bạn đã được xoá.",
-  "deleteAccountFailed": "Không thể xoá tài khoản. Vui lòng thử lại hoặc liên hệ hỗ trợ."
+  "deleteAccountFailed": "Không thể xoá tài khoản. Vui lòng thử lại hoặc liên hệ hỗ trợ.",
+
+  "continueLearningTitle": "Tiếp tục học",
+  "courseProgressInProgress": "Đã hoàn thành {completed} trên {total} bài học",
+  "@courseProgressInProgress": {
+    "placeholders": {
+      "completed": { "type": "int", "example": "3" },
+      "total": { "type": "int", "example": "12" }
+    }
+  },
+  "courseProgressFinished": "Đã hoàn thành khoá học",
+  "courseProgressResume": "Tiếp tục",
+  "courseProgressUntitled": "Khoá học chưa đặt tên"
 }

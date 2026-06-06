@@ -7,6 +7,8 @@ import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/error_view.dart';
 import '../../../../core/widgets/loading_indicator.dart';
+import '../../../progress/presentation/providers/progress_providers.dart';
+import '../../../progress/presentation/widgets/course_progress_card.dart';
 import '../../../purchases/presentation/providers/purchases_providers.dart';
 import '../../../purchases/presentation/widgets/buy_course_button.dart';
 import '../../domain/entities/course_entity.dart';
@@ -133,19 +135,42 @@ class _Loaded extends ConsumerWidget {
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 const SizedBox(height: 24),
+                // Progress + Resume CTA — visible only if the user has any
+                // saved progress on this course.
+                CourseProgressCard(
+                  courseId: course.id,
+                  onResume: (lectureId) => context.pushNamed(
+                    RouteNames.lecturePlayer,
+                    pathParameters: {
+                      'id': course.id,
+                      'lectureId': lectureId,
+                    },
+                  ),
+                ),
                 BuyCourseButton(
                   course: course,
                   onStart: () {
-                    // Owners: jump straight to the first lecture if the
-                    // curriculum has loaded; otherwise this is a no-op
-                    // until the sections come in.
+                    // Owners: jump to the saved lecture if there is one,
+                    // otherwise fall back to the first lecture.
+                    final summary = ref
+                        .read(courseProgressSummaryProvider(course.id))
+                        .value;
+                    final savedLectureId = summary?.lastWatchedLectureId;
                     curriculum.whenOrNull(
                       loaded: (sections) {
                         if (sections.isEmpty) return;
-                        final first = sections.first.lectures.isNotEmpty
+                        LectureEntity? target;
+                        if (savedLectureId != null) {
+                          for (final s in sections) {
+                            for (final l in s.lectures) {
+                              if (l.id == savedLectureId) target = l;
+                            }
+                          }
+                        }
+                        target ??= sections.first.lectures.isNotEmpty
                             ? sections.first.lectures.first
                             : null;
-                        if (first != null) _startCourse(context, first);
+                        if (target != null) _startCourse(context, target);
                       },
                     );
                   },

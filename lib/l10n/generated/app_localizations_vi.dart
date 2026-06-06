@@ -509,4 +509,21 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get deleteAccountFailed =>
       'Không thể xoá tài khoản. Vui lòng thử lại hoặc liên hệ hỗ trợ.';
+
+  @override
+  String get continueLearningTitle => 'Tiếp tục học';
+
+  @override
+  String courseProgressInProgress(int completed, int total) {
+    return 'Đã hoàn thành $completed trên $total bài học';
+  }
+
+  @override
+  String get courseProgressFinished => 'Đã hoàn thành khoá học';
+
+  @override
+  String get courseProgressResume => 'Tiếp tục';
+
+  @override
+  String get courseProgressUntitled => 'Khoá học chưa đặt tên';
 }

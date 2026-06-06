@@ -1027,6 +1027,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'We could not delete your account. Please try again or contact support.'**
   String get deleteAccountFailed;
+
+  /// Section header on the Home tab for in-progress courses.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue learning'**
+  String get continueLearningTitle;
+
+  /// Progress copy on the course detail card.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed} of {total} lectures completed'**
+  String courseProgressInProgress(int completed, int total);
+
+  /// No description provided for @courseProgressFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Course completed'**
+  String get courseProgressFinished;
+
+  /// No description provided for @courseProgressResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get courseProgressResume;
+
+  /// No description provided for @courseProgressUntitled.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled course'**
+  String get courseProgressUntitled;
 }
 
 class _AppLocalizationsDelegate

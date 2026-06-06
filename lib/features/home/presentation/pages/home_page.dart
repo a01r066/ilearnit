@@ -12,6 +12,7 @@ import '../../../courses/domain/entities/course_entity.dart';
 import '../../../courses/domain/entities/instrument_category.dart';
 import '../../../courses/presentation/providers/courses_providers.dart';
 import '../../../courses/presentation/widgets/course_card.dart';
+import '../../../progress/presentation/widgets/continue_learning_rail.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -62,6 +63,9 @@ class HomePage extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
+            // Continue learning — appears only if the user has any
+            // recently watched courses. Self-hiding when empty.
+            const ContinueLearningRail(),
             _SectionHeader(title: t.homeBrowseByInstrument),
             const SizedBox(height: 12),
             const _CategoriesRow(),

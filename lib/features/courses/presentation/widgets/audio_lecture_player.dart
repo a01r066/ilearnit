@@ -4,20 +4,30 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import 'video_lecture_player.dart' show LecturePlaybackTick;
 
 /// Custom audio player UI built on top of `just_audio`.
 ///
 /// Shows a play/pause toggle, scrub bar, and elapsed/total times. Designed
 /// to live above the lecture body inside [LecturePlayerPage].
+///
+/// Supply [initialPositionSec] + [onTick] + [onPause] to enable progress
+/// persistence — same contract as `VideoLecturePlayer`.
 class AudioLecturePlayer extends StatefulWidget {
   const AudioLecturePlayer({
     super.key,
     required this.url,
     required this.title,
+    this.initialPositionSec = 0,
+    this.onTick,
+    this.onPause,
   });
 
   final String url;
   final String title;
+  final int initialPositionSec;
+  final LecturePlaybackTick? onTick;
+  final VoidCallback? onPause;
 
   @override
   State<AudioLecturePlayer> createState() => _AudioLecturePlayerState();
@@ -26,6 +36,11 @@ class AudioLecturePlayer extends StatefulWidget {
 class _AudioLecturePlayerState extends State<AudioLecturePlayer> {
   final _player = AudioPlayer();
   Object? _error;
+
+  StreamSubscription<Duration>? _positionSub;
+  StreamSubscription<PlayerState>? _stateSub;
+  int _lastEmittedSec = -1;
+  bool _wasPlaying = false;
 
   @override
   void initState() {
@@ -36,6 +51,26 @@ class _AudioLecturePlayerState extends State<AudioLecturePlayer> {
   Future<void> _load() async {
     try {
       await _player.setUrl(widget.url);
+      if (widget.initialPositionSec > 0) {
+        await _player.seek(Duration(seconds: widget.initialPositionSec));
+      }
+
+      // Tick on whole-second boundaries only.
+      _positionSub = _player.positionStream.listen((pos) {
+        if (!_player.playing) return;
+        final positionSec = pos.inSeconds;
+        if (positionSec == _lastEmittedSec) return;
+        _lastEmittedSec = positionSec;
+        final durationSec = _player.duration?.inSeconds ?? 0;
+        widget.onTick?.call(positionSec, durationSec);
+      });
+
+      // Fire onPause on the playing → paused edge.
+      _stateSub = _player.playerStateStream.listen((state) {
+        final isPlaying = state.playing;
+        if (_wasPlaying && !isPlaying) widget.onPause?.call();
+        _wasPlaying = isPlaying;
+      });
     } catch (e) {
       if (mounted) setState(() => _error = e);
     }
@@ -43,6 +78,8 @@ class _AudioLecturePlayerState extends State<AudioLecturePlayer> {
 
   @override
   void dispose() {
+    unawaited(_positionSub?.cancel());
+    unawaited(_stateSub?.cancel());
     unawaited(_player.dispose());
     super.dispose();
   }

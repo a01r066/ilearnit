@@ -48,6 +48,18 @@ service cloud.firestore {
       allow update: if isAdmin();
 
       allow delete: if isAdmin();
+
+      // --- Lecture progress ------------------------------------------------
+      // Per-course rollup at users/{uid}/courseProgress/{courseId} and the
+      // per-lecture rows under /lectures/{lectureId}. Owner-only — admins
+      // intentionally cannot read these (they're private viewing history).
+      match /courseProgress/{courseId} {
+        allow read, write: if isSignedIn() && uid() == userId;
+
+        match /lectures/{lectureId} {
+          allow read, write: if isSignedIn() && uid() == userId;
+        }
+      }
     }
 
     // ============================================================

@@ -511,4 +511,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get deleteAccountFailed =>
       'We could not delete your account. Please try again or contact support.';
+
+  @override
+  String get continueLearningTitle => 'Continue learning';
+
+  @override
+  String courseProgressInProgress(int completed, int total) {
+    return '$completed of $total lectures completed';
+  }
+
+  @override
+  String get courseProgressFinished => 'Course completed';
+
+  @override
+  String get courseProgressResume => 'Resume';
+
+  @override
+  String get courseProgressUntitled => 'Untitled course';
 }

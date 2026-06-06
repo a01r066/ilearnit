@@ -239,5 +239,21 @@
   "deleteAccountSubmit": "Delete my account",
   "deleteAccountInProgress": "Deleting your account…",
   "deleteAccountSuccess": "Your account has been deleted.",
-  "deleteAccountFailed": "We could not delete your account. Please try again or contact support."
+  "deleteAccountFailed": "We could not delete your account. Please try again or contact support.",
+
+  "continueLearningTitle": "Continue learning",
+  "@continueLearningTitle": {
+    "description": "Section header on the Home tab for in-progress courses."
+  },
+  "courseProgressInProgress": "{completed} of {total} lectures completed",
+  "@courseProgressInProgress": {
+    "description": "Progress copy on the course detail card.",
+    "placeholders": {
+      "completed": { "type": "int", "example": "3" },
+      "total": { "type": "int", "example": "12" }
+    }
+  },
+  "courseProgressFinished": "Course completed",
+  "courseProgressResume": "Resume",
+  "courseProgressUntitled": "Untitled course"
 }
