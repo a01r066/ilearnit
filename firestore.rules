@@ -162,6 +162,16 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // --- Learning paths (editorial product, admin-managed) ----------------
+    // Public read of every path including drafts is fine — the consumer
+    // datasource filters by `isPublished == true`, and we don't write any
+    // sensitive metadata that would leak from an unpublished doc. Admin
+    // write only.
+    match /learning_paths/{pathId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /songbooks/{songbookId} {
       allow read: if true;
       allow write: if isAdmin();

@@ -262,5 +262,23 @@
   "wishlistRemoveTooltip": "Bỏ khỏi danh sách lưu",
   "wishlistError": "Không thể cập nhật — vui lòng thử lại.",
   "wishlistSignInPrompt": "Đăng nhập để lưu khoá học.",
-  "wishlistUntitled": "Khoá học chưa đặt tên"
+  "wishlistUntitled": "Khoá học chưa đặt tên",
+
+  "learningPathsTitle": "Lộ trình học",
+  "learningPathEyebrow": "LỘ TRÌNH",
+  "learningPathCourseCount": "{count} khoá học",
+  "@learningPathCourseCount": {
+    "placeholders": {
+      "count": { "type": "int", "example": "12" }
+    }
+  },
+  "learningPathTotalHours": "{hours} giờ",
+  "@learningPathTotalHours": {
+    "placeholders": {
+      "hours": { "type": "String", "example": "32" }
+    }
+  },
+  "learningPathCurriculumHeader": "Nội dung lộ trình",
+  "learningPathCourseMissing": "(Khoá học không còn khả dụng)",
+  "learningPathNotFound": "Không tìm thấy lộ trình học."
 }

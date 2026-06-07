@@ -16,6 +16,8 @@ import '../instructors/presentation/instructor_apply_page.dart';
 import '../instructors/presentation/instructor_pending_page.dart';
 import '../notifications/presentation/admin_notifications_page.dart';
 import '../shared/pages/unauthorized_page.dart';
+import '../learning_paths/presentation/admin_learning_paths_page.dart';
+import '../learning_paths/presentation/learning_path_editor_page.dart';
 import '../songbooks/presentation/admin_songbooks_page.dart';
 import '../songbooks/presentation/songbook_editor_page.dart';
 import '../subscriptions/presentation/admin_subscriptions_page.dart';
@@ -127,6 +129,20 @@ final adminGoRouterProvider = Provider<GoRouter>((ref) {
             name: AdminRoutes.subscriptions,
             builder: (_, __) => const AdminSubscriptionsPage(),
           ),
+          GoRoute(
+            path: AdminRoutes.learningPathsPath,
+            name: AdminRoutes.learningPaths,
+            builder: (_, __) => const AdminLearningPathsPage(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                name: AdminRoutes.learningPathEditor,
+                builder: (_, s) => LearningPathEditorPage(
+                  pathId: s.pathParameters['id']!,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     ],
@@ -196,6 +212,7 @@ bool _isAdminOnly(String location) =>
     location == AdminRoutes.instructorsPath ||
     location == AdminRoutes.notificationsPath ||
     location.startsWith(AdminRoutes.songbooksPath) ||
+    location.startsWith(AdminRoutes.learningPathsPath) ||
     location == AdminRoutes.subscriptionsPath;
 
 String _landingFor(UserRole role) {

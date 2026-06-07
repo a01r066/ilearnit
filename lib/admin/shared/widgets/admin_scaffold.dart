@@ -126,6 +126,11 @@ class AdminScaffold extends ConsumerWidget {
           path: AdminRoutes.songbooksPath,
         ),
         _NavItem(
+          label: 'Learning paths',
+          icon: Icons.timeline_outlined,
+          path: AdminRoutes.learningPathsPath,
+        ),
+        _NavItem(
           label: 'Subscriptions',
           icon: Icons.workspace_premium_outlined,
           path: AdminRoutes.subscriptionsPath,

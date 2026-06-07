@@ -86,6 +86,20 @@ class AdminStorageService {
     return _runUpload(ref, bytes, contentType);
   }
 
+  /// One-shot upload for a learning-path cover image. Used by the admin
+  /// editor — we don't need a progress stream for a single small JPEG.
+  /// Returns the resolved download URL.
+  Future<String> uploadLearningPathCover({
+    required String pathId,
+    required String filename,
+    required Uint8List bytes,
+    required String contentType,
+  }) async {
+    final ref = _storage.ref('learning_paths/$pathId/cover/$filename');
+    await ref.putData(bytes, SettableMetadata(contentType: contentType));
+    return ref.getDownloadURL();
+  }
+
   /// Upload the main media file (video / audio / pdf) for a lecture.
   Stream<UploadProgress> uploadLectureMedia({
     required String courseId,

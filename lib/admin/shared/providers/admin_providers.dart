@@ -7,6 +7,7 @@ import '../../../shared/providers/firebase_providers.dart';
 import '../../courses/data/admin_courses_datasource.dart';
 import '../../courses/data/admin_storage_service.dart';
 import '../../instructors/data/instructor_application_datasource.dart';
+import '../../learning_paths/data/admin_learning_paths_datasource.dart';
 import '../../songbooks/data/admin_songbooks_datasource.dart';
 import '../../subscriptions/data/admin_subscriptions_datasource.dart';
 
@@ -29,6 +30,11 @@ final instructorApplicationDataSourceProvider =
 
 final adminSongbooksDataSourceProvider = Provider<AdminSongbooksDataSource>(
   (ref) => AdminSongbooksDataSource(firestore: ref.watch(firestoreProvider)),
+);
+
+final adminLearningPathsDataSourceProvider =
+    Provider<AdminLearningPathsDataSource>(
+  (ref) => AdminLearningPathsDataSource(ref.watch(firestoreProvider)),
 );
 
 final adminSubscriptionsDataSourceProvider =

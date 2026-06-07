@@ -13,6 +13,7 @@ import '../../../courses/domain/entities/instrument_category.dart';
 import '../../../courses/presentation/providers/courses_providers.dart';
 import '../../../courses/presentation/widgets/course_card.dart';
 import '../../../courses/presentation/widgets/course_carousel_skeleton.dart';
+import '../../../learning_paths/presentation/widgets/learning_paths_rail.dart';
 import '../../../progress/presentation/widgets/continue_learning_rail.dart';
 
 class HomePage extends ConsumerWidget {
@@ -80,6 +81,9 @@ class HomePage extends ConsumerWidget {
             // Continue learning — appears only if the user has any
             // recently watched courses. Self-hiding when empty.
             const ContinueLearningRail(),
+            // Curated multi-course paths. Self-hides when no paths
+            // have been published yet.
+            const LearningPathsRail(),
             _SectionHeader(title: t.homeBrowseByInstrument),
             const SizedBox(height: 12),
             const _CategoriesRow(),

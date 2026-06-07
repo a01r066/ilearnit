@@ -335,5 +335,23 @@
   "wishlistRemoveTooltip": "Remove from saved",
   "wishlistError": "Could not update — please try again.",
   "wishlistSignInPrompt": "Sign in to save courses.",
-  "wishlistUntitled": "Untitled course"
+  "wishlistUntitled": "Untitled course",
+
+  "learningPathsTitle": "Learning paths",
+  "learningPathEyebrow": "LEARNING PATH",
+  "learningPathCourseCount": "{count, plural, =1{1 course} other{{count} courses}}",
+  "@learningPathCourseCount": {
+    "placeholders": {
+      "count": { "type": "int", "example": "12" }
+    }
+  },
+  "learningPathTotalHours": "{hours} hr",
+  "@learningPathTotalHours": {
+    "placeholders": {
+      "hours": { "type": "String", "example": "32" }
+    }
+  },
+  "learningPathCurriculumHeader": "What you'll cover",
+  "learningPathCourseMissing": "(Course no longer available)",
+  "learningPathNotFound": "Learning path not found."
 }

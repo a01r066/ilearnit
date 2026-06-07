@@ -723,4 +723,29 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get wishlistUntitled => 'Khoá học chưa đặt tên';
+
+  @override
+  String get learningPathsTitle => 'Lộ trình học';
+
+  @override
+  String get learningPathEyebrow => 'LỘ TRÌNH';
+
+  @override
+  String learningPathCourseCount(int count) {
+    return '$count khoá học';
+  }
+
+  @override
+  String learningPathTotalHours(String hours) {
+    return '$hours giờ';
+  }
+
+  @override
+  String get learningPathCurriculumHeader => 'Nội dung lộ trình';
+
+  @override
+  String get learningPathCourseMissing => '(Khoá học không còn khả dụng)';
+
+  @override
+  String get learningPathNotFound => 'Không tìm thấy lộ trình học.';
 }

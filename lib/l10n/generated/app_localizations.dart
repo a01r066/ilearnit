@@ -1405,6 +1405,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Untitled course'**
   String get wishlistUntitled;
+
+  /// No description provided for @learningPathsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning paths'**
+  String get learningPathsTitle;
+
+  /// No description provided for @learningPathEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'LEARNING PATH'**
+  String get learningPathEyebrow;
+
+  /// No description provided for @learningPathCourseCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 course} other{{count} courses}}'**
+  String learningPathCourseCount(int count);
+
+  /// No description provided for @learningPathTotalHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} hr'**
+  String learningPathTotalHours(String hours);
+
+  /// No description provided for @learningPathCurriculumHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'What you\'ll cover'**
+  String get learningPathCurriculumHeader;
+
+  /// No description provided for @learningPathCourseMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'(Course no longer available)'**
+  String get learningPathCourseMissing;
+
+  /// No description provided for @learningPathNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning path not found.'**
+  String get learningPathNotFound;
 }
 
 class _AppLocalizationsDelegate

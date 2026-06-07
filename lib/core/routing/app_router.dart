@@ -14,6 +14,7 @@ import '../../features/courses/presentation/pages/course_detail_page.dart';
 import '../../features/courses/presentation/pages/courses_page.dart';
 import '../../features/courses/presentation/pages/lecture_player_page.dart';
 import '../../features/downloads/presentation/pages/downloads_page.dart';
+import '../../features/learning_paths/presentation/pages/learning_path_detail_page.dart';
 import '../../features/wishlist/presentation/pages/wishlist_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/instructors/presentation/pages/instructor_detail_page.dart';
@@ -134,6 +135,17 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: RouteNames.notificationsInbox,
         parentNavigatorKey: _rootKey,
         builder: (_, __) => const NotificationsInboxPage(),
+      ),
+      // ----- Learning path detail ---------------------------------------
+      // Top-level so the Home rail + the (future) course-detail link
+      // both push the same screen.
+      GoRoute(
+        path: RoutePaths.learningPathDetail,
+        name: RouteNames.learningPathDetail,
+        parentNavigatorKey: _rootKey,
+        builder: (_, state) => LearningPathDetailPage(
+          pathId: state.pathParameters['id']!,
+        ),
       ),
       // ----- Legal (privacy / terms) ------------------------------------
       // Reachable from auth + profile + checkout. Routed top-level so the

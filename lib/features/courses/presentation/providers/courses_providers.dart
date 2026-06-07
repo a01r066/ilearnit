@@ -84,3 +84,19 @@ final popularByInstrumentProvider = FutureProvider.autoDispose
     },
   );
 });
+
+/// One-shot fetch of a course by id. Used by the learning-path detail
+/// page to hydrate each row in the curriculum (we iterate `courseIds`).
+///
+/// Riverpod dedupes concurrent calls for the same id, so rendering N
+/// rows costs at most N Firestore reads — and the SDK caches
+/// `courses/{id}` aggressively.
+final courseByIdProvider = FutureProvider.autoDispose
+    .family<CourseEntity?, String>((ref, id) async {
+  final result =
+      await ref.watch(coursesRepositoryProvider).fetchCourseById(id);
+  return result.fold(
+    (_) => null, // surface as "course missing" in the UI
+    (course) => course,
+  );
+});

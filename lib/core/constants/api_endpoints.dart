@@ -30,6 +30,7 @@ class FirestoreCollections {
   static const String reviews = 'reviews';
   static const String instructorApplications = 'instructor_applications';
   static const String songbooks = 'songbooks';
+  static const String learningPaths = 'learning_paths';
 
   // Sub-collections on `courses/{courseId}`
   static const String sections = 'sections';

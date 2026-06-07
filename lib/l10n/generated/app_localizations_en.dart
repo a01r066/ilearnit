@@ -732,4 +732,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wishlistUntitled => 'Untitled course';
+
+  @override
+  String get learningPathsTitle => 'Learning paths';
+
+  @override
+  String get learningPathEyebrow => 'LEARNING PATH';
+
+  @override
+  String learningPathCourseCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count courses',
+      one: '1 course',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String learningPathTotalHours(String hours) {
+    return '$hours hr';
+  }
+
+  @override
+  String get learningPathCurriculumHeader => 'What you\'ll cover';
+
+  @override
+  String get learningPathCourseMissing => '(Course no longer available)';
+
+  @override
+  String get learningPathNotFound => 'Learning path not found.';
 }
