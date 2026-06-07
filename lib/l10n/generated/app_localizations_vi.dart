@@ -599,4 +599,49 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get onboardingNotificationsCanChange =>
       'Không sao. Bạn có thể bật thông báo bất cứ lúc nào trong Cài đặt.';
+
+  @override
+  String get notificationsInboxTitle => 'Thông báo';
+
+  @override
+  String get notificationsEmpty =>
+      'Bạn đã xem hết.\nThông báo mới sẽ hiển thị tại đây.';
+
+  @override
+  String get notificationsMarkAllRead => 'Đánh dấu tất cả đã đọc';
+
+  @override
+  String get notificationsClearAll => 'Xoá tất cả';
+
+  @override
+  String get notificationsClearAllConfirmTitle => 'Xoá tất cả thông báo?';
+
+  @override
+  String get notificationsClearAllConfirmBody =>
+      'Tất cả thông báo trong hộp thư sẽ bị xoá vĩnh viễn.';
+
+  @override
+  String get notificationsPrefsTitle => 'Thông báo';
+
+  @override
+  String get notificationsPrefsSubtitle =>
+      'Chọn loại thông báo đẩy bạn muốn nhận. Cài đặt sẽ áp dụng trên các thiết bị của bạn.';
+
+  @override
+  String get notificationsPrefsSubtitleShort => 'Chọn loại thông báo bạn nhận';
+
+  @override
+  String get notificationsPrefsTopicAll => 'Tất cả cập nhật';
+
+  @override
+  String get notificationsPrefsTopicAllBlurb =>
+      'Nhận mọi thông báo dành cho cộng đồng.';
+
+  @override
+  String get notificationsPrefsTopicInstrumentBlurb =>
+      'Khoá học, bài học và mẹo mới cho nhạc cụ này.';
+
+  @override
+  String get notificationsPrefsUpdateFailed =>
+      'Không thể cập nhật — vui lòng thử lại.';
 }

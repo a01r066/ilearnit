@@ -60,6 +60,21 @@ service cloud.firestore {
           allow read, write: if isSignedIn() && uid() == userId;
         }
       }
+
+      // --- In-app notification inbox --------------------------------------
+      // Cloud Functions write new docs via Admin SDK (bypassing rules).
+      // From the client we only allow the owner to read, mark-read (set
+      // readAt), or delete their own items.
+      match /notifications/{notificationId} {
+        allow read: if isSignedIn() && uid() == userId;
+        allow update: if isSignedIn()
+          && uid() == userId
+          && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['readAt']);
+        allow delete: if isSignedIn() && uid() == userId;
+        // Creates are server-only.
+        allow create: if false;
+      }
     }
 
     // ============================================================

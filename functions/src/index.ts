@@ -113,6 +113,53 @@ async function sendToTopic(
   return fcm.send(msg);
 }
 
+/**
+ * Mirror a 1:1 push into `users/{uid}/notifications/{id}` so the in-app
+ * inbox shows the event regardless of OS notification permission. The
+ * client subscribes via `notificationsInboxProvider`.
+ *
+ * Shape matches `NotificationItemModel`:
+ *   { type, title, body, payload: {...data}, readAt: null, createdAt }
+ */
+async function writeInbox(
+  userId: string,
+  notification: {title: string; body: string},
+  data: DataPayload,
+): Promise<void> {
+  try {
+    await db
+      .collection('users')
+      .doc(userId)
+      .collection('notifications')
+      .add({
+        type: data.type ?? 'unknown',
+        title: notification.title,
+        body: notification.body,
+        payload: data,
+        readAt: null,
+        createdAt: FieldValue.serverTimestamp(),
+      });
+  } catch (e) {
+    // Inbox is best-effort — never let it fail the push pipeline.
+    logger.warn(`writeInbox failed for ${userId}: ${e}`);
+  }
+}
+
+/**
+ * Send the same notification via FCM *and* write a row to the in-app
+ * inbox. Order is parallel — neither blocks the other.
+ */
+async function notifyUser(
+  userId: string,
+  notification: {title: string; body: string},
+  data: DataPayload,
+): Promise<void> {
+  await Promise.all([
+    sendToUser(userId, notification, data),
+    writeInbox(userId, notification, data),
+  ]);
+}
+
 // ---------- 1. application decision ---------------------------------------
 
 /**
@@ -130,7 +177,7 @@ export const onApplicationDecision = onDocumentUpdated(
     const userId = event.params.userId;
 
     if (after.status === 'approved') {
-      await sendToUser(
+      await notifyUser(
         userId,
         {
           title: "You're approved!",
@@ -142,7 +189,7 @@ export const onApplicationDecision = onDocumentUpdated(
         }),
       );
     } else if (after.status === 'rejected') {
-      await sendToUser(
+      await notifyUser(
         userId,
         {
           title: 'Application update',
@@ -179,7 +226,7 @@ export const onEnrollmentCreated = onDocumentCreated(
     const courseTitle = (d.courseTitle as string | undefined) ?? 'your new course';
     if (!userId || !courseId) return;
 
-    await sendToUser(
+    await notifyUser(
       userId,
       {
         title: "You're enrolled!",

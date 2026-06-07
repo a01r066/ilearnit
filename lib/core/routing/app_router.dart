@@ -8,6 +8,8 @@ import '../../features/auth/presentation/pages/signup_page.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/auth/presentation/providers/auth_state.dart';
+import '../notifications/presentation/pages/notification_preferences_page.dart';
+import '../notifications/presentation/pages/notifications_inbox_page.dart';
 import '../../features/courses/presentation/pages/course_detail_page.dart';
 import '../../features/courses/presentation/pages/courses_page.dart';
 import '../../features/courses/presentation/pages/lecture_player_page.dart';
@@ -121,6 +123,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         // search — mirrors the attached design (full-screen search).
         parentNavigatorKey: _rootKey,
         builder: (_, __) => const SearchPage(),
+      ),
+      // ----- Notifications inbox ----------------------------------------
+      // Top-level so the bell on every shell tab pushes the same modal-
+      // style page (consistent back behaviour).
+      GoRoute(
+        path: RoutePaths.notificationsInbox,
+        name: RouteNames.notificationsInbox,
+        parentNavigatorKey: _rootKey,
+        builder: (_, __) => const NotificationsInboxPage(),
       ),
       // ----- Legal (privacy / terms) ------------------------------------
       // Reachable from auth + profile + checkout. Routed top-level so the
@@ -238,6 +249,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                     path: RoutePaths.deleteAccount,
                     name: RouteNames.deleteAccount,
                     builder: (_, __) => const DeleteAccountPage(),
+                  ),
+                  GoRoute(
+                    path: RoutePaths.notificationPreferences,
+                    name: RouteNames.notificationPreferences,
+                    builder: (_, __) =>
+                        const NotificationPreferencesPage(),
                   ),
                   GoRoute(
                     path: RoutePaths.subscription,

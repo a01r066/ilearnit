@@ -62,6 +62,19 @@ class SettingsPage extends ConsumerWidget {
 
         const Divider(height: 1),
 
+        // --- Notifications ---
+        _SectionHeader(label: t.notificationsPrefsTitle),
+        ListTile(
+          leading: const Icon(Icons.notifications_outlined),
+          title: Text(t.notificationsPrefsTitle),
+          subtitle: Text(t.notificationsPrefsSubtitleShort),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () =>
+              context.pushNamed(RouteNames.notificationPreferences),
+        ),
+
+        const Divider(height: 1),
+
         // --- Legal ---
         _SectionHeader(label: t.legalAbout),
         ListTile(

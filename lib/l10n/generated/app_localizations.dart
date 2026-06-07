@@ -1183,6 +1183,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No worries. You can enable notifications anytime from Settings.'**
   String get onboardingNotificationsCanChange;
+
+  /// No description provided for @notificationsInboxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationsInboxTitle;
+
+  /// No description provided for @notificationsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re all caught up.\nNew alerts will appear here.'**
+  String get notificationsEmpty;
+
+  /// No description provided for @notificationsMarkAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all as read'**
+  String get notificationsMarkAllRead;
+
+  /// No description provided for @notificationsClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get notificationsClearAll;
+
+  /// No description provided for @notificationsClearAllConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all notifications?'**
+  String get notificationsClearAllConfirmTitle;
+
+  /// No description provided for @notificationsClearAllConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently remove every notification from your inbox.'**
+  String get notificationsClearAllConfirmBody;
+
+  /// No description provided for @notificationsPrefsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationsPrefsTitle;
+
+  /// No description provided for @notificationsPrefsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose what kinds of push notifications you want to receive. Changes apply across your devices.'**
+  String get notificationsPrefsSubtitle;
+
+  /// No description provided for @notificationsPrefsSubtitleShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose what alerts you receive'**
+  String get notificationsPrefsSubtitleShort;
+
+  /// No description provided for @notificationsPrefsTopicAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All updates'**
+  String get notificationsPrefsTopicAll;
+
+  /// No description provided for @notificationsPrefsTopicAllBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'Get every announcement we send to the community.'**
+  String get notificationsPrefsTopicAllBlurb;
+
+  /// No description provided for @notificationsPrefsTopicInstrumentBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'New courses, lessons, and tips for this instrument.'**
+  String get notificationsPrefsTopicInstrumentBlurb;
+
+  /// No description provided for @notificationsPrefsUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update — please try again.'**
+  String get notificationsPrefsUpdateFailed;
 }
 
 class _AppLocalizationsDelegate

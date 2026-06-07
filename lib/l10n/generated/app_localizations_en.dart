@@ -601,4 +601,50 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get onboardingNotificationsCanChange =>
       'No worries. You can enable notifications anytime from Settings.';
+
+  @override
+  String get notificationsInboxTitle => 'Notifications';
+
+  @override
+  String get notificationsEmpty =>
+      'You\'re all caught up.\nNew alerts will appear here.';
+
+  @override
+  String get notificationsMarkAllRead => 'Mark all as read';
+
+  @override
+  String get notificationsClearAll => 'Clear all';
+
+  @override
+  String get notificationsClearAllConfirmTitle => 'Clear all notifications?';
+
+  @override
+  String get notificationsClearAllConfirmBody =>
+      'This will permanently remove every notification from your inbox.';
+
+  @override
+  String get notificationsPrefsTitle => 'Notifications';
+
+  @override
+  String get notificationsPrefsSubtitle =>
+      'Choose what kinds of push notifications you want to receive. Changes apply across your devices.';
+
+  @override
+  String get notificationsPrefsSubtitleShort =>
+      'Choose what alerts you receive';
+
+  @override
+  String get notificationsPrefsTopicAll => 'All updates';
+
+  @override
+  String get notificationsPrefsTopicAllBlurb =>
+      'Get every announcement we send to the community.';
+
+  @override
+  String get notificationsPrefsTopicInstrumentBlurb =>
+      'New courses, lessons, and tips for this instrument.';
+
+  @override
+  String get notificationsPrefsUpdateFailed =>
+      'Could not update — please try again.';
 }

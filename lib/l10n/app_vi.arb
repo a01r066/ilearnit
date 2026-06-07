@@ -209,5 +209,20 @@
   "onboardingNotificationsReason2": "Cập nhật khoá học mới cho nhạc cụ bạn yêu thích.",
   "onboardingNotificationsReason3": "Nhận lời nhắc thân thiện để tập mỗi ngày.",
   "onboardingNotificationsThanks": "Cảm ơn bạn — đã sẵn sàng.",
-  "onboardingNotificationsCanChange": "Không sao. Bạn có thể bật thông báo bất cứ lúc nào trong Cài đặt."
+  "onboardingNotificationsCanChange": "Không sao. Bạn có thể bật thông báo bất cứ lúc nào trong Cài đặt.",
+
+  "notificationsInboxTitle": "Thông báo",
+  "notificationsEmpty": "Bạn đã xem hết.\nThông báo mới sẽ hiển thị tại đây.",
+  "notificationsMarkAllRead": "Đánh dấu tất cả đã đọc",
+  "notificationsClearAll": "Xoá tất cả",
+  "notificationsClearAllConfirmTitle": "Xoá tất cả thông báo?",
+  "notificationsClearAllConfirmBody": "Tất cả thông báo trong hộp thư sẽ bị xoá vĩnh viễn.",
+
+  "notificationsPrefsTitle": "Thông báo",
+  "notificationsPrefsSubtitle": "Chọn loại thông báo đẩy bạn muốn nhận. Cài đặt sẽ áp dụng trên các thiết bị của bạn.",
+  "notificationsPrefsSubtitleShort": "Chọn loại thông báo bạn nhận",
+  "notificationsPrefsTopicAll": "Tất cả cập nhật",
+  "notificationsPrefsTopicAllBlurb": "Nhận mọi thông báo dành cho cộng đồng.",
+  "notificationsPrefsTopicInstrumentBlurb": "Khoá học, bài học và mẹo mới cho nhạc cụ này.",
+  "notificationsPrefsUpdateFailed": "Không thể cập nhật — vui lòng thử lại."
 }

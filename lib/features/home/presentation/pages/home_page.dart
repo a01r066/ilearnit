@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/loading_indicator.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../../core/notifications/presentation/widgets/notification_bell.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../courses/domain/entities/course_entity.dart';
 import '../../../courses/domain/entities/instrument_category.dart';
@@ -38,6 +39,7 @@ class HomePage extends ConsumerWidget {
                     icon: const Icon(Icons.search),
                     onPressed: () => context.goNamed(RouteNames.search),
                   ),
+                  const NotificationBell(),
                 ],
               ),
             ),

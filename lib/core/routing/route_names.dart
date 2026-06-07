@@ -40,6 +40,10 @@ class RouteNames {
 
   // Delete account (within profile)
   static const String deleteAccount = 'delete-account';
+
+  // Notifications inbox + preferences
+  static const String notificationsInbox = 'notifications-inbox';
+  static const String notificationPreferences = 'notification-prefs';
 }
 
 class RoutePaths {
@@ -79,4 +83,9 @@ class RoutePaths {
 
   // Delete account (nested under profile)
   static const String deleteAccount = 'delete-account';
+
+  // Notifications — inbox is top-level (modal-style above the shell),
+  // preferences is nested under profile/settings.
+  static const String notificationsInbox = '/notifications';
+  static const String notificationPreferences = 'notifications';
 }
