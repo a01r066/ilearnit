@@ -21,7 +21,15 @@ abstract class CoursesState with _$CoursesState {
     String? nextCursor,
     InstrumentCategory? category,
     CourseLevel? level,
+
+    /// Failure on the initial / refresh load. Null while a load is in
+    /// progress and on success.
     Failure? failure,
+
+    /// Failure on the most recent `loadMore()`. Surfaced as an inline
+    /// retry footer at the end of the grid so the user keeps their
+    /// scroll position.
+    Failure? loadMoreFailure,
   }) = _CoursesState;
 
   factory CoursesState.initial() => const CoursesState(isLoading: true);

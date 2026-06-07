@@ -242,5 +242,8 @@
   "downloadInProgress": "Đang tải",
   "downloadResume": "Tiếp tục tải",
   "downloadCompleted": "Đã tải",
-  "downloadDelete": "Xoá bản tải"
+  "downloadDelete": "Xoá bản tải",
+
+  "coursesLoadingMore": "Đang tải thêm khoá học…",
+  "coursesEndOfList": "Bạn đã xem hết danh sách."
 }

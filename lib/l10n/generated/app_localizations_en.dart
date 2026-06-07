@@ -684,4 +684,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get downloadDelete => 'Delete download';
+
+  @override
+  String get coursesLoadingMore => 'Loading more courses…';
+
+  @override
+  String get coursesEndOfList => 'You\'ve reached the end.';
 }

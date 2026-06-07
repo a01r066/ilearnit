@@ -2,11 +2,11 @@
 
 Outputs:
   sample_data/instructors.json  — 10 instructor docs (Map id → fields)
-  sample_data/courses.json      — 100 course docs    (Map id → fields)
+  sample_data/courses.json      — 120 course docs    (Map id → fields)
 
 Distribution
-  guitar : 4 instructors → 35 courses
-  piano  : 3 instructors → 35 courses
+  guitar : 4 instructors → 45 courses
+  piano  : 3 instructors → 45 courses
   violin : 3 instructors → 30 courses
 """
 from __future__ import annotations
@@ -18,7 +18,9 @@ from pathlib import Path
 
 random.seed(20260502)  # reproducible
 
-OUT_DIR = Path("/sessions/eager-gallant-turing/mnt/ilearnit/sample_data")
+# Always write next to this script so the generator works regardless of
+# the cwd it's launched from (CI, dev laptop, container).
+OUT_DIR = Path(__file__).resolve().parent
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
@@ -527,7 +529,10 @@ def generate_course(idx: int, instrument: str, instructor: dict) -> tuple[str, d
 
 
 def generate_courses() -> dict[str, dict]:
-    counts = {"guitar": 35, "piano": 35, "violin": 30}
+    # Bumped from 100 → 120 to guarantee multiple pages per category at the
+    # default `AppConstants.defaultPageSize` (20). The pagination smoke test
+    # depends on `loadMore` being exercised at least twice per filter.
+    counts = {"guitar": 45, "piano": 45, "violin": 30}
     courses: dict[str, dict] = {}
     idx = 1
 

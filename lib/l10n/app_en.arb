@@ -314,5 +314,8 @@
   "downloadInProgress": "Downloading",
   "downloadResume": "Resume download",
   "downloadCompleted": "Downloaded",
-  "downloadDelete": "Delete download"
+  "downloadDelete": "Delete download",
+
+  "coursesLoadingMore": "Loading more courses…",
+  "coursesEndOfList": "You've reached the end."
 }

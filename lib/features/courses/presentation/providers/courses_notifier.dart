@@ -31,11 +31,17 @@ class CoursesNotifier extends StateNotifier<CoursesState> {
     );
   }
 
+  /// Alias used by the page widget — matches the roadmap spec name.
+  Future<void> loadNextPage() => loadMore();
+
   Future<void> loadMore() async {
     if (state.isLoadingMore || !state.hasMore || state.nextCursor == null) {
       return;
     }
-    state = state.copyWith(isLoadingMore: true);
+    state = state.copyWith(
+      isLoadingMore: true,
+      loadMoreFailure: null,
+    );
     final result = await _repo.fetchCourses(
       category: state.category,
       level: state.level,
@@ -43,7 +49,13 @@ class CoursesNotifier extends StateNotifier<CoursesState> {
       limit: AppConstants.defaultPageSize,
     );
     result.fold(
-      (f) => state = state.copyWith(isLoadingMore: false, failure: f),
+      // loadMore failures land in `loadMoreFailure` (not the top-level
+      // `failure`) so we don't blow away the already-rendered list — the
+      // UI surfaces them as an inline retry footer instead.
+      (f) => state = state.copyWith(
+        isLoadingMore: false,
+        loadMoreFailure: f,
+      ),
       (page) => state = state.copyWith(
         isLoadingMore: false,
         items: [...state.items, ...page.items],

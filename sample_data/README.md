@@ -1,8 +1,13 @@
 # Sample Firestore data
 
-Seed data for the iLearnIt project: **10 instructors**, **100 courses**, and
-~**500 sections** with ~**2,300 lectures** (video / audio / pdf / doc),
-spread across guitar (35) / piano (35) / violin (30).
+Seed data for the iLearnIt project: **10 instructors**, **120 courses**, and
+~**600 sections** with ~**2,750 lectures** (video / audio / pdf / doc),
+spread across guitar (45) / piano (45) / violin (30).
+
+> **Pagination smoke test:** 120 courses guarantees ≥2 pages per category
+> filter at the default page size of 20, so `CoursesNotifier.loadNextPage`
+> is exercised end-to-end. Re-run `python3 generate_seed.py` after pulling
+> a fresh checkout if the JSON dropped out of sync.
 
 ## Files
 

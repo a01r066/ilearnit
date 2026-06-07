@@ -681,4 +681,10 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get downloadDelete => 'Xoá bản tải';
+
+  @override
+  String get coursesLoadingMore => 'Đang tải thêm khoá học…';
+
+  @override
+  String get coursesEndOfList => 'Bạn đã xem hết danh sách.';
 }

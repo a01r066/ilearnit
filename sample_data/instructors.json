@@ -75,7 +75,9 @@
     "rating": 4.76,
     "studentCount": 13070,
     "joinedAt": "2023-03-14T00:00:00.000Z",
-    "featuredCourseIds": []
+    "featuredCourseIds": [
+      "course_044"
+    ]
   },
   "ins_005": {
     "id": "ins_005",
@@ -95,7 +97,7 @@
     "studentCount": 17712,
     "joinedAt": "2023-05-04T00:00:00.000Z",
     "featuredCourseIds": [
-      "course_057"
+      "course_064"
     ]
   },
   "ins_006": {
@@ -116,7 +118,7 @@
     "studentCount": 2548,
     "joinedAt": "2024-01-30T00:00:00.000Z",
     "featuredCourseIds": [
-      "course_064"
+      "course_050"
     ]
   },
   "ins_007": {
@@ -137,8 +139,9 @@
     "studentCount": 5233,
     "joinedAt": "2024-03-01T00:00:00.000Z",
     "featuredCourseIds": [
-      "course_044",
-      "course_050"
+      "course_057",
+      "course_072",
+      "course_081"
     ]
   },
   "ins_008": {
@@ -158,7 +161,9 @@
     "rating": 4.7,
     "studentCount": 15023,
     "joinedAt": "2022-02-04T00:00:00.000Z",
-    "featuredCourseIds": []
+    "featuredCourseIds": [
+      "course_097"
+    ]
   },
   "ins_009": {
     "id": "ins_009",
@@ -177,10 +182,7 @@
     "rating": 4.89,
     "studentCount": 5134,
     "joinedAt": "2023-01-06T00:00:00.000Z",
-    "featuredCourseIds": [
-      "course_072",
-      "course_081"
-    ]
+    "featuredCourseIds": []
   },
   "ins_010": {
     "id": "ins_010",
@@ -200,7 +202,8 @@
     "studentCount": 13334,
     "joinedAt": "2023-06-01T00:00:00.000Z",
     "featuredCourseIds": [
-      "course_097"
+      "course_102",
+      "course_120"
     ]
   }
 }

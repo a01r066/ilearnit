@@ -20,7 +20,7 @@
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-08-18T23:41:46.000Z"
+    "publishedAt": "2025-09-06T18:17:09.000Z"
   },
   "course_002": {
     "id": "course_002",
@@ -45,7 +45,7 @@
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2024-07-19T23:41:46.000Z"
+    "publishedAt": "2024-08-07T18:17:09.000Z"
   },
   "course_003": {
     "id": "course_003",
@@ -68,7 +68,7 @@
       "advanced"
     ],
     "priceTier": "standard",
-    "publishedAt": "2024-07-09T23:52:46.000Z"
+    "publishedAt": "2024-07-28T18:28:09.000Z"
   },
   "course_004": {
     "id": "course_004",
@@ -91,7 +91,7 @@
       "intermediate"
     ],
     "priceTier": "premium",
-    "publishedAt": "2025-05-03T11:18:46.000Z"
+    "publishedAt": "2025-05-22T05:54:09.000Z"
   },
   "course_005": {
     "id": "course_005",
@@ -114,7 +114,7 @@
       "advanced"
     ],
     "priceTier": "premium",
-    "publishedAt": "2025-09-20T03:25:46.000Z"
+    "publishedAt": "2025-10-08T22:01:09.000Z"
   },
   "course_006": {
     "id": "course_006",
@@ -139,7 +139,7 @@
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2026-04-17T22:52:46.000Z"
+    "publishedAt": "2026-05-06T17:28:09.000Z"
   },
   "course_007": {
     "id": "course_007",
@@ -163,7 +163,7 @@
       "advanced"
     ],
     "priceTier": "premium",
-    "publishedAt": "2024-12-21T19:06:46.000Z"
+    "publishedAt": "2025-01-09T13:42:09.000Z"
   },
   "course_008": {
     "id": "course_008",
@@ -188,7 +188,7 @@
       "advanced"
     ],
     "priceTier": "premium",
-    "publishedAt": "2026-04-24T12:03:46.000Z"
+    "publishedAt": "2026-05-13T06:39:09.000Z"
   },
   "course_009": {
     "id": "course_009",
@@ -211,7 +211,7 @@
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-02-26T05:16:46.000Z"
+    "publishedAt": "2025-03-16T23:52:09.000Z"
   },
   "course_010": {
     "id": "course_010",
@@ -235,7 +235,7 @@
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-05-09T15:43:46.000Z"
+    "publishedAt": "2025-05-28T10:19:09.000Z"
   },
   "course_011": {
     "id": "course_011",
@@ -260,7 +260,7 @@
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-12-07T21:37:46.000Z"
+    "publishedAt": "2025-12-26T16:13:09.000Z"
   },
   "course_012": {
     "id": "course_012",
@@ -283,7 +283,7 @@
       "advanced"
     ],
     "priceTier": "premium",
-    "publishedAt": "2025-05-08T04:09:46.000Z"
+    "publishedAt": "2025-05-26T22:45:09.000Z"
   },
   "course_013": {
     "id": "course_013",
@@ -306,7 +306,7 @@
       "beginner"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-03-02T05:47:46.000Z"
+    "publishedAt": "2025-03-21T00:23:09.000Z"
   },
   "course_014": {
     "id": "course_014",
@@ -330,7 +330,7 @@
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2024-11-22T03:59:46.000Z"
+    "publishedAt": "2024-12-10T22:35:09.000Z"
   },
   "course_015": {
     "id": "course_015",
@@ -353,7 +353,7 @@
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2024-06-09T10:35:46.000Z"
+    "publishedAt": "2024-06-28T05:11:09.000Z"
   },
   "course_016": {
     "id": "course_016",
@@ -377,7 +377,7 @@
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-08-07T01:40:46.000Z"
+    "publishedAt": "2025-08-25T20:16:09.000Z"
   },
   "course_017": {
     "id": "course_017",
@@ -400,7 +400,7 @@
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2026-05-12T01:35:46.000Z"
+    "publishedAt": "2026-05-30T20:11:09.000Z"
   },
   "course_018": {
     "id": "course_018",
@@ -423,7 +423,7 @@
       "advanced"
     ],
     "priceTier": "premium",
-    "publishedAt": "2024-07-09T18:49:46.000Z"
+    "publishedAt": "2024-07-28T13:25:09.000Z"
   },
   "course_019": {
     "id": "course_019",
@@ -446,7 +446,7 @@
       "advanced"
     ],
     "priceTier": "standard",
-    "publishedAt": "2026-04-15T10:53:46.000Z"
+    "publishedAt": "2026-05-04T05:29:09.000Z"
   },
   "course_020": {
     "id": "course_020",
@@ -471,7 +471,7 @@
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2024-10-03T12:18:46.000Z"
+    "publishedAt": "2024-10-22T06:54:09.000Z"
   },
   "course_021": {
     "id": "course_021",
@@ -495,7 +495,7 @@
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2024-09-12T18:12:46.000Z"
+    "publishedAt": "2024-10-01T12:48:09.000Z"
   },
   "course_022": {
     "id": "course_022",
@@ -519,7 +519,7 @@
       "advanced"
     ],
     "priceTier": "basic",
-    "publishedAt": "2026-03-25T11:38:46.000Z"
+    "publishedAt": "2026-04-13T06:14:09.000Z"
   },
   "course_023": {
     "id": "course_023",
@@ -543,7 +543,7 @@
       "beginner"
     ],
     "priceTier": "standard",
-    "publishedAt": "2026-04-06T18:21:46.000Z"
+    "publishedAt": "2026-04-25T12:57:09.000Z"
   },
   "course_024": {
     "id": "course_024",
@@ -568,7 +568,7 @@
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-05-16T09:10:46.000Z"
+    "publishedAt": "2025-06-04T03:46:09.000Z"
   },
   "course_025": {
     "id": "course_025",
@@ -591,7 +591,7 @@
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2026-03-11T20:13:46.000Z"
+    "publishedAt": "2026-03-30T14:49:09.000Z"
   },
   "course_026": {
     "id": "course_026",
@@ -615,7 +615,7 @@
       "advanced"
     ],
     "priceTier": "premium",
-    "publishedAt": "2025-02-04T13:03:46.000Z"
+    "publishedAt": "2025-02-23T07:39:09.000Z"
   },
   "course_027": {
     "id": "course_027",
@@ -640,7 +640,7 @@
       "advanced"
     ],
     "priceTier": "premium",
-    "publishedAt": "2025-05-23T03:47:46.000Z"
+    "publishedAt": "2025-06-10T22:23:09.000Z"
   },
   "course_028": {
     "id": "course_028",
@@ -664,7 +664,7 @@
       "beginner"
     ],
     "priceTier": "standard",
-    "publishedAt": "2024-09-27T14:00:46.000Z"
+    "publishedAt": "2024-10-16T08:36:09.000Z"
   },
   "course_029": {
     "id": "course_029",
@@ -688,7 +688,7 @@
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-10-26T09:54:46.000Z"
+    "publishedAt": "2025-11-14T04:30:09.000Z"
   },
   "course_030": {
     "id": "course_030",
@@ -711,7 +711,7 @@
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-05-11T01:12:46.000Z"
+    "publishedAt": "2025-05-29T19:48:09.000Z"
   },
   "course_031": {
     "id": "course_031",
@@ -736,7 +736,7 @@
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2024-09-12T19:54:46.000Z"
+    "publishedAt": "2024-10-01T14:30:09.000Z"
   },
   "course_032": {
     "id": "course_032",
@@ -761,7 +761,7 @@
       "advanced"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-10-07T13:22:46.000Z"
+    "publishedAt": "2025-10-26T07:58:09.000Z"
   },
   "course_033": {
     "id": "course_033",
@@ -784,7 +784,7 @@
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-12-10T03:43:46.000Z"
+    "publishedAt": "2025-12-28T22:19:09.000Z"
   },
   "course_034": {
     "id": "course_034",
@@ -809,7 +809,7 @@
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2024-07-23T07:50:46.000Z"
+    "publishedAt": "2024-08-11T02:26:09.000Z"
   },
   "course_035": {
     "id": "course_035",
@@ -832,17 +832,17 @@
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-06-06T13:48:46.000Z"
+    "publishedAt": "2025-06-25T08:24:09.000Z"
   },
   "course_036": {
     "id": "course_036",
-    "title": "Phrasing the Long Romantic Line — Advanced",
+    "title": "Chord-Melody Architecture — Advanced",
     "summary": "Strengthen your interpretation and theory with this advanced course. Includes practice logs, listening guides, and recital-prep checklists.",
-    "thumbnailUrl": "https://images.ilearnit.app/piano/036.jpg",
-    "category": "piano",
+    "thumbnailUrl": "https://images.ilearnit.app/guitar/036.jpg",
+    "category": "guitar",
     "level": "advanced",
-    "instructorId": "ins_005",
-    "instructorName": "Sofia Ackermann",
+    "instructorId": "ins_004",
+    "instructorName": "Yuki Tanaka",
     "lessonCount": 27,
     "enrollmentCount": 4978,
     "rating": 4.78,
@@ -855,65 +855,65 @@
       "advanced"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-08-24T12:29:46.000Z"
+    "publishedAt": "2025-09-12T07:05:09.000Z"
   },
   "course_037": {
     "id": "course_037",
-    "title": "Voicing Polyphony at the Piano — Advanced",
-    "summary": "A advanced-level course on phrasing and theory. 10 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
-    "thumbnailUrl": "https://images.ilearnit.app/piano/037.jpg",
-    "category": "piano",
+    "title": "Villa-Lobos Preludes Decoded — Advanced",
+    "summary": "A advanced-level course on right-hand and theory. 10 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
+    "thumbnailUrl": "https://images.ilearnit.app/guitar/037.jpg",
+    "category": "guitar",
     "level": "advanced",
-    "instructorId": "ins_006",
-    "instructorName": "Daniel Voss",
+    "instructorId": "ins_001",
+    "instructorName": "Antonio Vela",
     "lessonCount": 28,
     "enrollmentCount": 2714,
     "rating": 4.39,
     "durationMinutes": 308,
     "isFeatured": false,
     "tags": [
-      "phrasing",
+      "right-hand",
       "theory",
       "repertoire",
       "advanced"
     ],
     "priceTier": "premium",
-    "publishedAt": "2025-09-23T08:47:46.000Z"
+    "publishedAt": "2025-10-12T03:23:09.000Z"
   },
   "course_038": {
     "id": "course_038",
-    "title": "Phrasing the Long Romantic Line — Advanced",
-    "summary": "From first principles to performance — counterpoint and voicing, taught at a advanced level over 6 progressive lessons.",
-    "thumbnailUrl": "https://images.ilearnit.app/piano/038.jpg",
-    "category": "piano",
+    "title": "Chord-Melody Architecture — Advanced",
+    "summary": "From first principles to performance — tone and sight-reading, taught at a advanced level over 6 progressive lessons.",
+    "thumbnailUrl": "https://images.ilearnit.app/guitar/038.jpg",
+    "category": "guitar",
     "level": "advanced",
-    "instructorId": "ins_007",
-    "instructorName": "Isabela Moreau",
+    "instructorId": "ins_002",
+    "instructorName": "Helena Rojas",
     "lessonCount": 27,
     "enrollmentCount": 1591,
     "rating": 4.52,
     "durationMinutes": 594,
     "isFeatured": false,
     "tags": [
-      "counterpoint",
-      "voicing",
+      "tone",
+      "sight-reading",
+      "right-hand",
       "phrasing",
-      "memorization",
-      "pedaling",
+      "fingerstyle",
       "advanced"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-07-01T19:27:46.000Z"
+    "publishedAt": "2025-07-20T14:03:09.000Z"
   },
   "course_039": {
     "id": "course_039",
-    "title": "Memorization for Concert Pianists — Advanced",
-    "summary": "Build a deep working understanding of technique and phrasing. Designed for the advanced student, with weekly practice plans and graded exercises.",
-    "thumbnailUrl": "https://images.ilearnit.app/piano/039.jpg",
-    "category": "piano",
+    "title": "Tone Production for Concert Guitar — Advanced",
+    "summary": "Build a deep working understanding of technique and right-hand. Designed for the advanced student, with weekly practice plans and graded exercises.",
+    "thumbnailUrl": "https://images.ilearnit.app/guitar/039.jpg",
+    "category": "guitar",
     "level": "advanced",
-    "instructorId": "ins_005",
-    "instructorName": "Sofia Ackermann",
+    "instructorId": "ins_003",
+    "instructorName": "Marcus Reinhardt",
     "lessonCount": 32,
     "enrollmentCount": 5758,
     "rating": 4.11,
@@ -921,22 +921,22 @@
     "isFeatured": false,
     "tags": [
       "technique",
-      "phrasing",
-      "voicing",
+      "right-hand",
+      "sight-reading",
       "advanced"
     ],
     "priceTier": "premium",
-    "publishedAt": "2024-08-22T10:51:46.000Z"
+    "publishedAt": "2024-09-10T05:27:09.000Z"
   },
   "course_040": {
     "id": "course_040",
-    "title": "Voicing Polyphony at the Piano — Advanced",
-    "summary": "From first principles to performance — repertoire and hand-independence, taught at a advanced level over 7 progressive lessons.",
-    "thumbnailUrl": "https://images.ilearnit.app/piano/040.jpg",
-    "category": "piano",
+    "title": "Villa-Lobos Preludes Decoded — Advanced",
+    "summary": "From first principles to performance — repertoire and left-hand, taught at a advanced level over 7 progressive lessons.",
+    "thumbnailUrl": "https://images.ilearnit.app/guitar/040.jpg",
+    "category": "guitar",
     "level": "advanced",
-    "instructorId": "ins_006",
-    "instructorName": "Daniel Voss",
+    "instructorId": "ins_004",
+    "instructorName": "Yuki Tanaka",
     "lessonCount": 34,
     "enrollmentCount": 4225,
     "rating": 4.17,
@@ -944,120 +944,120 @@
     "isFeatured": false,
     "tags": [
       "repertoire",
-      "hand-independence",
-      "pedaling",
+      "left-hand",
+      "fingerstyle",
       "advanced"
     ],
     "priceTier": "premium",
-    "publishedAt": "2025-06-14T21:21:46.000Z"
+    "publishedAt": "2025-07-03T15:57:09.000Z"
   },
   "course_041": {
     "id": "course_041",
-    "title": "Mozart Concerto Cadenzas — Intermediate",
-    "summary": "Build a deep working understanding of counterpoint and interpretation. Designed for the intermediate student, with weekly practice plans and graded exercises.",
-    "thumbnailUrl": "https://images.ilearnit.app/piano/041.jpg",
-    "category": "piano",
+    "title": "Sor Studies in Depth — Intermediate",
+    "summary": "Build a deep working understanding of tone and interpretation. Designed for the intermediate student, with weekly practice plans and graded exercises.",
+    "thumbnailUrl": "https://images.ilearnit.app/guitar/041.jpg",
+    "category": "guitar",
     "level": "intermediate",
-    "instructorId": "ins_007",
-    "instructorName": "Isabela Moreau",
+    "instructorId": "ins_001",
+    "instructorName": "Antonio Vela",
     "lessonCount": 31,
     "enrollmentCount": 6384,
     "rating": 4.27,
     "durationMinutes": 620,
     "isFeatured": false,
     "tags": [
-      "counterpoint",
+      "tone",
       "interpretation",
       "technique",
-      "phrasing",
-      "pedaling",
+      "right-hand",
+      "fingerstyle",
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-10-15T10:31:46.000Z"
+    "publishedAt": "2025-11-03T05:07:09.000Z"
   },
   "course_042": {
     "id": "course_042",
-    "title": "Phrasing the Long Romantic Line — Beginner",
-    "summary": "From first principles to performance — memorization and theory, taught at a beginner level over 6 progressive lessons.",
-    "thumbnailUrl": "https://images.ilearnit.app/piano/042.jpg",
-    "category": "piano",
+    "title": "Chord-Melody Architecture — Beginner",
+    "summary": "From first principles to performance — phrasing and theory, taught at a beginner level over 6 progressive lessons.",
+    "thumbnailUrl": "https://images.ilearnit.app/guitar/042.jpg",
+    "category": "guitar",
     "level": "beginner",
-    "instructorId": "ins_005",
-    "instructorName": "Sofia Ackermann",
+    "instructorId": "ins_002",
+    "instructorName": "Helena Rojas",
     "lessonCount": 20,
     "enrollmentCount": 542,
     "rating": 3.89,
     "durationMinutes": 300,
     "isFeatured": false,
     "tags": [
-      "memorization",
+      "phrasing",
       "theory",
-      "counterpoint",
-      "voicing",
+      "tone",
+      "sight-reading",
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-04-10T14:48:46.000Z"
+    "publishedAt": "2025-04-29T09:24:09.000Z"
   },
   "course_043": {
     "id": "course_043",
-    "title": "Goldberg Variations Lecture Series — Beginner",
-    "summary": "Build a deep working understanding of counterpoint and voicing. Designed for the beginner student, with weekly practice plans and graded exercises.",
-    "thumbnailUrl": "https://images.ilearnit.app/piano/043.jpg",
-    "category": "piano",
+    "title": "Flamenco-Classical Rasgueado — Beginner",
+    "summary": "Build a deep working understanding of tone and sight-reading. Designed for the beginner student, with weekly practice plans and graded exercises.",
+    "thumbnailUrl": "https://images.ilearnit.app/guitar/043.jpg",
+    "category": "guitar",
     "level": "beginner",
-    "instructorId": "ins_006",
-    "instructorName": "Daniel Voss",
+    "instructorId": "ins_003",
+    "instructorName": "Marcus Reinhardt",
     "lessonCount": 24,
     "enrollmentCount": 3416,
     "rating": 4.49,
     "durationMinutes": 240,
     "isFeatured": false,
     "tags": [
-      "counterpoint",
-      "voicing",
+      "tone",
+      "sight-reading",
       "theory",
       "repertoire",
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-11-02T21:17:46.000Z"
+    "publishedAt": "2025-11-21T15:53:09.000Z"
   },
   "course_044": {
     "id": "course_044",
-    "title": "Chopin Nocturnes Interpretation — Intermediate",
-    "summary": "From first principles to performance — pedaling and technique, taught at a intermediate level over 9 progressive lessons.",
-    "thumbnailUrl": "https://images.ilearnit.app/piano/044.jpg",
-    "category": "piano",
+    "title": "Spanish Guitar Repertoire — Intermediate",
+    "summary": "From first principles to performance — fingerstyle and technique, taught at a intermediate level over 9 progressive lessons.",
+    "thumbnailUrl": "https://images.ilearnit.app/guitar/044.jpg",
+    "category": "guitar",
     "level": "intermediate",
-    "instructorId": "ins_007",
-    "instructorName": "Isabela Moreau",
+    "instructorId": "ins_004",
+    "instructorName": "Yuki Tanaka",
     "lessonCount": 34,
     "enrollmentCount": 5768,
     "rating": 4.4,
     "durationMinutes": 612,
     "isFeatured": true,
     "tags": [
-      "pedaling",
+      "fingerstyle",
       "technique",
       "theory",
       "interpretation",
-      "memorization",
+      "phrasing",
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2024-08-23T10:22:46.000Z"
+    "publishedAt": "2024-09-11T04:58:09.000Z"
   },
   "course_045": {
     "id": "course_045",
-    "title": "Beethoven Sonatas — Early Period — Beginner",
+    "title": "Fingerstyle Mastery — Beginner",
     "summary": "Strengthen your theory and technique with this beginner course. Includes practice logs, listening guides, and recital-prep checklists.",
-    "thumbnailUrl": "https://images.ilearnit.app/piano/045.jpg",
-    "category": "piano",
+    "thumbnailUrl": "https://images.ilearnit.app/guitar/045.jpg",
+    "category": "guitar",
     "level": "beginner",
-    "instructorId": "ins_005",
-    "instructorName": "Sofia Ackermann",
+    "instructorId": "ins_001",
+    "instructorName": "Antonio Vela",
     "lessonCount": 20,
     "enrollmentCount": 5760,
     "rating": 4.73,
@@ -1066,13 +1066,13 @@
     "tags": [
       "theory",
       "technique",
-      "phrasing",
+      "right-hand",
       "interpretation",
       "repertoire",
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2026-03-11T22:26:46.000Z"
+    "publishedAt": "2026-03-30T17:02:09.000Z"
   },
   "course_046": {
     "id": "course_046",
@@ -1081,8 +1081,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/046.jpg",
     "category": "piano",
     "level": "beginner",
-    "instructorId": "ins_006",
-    "instructorName": "Daniel Voss",
+    "instructorId": "ins_005",
+    "instructorName": "Sofia Ackermann",
     "lessonCount": 21,
     "enrollmentCount": 4419,
     "rating": 4.9,
@@ -1097,7 +1097,7 @@
       "beginner"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-07-18T22:50:46.000Z"
+    "publishedAt": "2025-08-06T17:26:09.000Z"
   },
   "course_047": {
     "id": "course_047",
@@ -1106,8 +1106,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/047.jpg",
     "category": "piano",
     "level": "advanced",
-    "instructorId": "ins_007",
-    "instructorName": "Isabela Moreau",
+    "instructorId": "ins_006",
+    "instructorName": "Daniel Voss",
     "lessonCount": 36,
     "enrollmentCount": 4345,
     "rating": 4.83,
@@ -1122,7 +1122,7 @@
       "advanced"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-12-02T07:12:46.000Z"
+    "publishedAt": "2025-12-21T01:48:09.000Z"
   },
   "course_048": {
     "id": "course_048",
@@ -1131,8 +1131,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/048.jpg",
     "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_005",
-    "instructorName": "Sofia Ackermann",
+    "instructorId": "ins_007",
+    "instructorName": "Isabela Moreau",
     "lessonCount": 32,
     "enrollmentCount": 5273,
     "rating": 4.37,
@@ -1147,7 +1147,7 @@
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-10-28T18:15:46.000Z"
+    "publishedAt": "2025-11-16T12:51:09.000Z"
   },
   "course_049": {
     "id": "course_049",
@@ -1156,8 +1156,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/049.jpg",
     "category": "piano",
     "level": "beginner",
-    "instructorId": "ins_006",
-    "instructorName": "Daniel Voss",
+    "instructorId": "ins_005",
+    "instructorName": "Sofia Ackermann",
     "lessonCount": 18,
     "enrollmentCount": 3758,
     "rating": 3.89,
@@ -1170,7 +1170,7 @@
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-05-24T19:23:46.000Z"
+    "publishedAt": "2025-06-12T13:59:09.000Z"
   },
   "course_050": {
     "id": "course_050",
@@ -1179,8 +1179,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/050.jpg",
     "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_007",
-    "instructorName": "Isabela Moreau",
+    "instructorId": "ins_006",
+    "instructorName": "Daniel Voss",
     "lessonCount": 22,
     "enrollmentCount": 1345,
     "rating": 4.45,
@@ -1193,7 +1193,7 @@
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-01-20T03:39:46.000Z"
+    "publishedAt": "2025-02-07T22:15:09.000Z"
   },
   "course_051": {
     "id": "course_051",
@@ -1202,8 +1202,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/051.jpg",
     "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_005",
-    "instructorName": "Sofia Ackermann",
+    "instructorId": "ins_007",
+    "instructorName": "Isabela Moreau",
     "lessonCount": 24,
     "enrollmentCount": 3883,
     "rating": 4.02,
@@ -1217,7 +1217,7 @@
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-05-17T14:39:46.000Z"
+    "publishedAt": "2025-06-05T09:15:09.000Z"
   },
   "course_052": {
     "id": "course_052",
@@ -1226,8 +1226,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/052.jpg",
     "category": "piano",
     "level": "advanced",
-    "instructorId": "ins_006",
-    "instructorName": "Daniel Voss",
+    "instructorId": "ins_005",
+    "instructorName": "Sofia Ackermann",
     "lessonCount": 31,
     "enrollmentCount": 5909,
     "rating": 4.76,
@@ -1240,7 +1240,7 @@
       "advanced"
     ],
     "priceTier": "standard",
-    "publishedAt": "2024-07-19T11:54:46.000Z"
+    "publishedAt": "2024-08-07T06:30:09.000Z"
   },
   "course_053": {
     "id": "course_053",
@@ -1249,8 +1249,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/053.jpg",
     "category": "piano",
     "level": "beginner",
-    "instructorId": "ins_007",
-    "instructorName": "Isabela Moreau",
+    "instructorId": "ins_006",
+    "instructorName": "Daniel Voss",
     "lessonCount": 25,
     "enrollmentCount": 5089,
     "rating": 4.06,
@@ -1264,7 +1264,7 @@
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-02-03T01:15:46.000Z"
+    "publishedAt": "2025-02-21T19:51:09.000Z"
   },
   "course_054": {
     "id": "course_054",
@@ -1273,8 +1273,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/054.jpg",
     "category": "piano",
     "level": "beginner",
-    "instructorId": "ins_005",
-    "instructorName": "Sofia Ackermann",
+    "instructorId": "ins_007",
+    "instructorName": "Isabela Moreau",
     "lessonCount": 28,
     "enrollmentCount": 708,
     "rating": 4.36,
@@ -1289,7 +1289,7 @@
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-04-02T19:51:46.000Z"
+    "publishedAt": "2025-04-21T14:27:09.000Z"
   },
   "course_055": {
     "id": "course_055",
@@ -1298,8 +1298,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/055.jpg",
     "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_006",
-    "instructorName": "Daniel Voss",
+    "instructorId": "ins_005",
+    "instructorName": "Sofia Ackermann",
     "lessonCount": 34,
     "enrollmentCount": 1367,
     "rating": 4.5,
@@ -1314,7 +1314,7 @@
       "intermediate"
     ],
     "priceTier": "premium",
-    "publishedAt": "2025-11-01T19:30:46.000Z"
+    "publishedAt": "2025-11-20T14:06:09.000Z"
   },
   "course_056": {
     "id": "course_056",
@@ -1323,8 +1323,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/056.jpg",
     "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_007",
-    "instructorName": "Isabela Moreau",
+    "instructorId": "ins_006",
+    "instructorName": "Daniel Voss",
     "lessonCount": 31,
     "enrollmentCount": 6515,
     "rating": 4.51,
@@ -1339,7 +1339,7 @@
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2024-09-03T10:08:46.000Z"
+    "publishedAt": "2024-09-22T04:44:09.000Z"
   },
   "course_057": {
     "id": "course_057",
@@ -1348,8 +1348,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/057.jpg",
     "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_005",
-    "instructorName": "Sofia Ackermann",
+    "instructorId": "ins_007",
+    "instructorName": "Isabela Moreau",
     "lessonCount": 33,
     "enrollmentCount": 5050,
     "rating": 4.02,
@@ -1364,7 +1364,7 @@
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2024-07-10T03:18:46.000Z"
+    "publishedAt": "2024-07-28T21:54:09.000Z"
   },
   "course_058": {
     "id": "course_058",
@@ -1373,8 +1373,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/058.jpg",
     "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_006",
-    "instructorName": "Daniel Voss",
+    "instructorId": "ins_005",
+    "instructorName": "Sofia Ackermann",
     "lessonCount": 9,
     "enrollmentCount": 4772,
     "rating": 4.43,
@@ -1388,7 +1388,7 @@
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-05-20T07:23:46.000Z"
+    "publishedAt": "2025-06-08T01:59:09.000Z"
   },
   "course_059": {
     "id": "course_059",
@@ -1397,8 +1397,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/059.jpg",
     "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_007",
-    "instructorName": "Isabela Moreau",
+    "instructorId": "ins_006",
+    "instructorName": "Daniel Voss",
     "lessonCount": 35,
     "enrollmentCount": 3452,
     "rating": 4.04,
@@ -1413,7 +1413,7 @@
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-09-01T08:01:46.000Z"
+    "publishedAt": "2025-09-20T02:37:09.000Z"
   },
   "course_060": {
     "id": "course_060",
@@ -1422,8 +1422,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/060.jpg",
     "category": "piano",
     "level": "beginner",
-    "instructorId": "ins_005",
-    "instructorName": "Sofia Ackermann",
+    "instructorId": "ins_007",
+    "instructorName": "Isabela Moreau",
     "lessonCount": 35,
     "enrollmentCount": 892,
     "rating": 4.83,
@@ -1436,7 +1436,7 @@
       "beginner"
     ],
     "priceTier": "standard",
-    "publishedAt": "2024-12-04T07:00:46.000Z"
+    "publishedAt": "2024-12-23T01:36:09.000Z"
   },
   "course_061": {
     "id": "course_061",
@@ -1445,8 +1445,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/061.jpg",
     "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_006",
-    "instructorName": "Daniel Voss",
+    "instructorId": "ins_005",
+    "instructorName": "Sofia Ackermann",
     "lessonCount": 27,
     "enrollmentCount": 5350,
     "rating": 4.17,
@@ -1459,7 +1459,7 @@
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2026-04-03T01:43:46.000Z"
+    "publishedAt": "2026-04-21T20:19:09.000Z"
   },
   "course_062": {
     "id": "course_062",
@@ -1468,8 +1468,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/062.jpg",
     "category": "piano",
     "level": "beginner",
-    "instructorId": "ins_007",
-    "instructorName": "Isabela Moreau",
+    "instructorId": "ins_006",
+    "instructorName": "Daniel Voss",
     "lessonCount": 20,
     "enrollmentCount": 1576,
     "rating": 4.33,
@@ -1482,7 +1482,7 @@
       "beginner"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-10-04T04:31:46.000Z"
+    "publishedAt": "2025-10-22T23:07:09.000Z"
   },
   "course_063": {
     "id": "course_063",
@@ -1491,8 +1491,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/063.jpg",
     "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_005",
-    "instructorName": "Sofia Ackermann",
+    "instructorId": "ins_007",
+    "instructorName": "Isabela Moreau",
     "lessonCount": 14,
     "enrollmentCount": 6155,
     "rating": 4.76,
@@ -1507,7 +1507,7 @@
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-03-29T07:58:46.000Z"
+    "publishedAt": "2025-04-17T02:34:09.000Z"
   },
   "course_064": {
     "id": "course_064",
@@ -1516,8 +1516,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/064.jpg",
     "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_006",
-    "instructorName": "Daniel Voss",
+    "instructorId": "ins_005",
+    "instructorName": "Sofia Ackermann",
     "lessonCount": 14,
     "enrollmentCount": 1669,
     "rating": 3.99,
@@ -1530,7 +1530,7 @@
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-09-18T23:57:46.000Z"
+    "publishedAt": "2025-10-07T18:33:09.000Z"
   },
   "course_065": {
     "id": "course_065",
@@ -1539,8 +1539,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/065.jpg",
     "category": "piano",
     "level": "beginner",
-    "instructorId": "ins_007",
-    "instructorName": "Isabela Moreau",
+    "instructorId": "ins_006",
+    "instructorName": "Daniel Voss",
     "lessonCount": 21,
     "enrollmentCount": 3162,
     "rating": 4.54,
@@ -1555,7 +1555,7 @@
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2026-05-13T08:12:46.000Z"
+    "publishedAt": "2026-06-01T02:48:09.000Z"
   },
   "course_066": {
     "id": "course_066",
@@ -1564,8 +1564,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/066.jpg",
     "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_005",
-    "instructorName": "Sofia Ackermann",
+    "instructorId": "ins_007",
+    "instructorName": "Isabela Moreau",
     "lessonCount": 26,
     "enrollmentCount": 6352,
     "rating": 4.53,
@@ -1580,7 +1580,7 @@
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-06-11T21:42:46.000Z"
+    "publishedAt": "2025-06-30T16:18:09.000Z"
   },
   "course_067": {
     "id": "course_067",
@@ -1589,8 +1589,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/067.jpg",
     "category": "piano",
     "level": "beginner",
-    "instructorId": "ins_006",
-    "instructorName": "Daniel Voss",
+    "instructorId": "ins_005",
+    "instructorName": "Sofia Ackermann",
     "lessonCount": 32,
     "enrollmentCount": 2615,
     "rating": 4.88,
@@ -1603,7 +1603,7 @@
       "beginner"
     ],
     "priceTier": "standard",
-    "publishedAt": "2024-07-14T06:48:46.000Z"
+    "publishedAt": "2024-08-02T01:24:09.000Z"
   },
   "course_068": {
     "id": "course_068",
@@ -1612,8 +1612,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/068.jpg",
     "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_007",
-    "instructorName": "Isabela Moreau",
+    "instructorId": "ins_006",
+    "instructorName": "Daniel Voss",
     "lessonCount": 18,
     "enrollmentCount": 911,
     "rating": 4.2,
@@ -1627,7 +1627,7 @@
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2024-07-13T14:53:46.000Z"
+    "publishedAt": "2024-08-01T09:29:09.000Z"
   },
   "course_069": {
     "id": "course_069",
@@ -1636,8 +1636,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/069.jpg",
     "category": "piano",
     "level": "beginner",
-    "instructorId": "ins_005",
-    "instructorName": "Sofia Ackermann",
+    "instructorId": "ins_007",
+    "instructorName": "Isabela Moreau",
     "lessonCount": 26,
     "enrollmentCount": 6700,
     "rating": 3.97,
@@ -1652,7 +1652,7 @@
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-03-14T23:56:46.000Z"
+    "publishedAt": "2025-04-02T18:32:09.000Z"
   },
   "course_070": {
     "id": "course_070",
@@ -1661,8 +1661,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/piano/070.jpg",
     "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_006",
-    "instructorName": "Daniel Voss",
+    "instructorId": "ins_005",
+    "instructorName": "Sofia Ackermann",
     "lessonCount": 35,
     "enrollmentCount": 4909,
     "rating": 4.6,
@@ -1675,17 +1675,17 @@
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-08-26T22:29:46.000Z"
+    "publishedAt": "2025-09-14T17:05:09.000Z"
   },
   "course_071": {
     "id": "course_071",
-    "title": "Extended Techniques for Modern Repertoire — Beginner",
-    "summary": "Beginner students will work through repertoire and interpretation with annotated scores, slow-tempo demonstrations, and instructor feedback prompts.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/071.jpg",
-    "category": "violin",
+    "title": "Memorization for Concert Pianists — Beginner",
+    "summary": "Beginner students will work through repertoire and voicing with annotated scores, slow-tempo demonstrations, and instructor feedback prompts.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/071.jpg",
+    "category": "piano",
     "level": "beginner",
-    "instructorId": "ins_008",
-    "instructorName": "Ekaterina Volkova",
+    "instructorId": "ins_006",
+    "instructorName": "Daniel Voss",
     "lessonCount": 20,
     "enrollmentCount": 6248,
     "rating": 4.87,
@@ -1693,22 +1693,22 @@
     "isFeatured": false,
     "tags": [
       "repertoire",
-      "interpretation",
-      "intonation",
+      "voicing",
+      "phrasing",
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-05-09T13:18:46.000Z"
+    "publishedAt": "2025-05-28T07:54:09.000Z"
   },
   "course_072": {
     "id": "course_072",
-    "title": "Extended Techniques for Modern Repertoire — Intermediate",
-    "summary": "Build a deep working understanding of technique and intonation. Designed for the intermediate student, with weekly practice plans and graded exercises.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/072.jpg",
-    "category": "violin",
+    "title": "Memorization for Concert Pianists — Intermediate",
+    "summary": "Build a deep working understanding of technique and phrasing. Designed for the intermediate student, with weekly practice plans and graded exercises.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/072.jpg",
+    "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_009",
-    "instructorName": "Lucas Ferreira",
+    "instructorId": "ins_007",
+    "instructorName": "Isabela Moreau",
     "lessonCount": 10,
     "enrollmentCount": 5910,
     "rating": 4.06,
@@ -1716,168 +1716,168 @@
     "isFeatured": true,
     "tags": [
       "technique",
-      "intonation",
-      "bowing",
+      "phrasing",
+      "theory",
       "intermediate"
     ],
     "priceTier": "premium",
-    "publishedAt": "2025-04-28T11:00:46.000Z"
+    "publishedAt": "2025-05-17T05:36:09.000Z"
   },
   "course_073": {
     "id": "course_073",
-    "title": "Building a Recital Program — Advanced",
-    "summary": "Strengthen your phrasing and intonation with this advanced course. Includes practice logs, listening guides, and recital-prep checklists.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/073.jpg",
-    "category": "violin",
+    "title": "Practice Strategies for Virtuoso Works — Advanced",
+    "summary": "Strengthen your hand-independence and phrasing with this advanced course. Includes practice logs, listening guides, and recital-prep checklists.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/073.jpg",
+    "category": "piano",
     "level": "advanced",
-    "instructorId": "ins_010",
-    "instructorName": "Aria Kapoor",
+    "instructorId": "ins_005",
+    "instructorName": "Sofia Ackermann",
     "lessonCount": 24,
     "enrollmentCount": 442,
     "rating": 4.04,
     "durationMinutes": 384,
     "isFeatured": false,
     "tags": [
+      "hand-independence",
       "phrasing",
-      "intonation",
-      "vibrato",
+      "pedaling",
       "technique",
-      "spiccato",
+      "interpretation",
       "advanced"
     ],
     "priceTier": "premium",
-    "publishedAt": "2025-12-01T06:02:46.000Z"
+    "publishedAt": "2025-12-20T00:38:09.000Z"
   },
   "course_074": {
     "id": "course_074",
-    "title": "Russian School Vibrato Lab — Advanced",
-    "summary": "Build a deep working understanding of ornamentation and technique. Designed for the advanced student, with weekly practice plans and graded exercises.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/074.jpg",
-    "category": "violin",
+    "title": "Schumann's Carnaval — Advanced",
+    "summary": "Build a deep working understanding of memorization and technique. Designed for the advanced student, with weekly practice plans and graded exercises.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/074.jpg",
+    "category": "piano",
     "level": "advanced",
-    "instructorId": "ins_008",
-    "instructorName": "Ekaterina Volkova",
+    "instructorId": "ins_006",
+    "instructorName": "Daniel Voss",
     "lessonCount": 31,
     "enrollmentCount": 6367,
     "rating": 4.2,
     "durationMinutes": 527,
     "isFeatured": false,
     "tags": [
-      "ornamentation",
+      "memorization",
       "technique",
-      "interpretation",
-      "phrasing",
+      "voicing",
+      "hand-independence",
       "advanced"
     ],
     "priceTier": "premium",
-    "publishedAt": "2024-10-04T05:20:46.000Z"
+    "publishedAt": "2024-10-22T23:56:09.000Z"
   },
   "course_075": {
     "id": "course_075",
-    "title": "Vivaldi Four Seasons Decoded — Advanced",
-    "summary": "Build a deep working understanding of etudes and ornamentation. Designed for the advanced student, with weekly practice plans and graded exercises.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/075.jpg",
-    "category": "violin",
+    "title": "Chopin Nocturnes Interpretation — Advanced",
+    "summary": "Build a deep working understanding of counterpoint and memorization. Designed for the advanced student, with weekly practice plans and graded exercises.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/075.jpg",
+    "category": "piano",
     "level": "advanced",
-    "instructorId": "ins_009",
-    "instructorName": "Lucas Ferreira",
+    "instructorId": "ins_007",
+    "instructorName": "Isabela Moreau",
     "lessonCount": 22,
     "enrollmentCount": 3759,
     "rating": 3.91,
     "durationMinutes": 484,
     "isFeatured": false,
     "tags": [
-      "etudes",
-      "ornamentation",
-      "spiccato",
+      "counterpoint",
+      "memorization",
       "interpretation",
+      "voicing",
       "advanced"
     ],
     "priceTier": "premium",
-    "publishedAt": "2025-10-25T05:40:46.000Z"
+    "publishedAt": "2025-11-13T00:16:09.000Z"
   },
   "course_076": {
     "id": "course_076",
-    "title": "Paganini Caprices Foundations — Intermediate",
-    "summary": "Intermediate students will work through etudes and vibrato with annotated scores, slow-tempo demonstrations, and instructor feedback prompts.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/076.jpg",
-    "category": "violin",
+    "title": "Beethoven Sonatas — Late Period — Intermediate",
+    "summary": "Intermediate students will work through counterpoint and pedaling with annotated scores, slow-tempo demonstrations, and instructor feedback prompts.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/076.jpg",
+    "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_010",
-    "instructorName": "Aria Kapoor",
+    "instructorId": "ins_005",
+    "instructorName": "Sofia Ackermann",
     "lessonCount": 32,
     "enrollmentCount": 2275,
     "rating": 4.47,
     "durationMinutes": 480,
     "isFeatured": false,
     "tags": [
-      "etudes",
-      "vibrato",
-      "ornamentation",
+      "counterpoint",
+      "pedaling",
+      "memorization",
       "repertoire",
-      "interpretation",
+      "voicing",
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2026-04-29T08:48:46.000Z"
+    "publishedAt": "2026-05-18T03:24:09.000Z"
   },
   "course_077": {
     "id": "course_077",
-    "title": "Corelli Sonatas — Period Approach — Intermediate",
-    "summary": "A intermediate-level course on intonation and etudes. 7 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/077.jpg",
-    "category": "violin",
+    "title": "Voicing Polyphony at the Piano — Intermediate",
+    "summary": "A intermediate-level course on phrasing and counterpoint. 7 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/077.jpg",
+    "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_008",
-    "instructorName": "Ekaterina Volkova",
+    "instructorId": "ins_006",
+    "instructorName": "Daniel Voss",
     "lessonCount": 20,
     "enrollmentCount": 2346,
     "rating": 4.33,
     "durationMinutes": 440,
     "isFeatured": false,
     "tags": [
-      "intonation",
-      "etudes",
-      "spiccato",
+      "phrasing",
+      "counterpoint",
+      "interpretation",
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2024-07-02T08:00:46.000Z"
+    "publishedAt": "2024-07-21T02:36:09.000Z"
   },
   "course_078": {
     "id": "course_078",
-    "title": "Building a Recital Program — Beginner",
-    "summary": "A beginner-level course on intonation and bowing. 12 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/078.jpg",
-    "category": "violin",
+    "title": "Practice Strategies for Virtuoso Works — Beginner",
+    "summary": "A beginner-level course on phrasing and theory. 12 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/078.jpg",
+    "category": "piano",
     "level": "beginner",
-    "instructorId": "ins_009",
-    "instructorName": "Lucas Ferreira",
+    "instructorId": "ins_007",
+    "instructorName": "Isabela Moreau",
     "lessonCount": 34,
     "enrollmentCount": 6279,
     "rating": 4.97,
     "durationMinutes": 646,
     "isFeatured": false,
     "tags": [
-      "intonation",
-      "bowing",
       "phrasing",
-      "interpretation",
+      "theory",
+      "hand-independence",
+      "voicing",
       "repertoire",
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-10-12T22:52:46.000Z"
+    "publishedAt": "2025-10-31T17:28:09.000Z"
   },
   "course_079": {
     "id": "course_079",
-    "title": "Russian School Vibrato Lab — Intermediate",
-    "summary": "From first principles to performance — technique and etudes, taught at a intermediate level over 6 progressive lessons.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/079.jpg",
-    "category": "violin",
+    "title": "Schumann's Carnaval — Intermediate",
+    "summary": "From first principles to performance — technique and counterpoint, taught at a intermediate level over 6 progressive lessons.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/079.jpg",
+    "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_010",
-    "instructorName": "Aria Kapoor",
+    "instructorId": "ins_005",
+    "instructorName": "Sofia Ackermann",
     "lessonCount": 21,
     "enrollmentCount": 981,
     "rating": 4.61,
@@ -1885,22 +1885,22 @@
     "isFeatured": false,
     "tags": [
       "technique",
-      "etudes",
-      "bowing",
+      "counterpoint",
+      "theory",
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2024-08-11T00:32:46.000Z"
+    "publishedAt": "2024-08-29T19:08:09.000Z"
   },
   "course_080": {
     "id": "course_080",
-    "title": "Bach Sonatas & Partitas — Intermediate",
-    "summary": "A intermediate-level course on technique and vibrato. 12 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/080.jpg",
-    "category": "violin",
+    "title": "Bach: The Well-Tempered Clavier — Intermediate",
+    "summary": "A intermediate-level course on technique and pedaling. 12 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/080.jpg",
+    "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_008",
-    "instructorName": "Ekaterina Volkova",
+    "instructorId": "ins_006",
+    "instructorName": "Daniel Voss",
     "lessonCount": 18,
     "enrollmentCount": 1796,
     "rating": 4.02,
@@ -1908,72 +1908,72 @@
     "isFeatured": false,
     "tags": [
       "technique",
-      "vibrato",
-      "intonation",
+      "pedaling",
+      "phrasing",
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2024-05-29T03:29:46.000Z"
+    "publishedAt": "2024-06-16T22:05:09.000Z"
   },
   "course_081": {
     "id": "course_081",
-    "title": "Shostakovich Preludes & Fugues for Violin — Intermediate",
-    "summary": "Build a deep working understanding of vibrato and bowing. Designed for the intermediate student, with weekly practice plans and graded exercises.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/081.jpg",
-    "category": "violin",
+    "title": "Mozart Concerto Cadenzas — Intermediate",
+    "summary": "Build a deep working understanding of pedaling and theory. Designed for the intermediate student, with weekly practice plans and graded exercises.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/081.jpg",
+    "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_009",
-    "instructorName": "Lucas Ferreira",
+    "instructorId": "ins_007",
+    "instructorName": "Isabela Moreau",
     "lessonCount": 13,
     "enrollmentCount": 2874,
     "rating": 4.42,
     "durationMinutes": 182,
     "isFeatured": true,
     "tags": [
-      "vibrato",
-      "bowing",
+      "pedaling",
+      "theory",
       "repertoire",
-      "phrasing",
-      "interpretation",
+      "hand-independence",
+      "voicing",
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2024-05-29T11:23:46.000Z"
+    "publishedAt": "2024-06-17T05:59:09.000Z"
   },
   "course_082": {
     "id": "course_082",
-    "title": "Etudes for Concert Violin — Advanced",
-    "summary": "A advanced-level course on bowing and ornamentation. 10 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/082.jpg",
-    "category": "violin",
+    "title": "Liszt Transcendental Études — Advanced",
+    "summary": "A advanced-level course on theory and memorization. 10 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/082.jpg",
+    "category": "piano",
     "level": "advanced",
-    "instructorId": "ins_010",
-    "instructorName": "Aria Kapoor",
+    "instructorId": "ins_005",
+    "instructorName": "Sofia Ackermann",
     "lessonCount": 15,
     "enrollmentCount": 5822,
     "rating": 4.44,
     "durationMinutes": 180,
     "isFeatured": false,
     "tags": [
-      "bowing",
-      "ornamentation",
-      "etudes",
+      "theory",
+      "memorization",
+      "counterpoint",
       "technique",
-      "interpretation",
+      "voicing",
       "advanced"
     ],
     "priceTier": "premium",
-    "publishedAt": "2026-03-23T08:10:46.000Z"
+    "publishedAt": "2026-04-11T02:46:09.000Z"
   },
   "course_083": {
     "id": "course_083",
-    "title": "Tchaikovsky Concerto Workshop — Intermediate",
-    "summary": "A intermediate-level course on repertoire and interpretation. 10 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/083.jpg",
-    "category": "violin",
+    "title": "Beethoven Sonatas — Early Period — Intermediate",
+    "summary": "A intermediate-level course on repertoire and voicing. 10 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/083.jpg",
+    "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_008",
-    "instructorName": "Ekaterina Volkova",
+    "instructorId": "ins_006",
+    "instructorName": "Daniel Voss",
     "lessonCount": 36,
     "enrollmentCount": 4375,
     "rating": 4.74,
@@ -1981,118 +1981,118 @@
     "isFeatured": false,
     "tags": [
       "repertoire",
+      "voicing",
       "interpretation",
-      "spiccato",
       "technique",
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-02-02T11:41:46.000Z"
+    "publishedAt": "2025-02-21T06:17:09.000Z"
   },
   "course_084": {
     "id": "course_084",
-    "title": "Historically Informed Ornamentation — Intermediate",
-    "summary": "A intermediate-level course on phrasing and etudes. 6 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/084.jpg",
-    "category": "violin",
+    "title": "Goldberg Variations Lecture Series — Intermediate",
+    "summary": "A intermediate-level course on hand-independence and counterpoint. 6 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/084.jpg",
+    "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_009",
-    "instructorName": "Lucas Ferreira",
+    "instructorId": "ins_007",
+    "instructorName": "Isabela Moreau",
     "lessonCount": 8,
     "enrollmentCount": 1509,
     "rating": 4.53,
     "durationMinutes": 128,
     "isFeatured": false,
     "tags": [
-      "phrasing",
-      "etudes",
-      "vibrato",
-      "bowing",
+      "hand-independence",
+      "counterpoint",
+      "pedaling",
+      "theory",
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-11-14T17:11:46.000Z"
+    "publishedAt": "2025-12-03T11:47:09.000Z"
   },
   "course_085": {
     "id": "course_085",
-    "title": "Russian School Vibrato Lab — Intermediate",
-    "summary": "Intermediate students will work through ornamentation and phrasing with annotated scores, slow-tempo demonstrations, and instructor feedback prompts.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/085.jpg",
-    "category": "violin",
+    "title": "Schumann's Carnaval — Intermediate",
+    "summary": "Intermediate students will work through memorization and hand-independence with annotated scores, slow-tempo demonstrations, and instructor feedback prompts.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/085.jpg",
+    "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_010",
-    "instructorName": "Aria Kapoor",
+    "instructorId": "ins_005",
+    "instructorName": "Sofia Ackermann",
     "lessonCount": 12,
     "enrollmentCount": 3242,
     "rating": 4.19,
     "durationMinutes": 264,
     "isFeatured": false,
     "tags": [
-      "ornamentation",
+      "memorization",
+      "hand-independence",
       "phrasing",
-      "intonation",
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-08-15T21:44:46.000Z"
+    "publishedAt": "2025-09-03T16:20:09.000Z"
   },
   "course_086": {
     "id": "course_086",
-    "title": "Spiccato & Sautillé Mastery — Intermediate",
-    "summary": "Build a deep working understanding of vibrato and bowing. Designed for the intermediate student, with weekly practice plans and graded exercises.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/086.jpg",
-    "category": "violin",
+    "title": "Phrasing the Long Romantic Line — Intermediate",
+    "summary": "Build a deep working understanding of pedaling and theory. Designed for the intermediate student, with weekly practice plans and graded exercises.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/086.jpg",
+    "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_008",
-    "instructorName": "Ekaterina Volkova",
+    "instructorId": "ins_006",
+    "instructorName": "Daniel Voss",
     "lessonCount": 26,
     "enrollmentCount": 6060,
     "rating": 3.81,
     "durationMinutes": 390,
     "isFeatured": false,
     "tags": [
-      "vibrato",
-      "bowing",
+      "pedaling",
+      "theory",
       "repertoire",
-      "ornamentation",
+      "memorization",
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2024-07-17T21:16:46.000Z"
+    "publishedAt": "2024-08-05T15:52:09.000Z"
   },
   "course_087": {
     "id": "course_087",
-    "title": "Baroque Bowing Techniques — Intermediate",
-    "summary": "Intermediate students will work through bowing and vibrato with annotated scores, slow-tempo demonstrations, and instructor feedback prompts.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/087.jpg",
-    "category": "violin",
+    "title": "Bach Inventions & Sinfonias — Intermediate",
+    "summary": "Intermediate students will work through theory and pedaling with annotated scores, slow-tempo demonstrations, and instructor feedback prompts.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/087.jpg",
+    "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_009",
-    "instructorName": "Lucas Ferreira",
+    "instructorId": "ins_007",
+    "instructorName": "Isabela Moreau",
     "lessonCount": 27,
     "enrollmentCount": 4484,
     "rating": 4.95,
     "durationMinutes": 594,
     "isFeatured": false,
     "tags": [
-      "bowing",
-      "vibrato",
+      "theory",
+      "pedaling",
       "repertoire",
-      "phrasing",
+      "hand-independence",
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2024-07-01T20:49:46.000Z"
+    "publishedAt": "2024-07-20T15:25:09.000Z"
   },
   "course_088": {
     "id": "course_088",
-    "title": "Corelli Sonatas — Period Approach — Intermediate",
-    "summary": "Strengthen your repertoire and bowing with this intermediate course. Includes practice logs, listening guides, and recital-prep checklists.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/088.jpg",
-    "category": "violin",
+    "title": "Voicing Polyphony at the Piano — Intermediate",
+    "summary": "Strengthen your repertoire and theory with this intermediate course. Includes practice logs, listening guides, and recital-prep checklists.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/088.jpg",
+    "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_010",
-    "instructorName": "Aria Kapoor",
+    "instructorId": "ins_005",
+    "instructorName": "Sofia Ackermann",
     "lessonCount": 14,
     "enrollmentCount": 2504,
     "rating": 4.56,
@@ -2100,61 +2100,61 @@
     "isFeatured": false,
     "tags": [
       "repertoire",
-      "bowing",
-      "spiccato",
-      "phrasing",
-      "ornamentation",
+      "theory",
+      "interpretation",
+      "hand-independence",
+      "memorization",
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2024-09-21T22:23:46.000Z"
+    "publishedAt": "2024-10-10T16:59:09.000Z"
   },
   "course_089": {
     "id": "course_089",
-    "title": "Shostakovich Preludes & Fugues for Violin — Intermediate",
-    "summary": "From first principles to performance — ornamentation and intonation, taught at a intermediate level over 10 progressive lessons.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/089.jpg",
-    "category": "violin",
+    "title": "Mozart Concerto Cadenzas — Intermediate",
+    "summary": "From first principles to performance — memorization and phrasing, taught at a intermediate level over 10 progressive lessons.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/089.jpg",
+    "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_008",
-    "instructorName": "Ekaterina Volkova",
+    "instructorId": "ins_006",
+    "instructorName": "Daniel Voss",
     "lessonCount": 12,
     "enrollmentCount": 4775,
     "rating": 4.4,
     "durationMinutes": 252,
     "isFeatured": false,
     "tags": [
-      "ornamentation",
-      "intonation",
-      "spiccato",
+      "memorization",
+      "phrasing",
       "interpretation",
+      "voicing",
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2024-08-07T14:31:46.000Z"
+    "publishedAt": "2024-08-26T09:07:09.000Z"
   },
   "course_090": {
     "id": "course_090",
-    "title": "Russian School Vibrato Lab — Intermediate",
-    "summary": "Intermediate students will work through ornamentation and phrasing with annotated scores, slow-tempo demonstrations, and instructor feedback prompts.",
-    "thumbnailUrl": "https://images.ilearnit.app/violin/090.jpg",
-    "category": "violin",
+    "title": "Schumann's Carnaval — Intermediate",
+    "summary": "Intermediate students will work through memorization and hand-independence with annotated scores, slow-tempo demonstrations, and instructor feedback prompts.",
+    "thumbnailUrl": "https://images.ilearnit.app/piano/090.jpg",
+    "category": "piano",
     "level": "intermediate",
-    "instructorId": "ins_009",
-    "instructorName": "Lucas Ferreira",
+    "instructorId": "ins_007",
+    "instructorName": "Isabela Moreau",
     "lessonCount": 17,
     "enrollmentCount": 4245,
     "rating": 4.09,
     "durationMinutes": 306,
     "isFeatured": false,
     "tags": [
-      "ornamentation",
-      "phrasing",
-      "interpretation",
+      "memorization",
+      "hand-independence",
+      "voicing",
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-06-22T02:42:46.000Z"
+    "publishedAt": "2025-07-10T21:18:09.000Z"
   },
   "course_091": {
     "id": "course_091",
@@ -2163,8 +2163,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/violin/091.jpg",
     "category": "violin",
     "level": "advanced",
-    "instructorId": "ins_010",
-    "instructorName": "Aria Kapoor",
+    "instructorId": "ins_008",
+    "instructorName": "Ekaterina Volkova",
     "lessonCount": 10,
     "enrollmentCount": 1946,
     "rating": 4.37,
@@ -2177,7 +2177,7 @@
       "advanced"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-01-19T13:07:46.000Z"
+    "publishedAt": "2025-02-07T07:43:09.000Z"
   },
   "course_092": {
     "id": "course_092",
@@ -2186,8 +2186,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/violin/092.jpg",
     "category": "violin",
     "level": "intermediate",
-    "instructorId": "ins_008",
-    "instructorName": "Ekaterina Volkova",
+    "instructorId": "ins_009",
+    "instructorName": "Lucas Ferreira",
     "lessonCount": 33,
     "enrollmentCount": 2997,
     "rating": 4.89,
@@ -2200,7 +2200,7 @@
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-12-02T22:50:46.000Z"
+    "publishedAt": "2025-12-21T17:26:09.000Z"
   },
   "course_093": {
     "id": "course_093",
@@ -2209,8 +2209,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/violin/093.jpg",
     "category": "violin",
     "level": "intermediate",
-    "instructorId": "ins_009",
-    "instructorName": "Lucas Ferreira",
+    "instructorId": "ins_010",
+    "instructorName": "Aria Kapoor",
     "lessonCount": 29,
     "enrollmentCount": 4898,
     "rating": 4.1,
@@ -2223,7 +2223,7 @@
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2025-04-09T23:15:46.000Z"
+    "publishedAt": "2025-04-28T17:51:09.000Z"
   },
   "course_094": {
     "id": "course_094",
@@ -2232,8 +2232,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/violin/094.jpg",
     "category": "violin",
     "level": "beginner",
-    "instructorId": "ins_010",
-    "instructorName": "Aria Kapoor",
+    "instructorId": "ins_008",
+    "instructorName": "Ekaterina Volkova",
     "lessonCount": 11,
     "enrollmentCount": 2259,
     "rating": 4.32,
@@ -2247,7 +2247,7 @@
       "beginner"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-02-14T19:21:46.000Z"
+    "publishedAt": "2025-03-05T13:57:09.000Z"
   },
   "course_095": {
     "id": "course_095",
@@ -2256,8 +2256,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/violin/095.jpg",
     "category": "violin",
     "level": "intermediate",
-    "instructorId": "ins_008",
-    "instructorName": "Ekaterina Volkova",
+    "instructorId": "ins_009",
+    "instructorName": "Lucas Ferreira",
     "lessonCount": 29,
     "enrollmentCount": 1750,
     "rating": 4.16,
@@ -2271,7 +2271,7 @@
       "intermediate"
     ],
     "priceTier": "standard",
-    "publishedAt": "2024-06-21T20:12:46.000Z"
+    "publishedAt": "2024-07-10T14:48:09.000Z"
   },
   "course_096": {
     "id": "course_096",
@@ -2280,8 +2280,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/violin/096.jpg",
     "category": "violin",
     "level": "beginner",
-    "instructorId": "ins_009",
-    "instructorName": "Lucas Ferreira",
+    "instructorId": "ins_010",
+    "instructorName": "Aria Kapoor",
     "lessonCount": 36,
     "enrollmentCount": 3296,
     "rating": 3.93,
@@ -2294,7 +2294,7 @@
       "beginner"
     ],
     "priceTier": "basic",
-    "publishedAt": "2024-08-16T11:36:46.000Z"
+    "publishedAt": "2024-09-04T06:12:09.000Z"
   },
   "course_097": {
     "id": "course_097",
@@ -2303,8 +2303,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/violin/097.jpg",
     "category": "violin",
     "level": "intermediate",
-    "instructorId": "ins_010",
-    "instructorName": "Aria Kapoor",
+    "instructorId": "ins_008",
+    "instructorName": "Ekaterina Volkova",
     "lessonCount": 14,
     "enrollmentCount": 1567,
     "rating": 4.91,
@@ -2319,7 +2319,7 @@
       "intermediate"
     ],
     "priceTier": "basic",
-    "publishedAt": "2024-06-02T20:31:46.000Z"
+    "publishedAt": "2024-06-21T15:07:09.000Z"
   },
   "course_098": {
     "id": "course_098",
@@ -2328,8 +2328,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/violin/098.jpg",
     "category": "violin",
     "level": "advanced",
-    "instructorId": "ins_008",
-    "instructorName": "Ekaterina Volkova",
+    "instructorId": "ins_009",
+    "instructorName": "Lucas Ferreira",
     "lessonCount": 23,
     "enrollmentCount": 6782,
     "rating": 4.11,
@@ -2342,7 +2342,7 @@
       "advanced"
     ],
     "priceTier": "premium",
-    "publishedAt": "2024-07-09T22:55:46.000Z"
+    "publishedAt": "2024-07-28T17:31:09.000Z"
   },
   "course_099": {
     "id": "course_099",
@@ -2351,8 +2351,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/violin/099.jpg",
     "category": "violin",
     "level": "beginner",
-    "instructorId": "ins_009",
-    "instructorName": "Lucas Ferreira",
+    "instructorId": "ins_010",
+    "instructorName": "Aria Kapoor",
     "lessonCount": 28,
     "enrollmentCount": 1732,
     "rating": 4.49,
@@ -2366,7 +2366,7 @@
       "beginner"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-12-05T10:02:46.000Z"
+    "publishedAt": "2025-12-24T04:38:09.000Z"
   },
   "course_100": {
     "id": "course_100",
@@ -2375,8 +2375,8 @@
     "thumbnailUrl": "https://images.ilearnit.app/violin/100.jpg",
     "category": "violin",
     "level": "advanced",
-    "instructorId": "ins_010",
-    "instructorName": "Aria Kapoor",
+    "instructorId": "ins_008",
+    "instructorName": "Ekaterina Volkova",
     "lessonCount": 21,
     "enrollmentCount": 5300,
     "rating": 4.14,
@@ -2390,6 +2390,489 @@
       "advanced"
     ],
     "priceTier": "standard",
-    "publishedAt": "2025-02-04T18:37:46.000Z"
+    "publishedAt": "2025-02-23T13:13:09.000Z"
+  },
+  "course_101": {
+    "id": "course_101",
+    "title": "Vivaldi Four Seasons Decoded — Beginner",
+    "summary": "A beginner-level course on spiccato and vibrato. 7 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/101.jpg",
+    "category": "violin",
+    "level": "beginner",
+    "instructorId": "ins_009",
+    "instructorName": "Lucas Ferreira",
+    "lessonCount": 16,
+    "enrollmentCount": 1229,
+    "rating": 4.73,
+    "durationMinutes": 272,
+    "isFeatured": false,
+    "tags": [
+      "spiccato",
+      "vibrato",
+      "etudes",
+      "beginner"
+    ],
+    "priceTier": "standard",
+    "publishedAt": "2025-04-17T08:02:09.000Z"
+  },
+  "course_102": {
+    "id": "course_102",
+    "title": "Tchaikovsky Concerto Workshop — Advanced",
+    "summary": "From first principles to performance — technique and etudes, taught at a advanced level over 6 progressive lessons.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/102.jpg",
+    "category": "violin",
+    "level": "advanced",
+    "instructorId": "ins_010",
+    "instructorName": "Aria Kapoor",
+    "lessonCount": 26,
+    "enrollmentCount": 4454,
+    "rating": 3.95,
+    "durationMinutes": 286,
+    "isFeatured": true,
+    "tags": [
+      "technique",
+      "etudes",
+      "interpretation",
+      "advanced"
+    ],
+    "priceTier": "basic",
+    "publishedAt": "2024-10-20T08:28:09.000Z"
+  },
+  "course_103": {
+    "id": "course_103",
+    "title": "Building a Recital Program — Intermediate",
+    "summary": "Intermediate students will work through phrasing and spiccato with annotated scores, slow-tempo demonstrations, and instructor feedback prompts.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/103.jpg",
+    "category": "violin",
+    "level": "intermediate",
+    "instructorId": "ins_008",
+    "instructorName": "Ekaterina Volkova",
+    "lessonCount": 27,
+    "enrollmentCount": 6276,
+    "rating": 4.37,
+    "durationMinutes": 324,
+    "isFeatured": false,
+    "tags": [
+      "phrasing",
+      "spiccato",
+      "etudes",
+      "bowing",
+      "repertoire",
+      "intermediate"
+    ],
+    "priceTier": "standard",
+    "publishedAt": "2026-03-22T07:50:09.000Z"
+  },
+  "course_104": {
+    "id": "course_104",
+    "title": "Etudes for Concert Violin — Beginner",
+    "summary": "A beginner-level course on vibrato and spiccato. 12 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/104.jpg",
+    "category": "violin",
+    "level": "beginner",
+    "instructorId": "ins_009",
+    "instructorName": "Lucas Ferreira",
+    "lessonCount": 11,
+    "enrollmentCount": 5724,
+    "rating": 3.84,
+    "durationMinutes": 198,
+    "isFeatured": false,
+    "tags": [
+      "vibrato",
+      "spiccato",
+      "interpretation",
+      "repertoire",
+      "beginner"
+    ],
+    "priceTier": "basic",
+    "publishedAt": "2025-03-10T21:20:09.000Z"
+  },
+  "course_105": {
+    "id": "course_105",
+    "title": "Mendelssohn Concerto Step-by-Step — Beginner",
+    "summary": "A beginner-level course on repertoire and intonation. 9 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/105.jpg",
+    "category": "violin",
+    "level": "beginner",
+    "instructorId": "ins_010",
+    "instructorName": "Aria Kapoor",
+    "lessonCount": 14,
+    "enrollmentCount": 5161,
+    "rating": 4.45,
+    "durationMinutes": 154,
+    "isFeatured": false,
+    "tags": [
+      "repertoire",
+      "intonation",
+      "bowing",
+      "beginner"
+    ],
+    "priceTier": "basic",
+    "publishedAt": "2024-10-06T14:12:09.000Z"
+  },
+  "course_106": {
+    "id": "course_106",
+    "title": "Shostakovich Preludes & Fugues for Violin — Intermediate",
+    "summary": "Intermediate students will work through bowing and repertoire with annotated scores, slow-tempo demonstrations, and instructor feedback prompts.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/106.jpg",
+    "category": "violin",
+    "level": "intermediate",
+    "instructorId": "ins_008",
+    "instructorName": "Ekaterina Volkova",
+    "lessonCount": 21,
+    "enrollmentCount": 1120,
+    "rating": 3.82,
+    "durationMinutes": 315,
+    "isFeatured": false,
+    "tags": [
+      "bowing",
+      "repertoire",
+      "etudes",
+      "intermediate"
+    ],
+    "priceTier": "standard",
+    "publishedAt": "2024-11-02T09:10:09.000Z"
+  },
+  "course_107": {
+    "id": "course_107",
+    "title": "Mendelssohn Concerto Step-by-Step — Beginner",
+    "summary": "Beginner students will work through intonation and vibrato with annotated scores, slow-tempo demonstrations, and instructor feedback prompts.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/107.jpg",
+    "category": "violin",
+    "level": "beginner",
+    "instructorId": "ins_009",
+    "instructorName": "Lucas Ferreira",
+    "lessonCount": 12,
+    "enrollmentCount": 5851,
+    "rating": 4.14,
+    "durationMinutes": 240,
+    "isFeatured": false,
+    "tags": [
+      "intonation",
+      "vibrato",
+      "technique",
+      "bowing",
+      "repertoire",
+      "beginner"
+    ],
+    "priceTier": "basic",
+    "publishedAt": "2025-11-19T05:05:09.000Z"
+  },
+  "course_108": {
+    "id": "course_108",
+    "title": "Corelli Sonatas — Period Approach — Advanced",
+    "summary": "From first principles to performance — interpretation and repertoire, taught at a advanced level over 11 progressive lessons.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/108.jpg",
+    "category": "violin",
+    "level": "advanced",
+    "instructorId": "ins_010",
+    "instructorName": "Aria Kapoor",
+    "lessonCount": 13,
+    "enrollmentCount": 4489,
+    "rating": 4.31,
+    "durationMinutes": 182,
+    "isFeatured": false,
+    "tags": [
+      "interpretation",
+      "repertoire",
+      "intonation",
+      "spiccato",
+      "phrasing",
+      "advanced"
+    ],
+    "priceTier": "standard",
+    "publishedAt": "2026-03-18T22:32:09.000Z"
+  },
+  "course_109": {
+    "id": "course_109",
+    "title": "Tchaikovsky Concerto Workshop — Advanced",
+    "summary": "Advanced students will work through technique and intonation with annotated scores, slow-tempo demonstrations, and instructor feedback prompts.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/109.jpg",
+    "category": "violin",
+    "level": "advanced",
+    "instructorId": "ins_008",
+    "instructorName": "Ekaterina Volkova",
+    "lessonCount": 30,
+    "enrollmentCount": 5693,
+    "rating": 4.42,
+    "durationMinutes": 450,
+    "isFeatured": false,
+    "tags": [
+      "technique",
+      "intonation",
+      "phrasing",
+      "advanced"
+    ],
+    "priceTier": "standard",
+    "publishedAt": "2026-01-22T11:25:09.000Z"
+  },
+  "course_110": {
+    "id": "course_110",
+    "title": "Extended Techniques for Modern Repertoire — Advanced",
+    "summary": "Strengthen your bowing and phrasing with this advanced course. Includes practice logs, listening guides, and recital-prep checklists.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/110.jpg",
+    "category": "violin",
+    "level": "advanced",
+    "instructorId": "ins_009",
+    "instructorName": "Lucas Ferreira",
+    "lessonCount": 34,
+    "enrollmentCount": 2711,
+    "rating": 4.88,
+    "durationMinutes": 510,
+    "isFeatured": false,
+    "tags": [
+      "bowing",
+      "phrasing",
+      "technique",
+      "repertoire",
+      "vibrato",
+      "advanced"
+    ],
+    "priceTier": "premium",
+    "publishedAt": "2024-09-01T19:49:09.000Z"
+  },
+  "course_111": {
+    "id": "course_111",
+    "title": "Tchaikovsky Concerto Workshop — Intermediate",
+    "summary": "Strengthen your phrasing and spiccato with this intermediate course. Includes practice logs, listening guides, and recital-prep checklists.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/111.jpg",
+    "category": "violin",
+    "level": "intermediate",
+    "instructorId": "ins_010",
+    "instructorName": "Aria Kapoor",
+    "lessonCount": 21,
+    "enrollmentCount": 3521,
+    "rating": 4.03,
+    "durationMinutes": 378,
+    "isFeatured": false,
+    "tags": [
+      "phrasing",
+      "spiccato",
+      "ornamentation",
+      "vibrato",
+      "etudes",
+      "intermediate"
+    ],
+    "priceTier": "premium",
+    "publishedAt": "2025-05-24T09:24:09.000Z"
+  },
+  "course_112": {
+    "id": "course_112",
+    "title": "Extended Techniques for Modern Repertoire — Intermediate",
+    "summary": "A intermediate-level course on intonation and repertoire. 5 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/112.jpg",
+    "category": "violin",
+    "level": "intermediate",
+    "instructorId": "ins_008",
+    "instructorName": "Ekaterina Volkova",
+    "lessonCount": 12,
+    "enrollmentCount": 5721,
+    "rating": 4.46,
+    "durationMinutes": 192,
+    "isFeatured": false,
+    "tags": [
+      "intonation",
+      "repertoire",
+      "phrasing",
+      "interpretation",
+      "ornamentation",
+      "intermediate"
+    ],
+    "priceTier": "standard",
+    "publishedAt": "2025-12-04T07:06:09.000Z"
+  },
+  "course_113": {
+    "id": "course_113",
+    "title": "Baroque Bowing Techniques — Beginner",
+    "summary": "A beginner-level course on phrasing and bowing. 4 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/113.jpg",
+    "category": "violin",
+    "level": "beginner",
+    "instructorId": "ins_009",
+    "instructorName": "Lucas Ferreira",
+    "lessonCount": 24,
+    "enrollmentCount": 3580,
+    "rating": 4.72,
+    "durationMinutes": 480,
+    "isFeatured": false,
+    "tags": [
+      "phrasing",
+      "bowing",
+      "spiccato",
+      "intonation",
+      "beginner"
+    ],
+    "priceTier": "basic",
+    "publishedAt": "2025-12-13T23:09:09.000Z"
+  },
+  "course_114": {
+    "id": "course_114",
+    "title": "Vivaldi Four Seasons Decoded — Beginner",
+    "summary": "From first principles to performance — technique and ornamentation, taught at a beginner level over 6 progressive lessons.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/114.jpg",
+    "category": "violin",
+    "level": "beginner",
+    "instructorId": "ins_010",
+    "instructorName": "Aria Kapoor",
+    "lessonCount": 21,
+    "enrollmentCount": 5861,
+    "rating": 4.84,
+    "durationMinutes": 462,
+    "isFeatured": false,
+    "tags": [
+      "technique",
+      "ornamentation",
+      "intonation",
+      "spiccato",
+      "beginner"
+    ],
+    "priceTier": "standard",
+    "publishedAt": "2024-11-25T20:51:09.000Z"
+  },
+  "course_115": {
+    "id": "course_115",
+    "title": "Paganini Caprices Foundations — Intermediate",
+    "summary": "From first principles to performance — etudes and phrasing, taught at a intermediate level over 4 progressive lessons.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/115.jpg",
+    "category": "violin",
+    "level": "intermediate",
+    "instructorId": "ins_008",
+    "instructorName": "Ekaterina Volkova",
+    "lessonCount": 14,
+    "enrollmentCount": 758,
+    "rating": 4.31,
+    "durationMinutes": 154,
+    "isFeatured": false,
+    "tags": [
+      "etudes",
+      "phrasing",
+      "repertoire",
+      "interpretation",
+      "intermediate"
+    ],
+    "priceTier": "standard",
+    "publishedAt": "2025-02-01T06:00:09.000Z"
+  },
+  "course_116": {
+    "id": "course_116",
+    "title": "Historically Informed Ornamentation — Advanced",
+    "summary": "Build a deep working understanding of vibrato and technique. Designed for the advanced student, with weekly practice plans and graded exercises.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/116.jpg",
+    "category": "violin",
+    "level": "advanced",
+    "instructorId": "ins_009",
+    "instructorName": "Lucas Ferreira",
+    "lessonCount": 31,
+    "enrollmentCount": 4325,
+    "rating": 4.97,
+    "durationMinutes": 372,
+    "isFeatured": false,
+    "tags": [
+      "vibrato",
+      "technique",
+      "repertoire",
+      "advanced"
+    ],
+    "priceTier": "premium",
+    "publishedAt": "2024-11-25T11:36:09.000Z"
+  },
+  "course_117": {
+    "id": "course_117",
+    "title": "Historically Informed Ornamentation — Intermediate",
+    "summary": "Build a deep working understanding of bowing and ornamentation. Designed for the intermediate student, with weekly practice plans and graded exercises.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/117.jpg",
+    "category": "violin",
+    "level": "intermediate",
+    "instructorId": "ins_010",
+    "instructorName": "Aria Kapoor",
+    "lessonCount": 12,
+    "enrollmentCount": 1230,
+    "rating": 4.97,
+    "durationMinutes": 204,
+    "isFeatured": false,
+    "tags": [
+      "bowing",
+      "ornamentation",
+      "technique",
+      "intonation",
+      "vibrato",
+      "intermediate"
+    ],
+    "priceTier": "standard",
+    "publishedAt": "2025-03-05T05:00:09.000Z"
+  },
+  "course_118": {
+    "id": "course_118",
+    "title": "Historically Informed Ornamentation — Intermediate",
+    "summary": "A intermediate-level course on spiccato and bowing. 7 weeks of structured lessons, exercises, and curated repertoire — with downloadable PDFs.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/118.jpg",
+    "category": "violin",
+    "level": "intermediate",
+    "instructorId": "ins_008",
+    "instructorName": "Ekaterina Volkova",
+    "lessonCount": 36,
+    "enrollmentCount": 934,
+    "rating": 4.53,
+    "durationMinutes": 360,
+    "isFeatured": false,
+    "tags": [
+      "spiccato",
+      "bowing",
+      "intonation",
+      "ornamentation",
+      "interpretation",
+      "intermediate"
+    ],
+    "priceTier": "standard",
+    "publishedAt": "2025-06-07T05:26:09.000Z"
+  },
+  "course_119": {
+    "id": "course_119",
+    "title": "Paganini Caprices Foundations — Intermediate",
+    "summary": "Build a deep working understanding of technique and interpretation. Designed for the intermediate student, with weekly practice plans and graded exercises.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/119.jpg",
+    "category": "violin",
+    "level": "intermediate",
+    "instructorId": "ins_009",
+    "instructorName": "Lucas Ferreira",
+    "lessonCount": 17,
+    "enrollmentCount": 3036,
+    "rating": 4.81,
+    "durationMinutes": 204,
+    "isFeatured": false,
+    "tags": [
+      "technique",
+      "interpretation",
+      "repertoire",
+      "intonation",
+      "intermediate"
+    ],
+    "priceTier": "basic",
+    "publishedAt": "2025-05-26T08:00:09.000Z"
+  },
+  "course_120": {
+    "id": "course_120",
+    "title": "Building a Recital Program — Intermediate",
+    "summary": "Intermediate students will work through etudes and bowing with annotated scores, slow-tempo demonstrations, and instructor feedback prompts.",
+    "thumbnailUrl": "https://images.ilearnit.app/violin/120.jpg",
+    "category": "violin",
+    "level": "intermediate",
+    "instructorId": "ins_010",
+    "instructorName": "Aria Kapoor",
+    "lessonCount": 17,
+    "enrollmentCount": 1302,
+    "rating": 3.89,
+    "durationMinutes": 323,
+    "isFeatured": true,
+    "tags": [
+      "etudes",
+      "bowing",
+      "interpretation",
+      "spiccato",
+      "technique",
+      "intermediate"
+    ],
+    "priceTier": "standard",
+    "publishedAt": "2025-08-22T14:42:09.000Z"
   }
 }

@@ -1327,6 +1327,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete download'**
   String get downloadDelete;
+
+  /// No description provided for @coursesLoadingMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading more courses…'**
+  String get coursesLoadingMore;
+
+  /// No description provided for @coursesEndOfList.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached the end.'**
+  String get coursesEndOfList;
 }
 
 class _AppLocalizationsDelegate
