@@ -748,4 +748,60 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get learningPathNotFound => 'Không tìm thấy lộ trình học.';
+
+  @override
+  String get practiceTitle => 'Công cụ luyện tập';
+
+  @override
+  String get practiceTileSubtitle => 'Máy đếm nhịp + bộ lên dây';
+
+  @override
+  String get practiceMetronome => 'Đếm nhịp';
+
+  @override
+  String get practiceTuner => 'Lên dây';
+
+  @override
+  String get metronomeTimeSignature => 'Nhịp';
+
+  @override
+  String get metronomeTapTempo => 'Gõ theo nhịp';
+
+  @override
+  String get metronomeTapHere => 'Gõ đều tay tại đây';
+
+  @override
+  String get metronomeStart => 'Bắt đầu';
+
+  @override
+  String get metronomeStop => 'Dừng';
+
+  @override
+  String get tunerStart => 'Bắt đầu lắng nghe';
+
+  @override
+  String get tunerStop => 'Dừng';
+
+  @override
+  String get tunerListening => 'Đang lắng nghe…';
+
+  @override
+  String get tunerHint =>
+      'Chơi một nốt gần micro. Tốt nhất trong phòng yên tĩnh.';
+
+  @override
+  String get tunerHintSilent => 'Chơi một nốt để bắt đầu.';
+
+  @override
+  String get tunerHintInTune => 'Đúng nhịp.';
+
+  @override
+  String get tunerHintFlat => 'Lên dây.';
+
+  @override
+  String get tunerHintSharp => 'Hạ dây.';
+
+  @override
+  String get tunerPermissionDenied =>
+      'Cần quyền truy cập micro. Bật lại trong Cài đặt → iLearnIt → Micro.';
 }

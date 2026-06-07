@@ -1447,6 +1447,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Learning path not found.'**
   String get learningPathNotFound;
+
+  /// No description provided for @practiceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice tools'**
+  String get practiceTitle;
+
+  /// No description provided for @practiceTileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Metronome + tuner'**
+  String get practiceTileSubtitle;
+
+  /// No description provided for @practiceMetronome.
+  ///
+  /// In en, this message translates to:
+  /// **'Metronome'**
+  String get practiceMetronome;
+
+  /// No description provided for @practiceTuner.
+  ///
+  /// In en, this message translates to:
+  /// **'Tuner'**
+  String get practiceTuner;
+
+  /// No description provided for @metronomeTimeSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Time signature'**
+  String get metronomeTimeSignature;
+
+  /// No description provided for @metronomeTapTempo.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap tempo'**
+  String get metronomeTapTempo;
+
+  /// No description provided for @metronomeTapHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap here in rhythm'**
+  String get metronomeTapHere;
+
+  /// No description provided for @metronomeStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get metronomeStart;
+
+  /// No description provided for @metronomeStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get metronomeStop;
+
+  /// No description provided for @tunerStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start listening'**
+  String get tunerStart;
+
+  /// No description provided for @tunerStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get tunerStop;
+
+  /// No description provided for @tunerListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening…'**
+  String get tunerListening;
+
+  /// No description provided for @tunerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Play a single note close to the mic. Best in a quiet room.'**
+  String get tunerHint;
+
+  /// No description provided for @tunerHintSilent.
+  ///
+  /// In en, this message translates to:
+  /// **'Play a note to begin.'**
+  String get tunerHintSilent;
+
+  /// No description provided for @tunerHintInTune.
+  ///
+  /// In en, this message translates to:
+  /// **'In tune.'**
+  String get tunerHintInTune;
+
+  /// No description provided for @tunerHintFlat.
+  ///
+  /// In en, this message translates to:
+  /// **'Tune up.'**
+  String get tunerHintFlat;
+
+  /// No description provided for @tunerHintSharp.
+  ///
+  /// In en, this message translates to:
+  /// **'Tune down.'**
+  String get tunerHintSharp;
+
+  /// No description provided for @tunerPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone access is required. Re-enable it in Settings → iLearnIt → Microphone.'**
+  String get tunerPermissionDenied;
 }
 
 class _AppLocalizationsDelegate

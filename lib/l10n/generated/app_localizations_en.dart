@@ -763,4 +763,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get learningPathNotFound => 'Learning path not found.';
+
+  @override
+  String get practiceTitle => 'Practice tools';
+
+  @override
+  String get practiceTileSubtitle => 'Metronome + tuner';
+
+  @override
+  String get practiceMetronome => 'Metronome';
+
+  @override
+  String get practiceTuner => 'Tuner';
+
+  @override
+  String get metronomeTimeSignature => 'Time signature';
+
+  @override
+  String get metronomeTapTempo => 'Tap tempo';
+
+  @override
+  String get metronomeTapHere => 'Tap here in rhythm';
+
+  @override
+  String get metronomeStart => 'Start';
+
+  @override
+  String get metronomeStop => 'Stop';
+
+  @override
+  String get tunerStart => 'Start listening';
+
+  @override
+  String get tunerStop => 'Stop';
+
+  @override
+  String get tunerListening => 'Listening…';
+
+  @override
+  String get tunerHint =>
+      'Play a single note close to the mic. Best in a quiet room.';
+
+  @override
+  String get tunerHintSilent => 'Play a note to begin.';
+
+  @override
+  String get tunerHintInTune => 'In tune.';
+
+  @override
+  String get tunerHintFlat => 'Tune up.';
+
+  @override
+  String get tunerHintSharp => 'Tune down.';
+
+  @override
+  String get tunerPermissionDenied =>
+      'Microphone access is required. Re-enable it in Settings → iLearnIt → Microphone.';
 }

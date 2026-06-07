@@ -280,5 +280,26 @@
   },
   "learningPathCurriculumHeader": "Nội dung lộ trình",
   "learningPathCourseMissing": "(Khoá học không còn khả dụng)",
-  "learningPathNotFound": "Không tìm thấy lộ trình học."
+  "learningPathNotFound": "Không tìm thấy lộ trình học.",
+
+  "practiceTitle": "Công cụ luyện tập",
+  "practiceTileSubtitle": "Máy đếm nhịp + bộ lên dây",
+  "practiceMetronome": "Đếm nhịp",
+  "practiceTuner": "Lên dây",
+
+  "metronomeTimeSignature": "Nhịp",
+  "metronomeTapTempo": "Gõ theo nhịp",
+  "metronomeTapHere": "Gõ đều tay tại đây",
+  "metronomeStart": "Bắt đầu",
+  "metronomeStop": "Dừng",
+
+  "tunerStart": "Bắt đầu lắng nghe",
+  "tunerStop": "Dừng",
+  "tunerListening": "Đang lắng nghe…",
+  "tunerHint": "Chơi một nốt gần micro. Tốt nhất trong phòng yên tĩnh.",
+  "tunerHintSilent": "Chơi một nốt để bắt đầu.",
+  "tunerHintInTune": "Đúng nhịp.",
+  "tunerHintFlat": "Lên dây.",
+  "tunerHintSharp": "Hạ dây.",
+  "tunerPermissionDenied": "Cần quyền truy cập micro. Bật lại trong Cài đặt → iLearnIt → Micro."
 }

@@ -53,6 +53,9 @@ class RouteNames {
 
   // Learning paths
   static const String learningPathDetail = 'learning-path-detail';
+
+  // Practice tools (within profile)
+  static const String practice = 'practice';
 }
 
 class RoutePaths {
@@ -107,4 +110,7 @@ class RoutePaths {
   // Learning path detail (top-level, modal-style above the shell so the
   // Home rail and the course detail page both push the same screen).
   static const String learningPathDetail = '/learning-paths/:id';
+
+  // Practice tools (nested under profile)
+  static const String practice = 'practice';
 }

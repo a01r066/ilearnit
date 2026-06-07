@@ -353,5 +353,26 @@
   },
   "learningPathCurriculumHeader": "What you'll cover",
   "learningPathCourseMissing": "(Course no longer available)",
-  "learningPathNotFound": "Learning path not found."
+  "learningPathNotFound": "Learning path not found.",
+
+  "practiceTitle": "Practice tools",
+  "practiceTileSubtitle": "Metronome + tuner",
+  "practiceMetronome": "Metronome",
+  "practiceTuner": "Tuner",
+
+  "metronomeTimeSignature": "Time signature",
+  "metronomeTapTempo": "Tap tempo",
+  "metronomeTapHere": "Tap here in rhythm",
+  "metronomeStart": "Start",
+  "metronomeStop": "Stop",
+
+  "tunerStart": "Start listening",
+  "tunerStop": "Stop",
+  "tunerListening": "Listening…",
+  "tunerHint": "Play a single note close to the mic. Best in a quiet room.",
+  "tunerHintSilent": "Play a note to begin.",
+  "tunerHintInTune": "In tune.",
+  "tunerHintFlat": "Tune up.",
+  "tunerHintSharp": "Tune down.",
+  "tunerPermissionDenied": "Microphone access is required. Re-enable it in Settings → iLearnIt → Microphone."
 }

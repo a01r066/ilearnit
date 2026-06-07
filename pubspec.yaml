@@ -138,6 +138,7 @@ flutter:
     - assets/launchers/
     - assets/colors/
     - assets/legal/
+    - assets/audio/
   # fonts:
   #   - family: Inter
   #     fonts:
