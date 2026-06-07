@@ -295,5 +295,24 @@
   "notificationsPrefsTopicAll": "All updates",
   "notificationsPrefsTopicAllBlurb": "Get every announcement we send to the community.",
   "notificationsPrefsTopicInstrumentBlurb": "New courses, lessons, and tips for this instrument.",
-  "notificationsPrefsUpdateFailed": "Could not update — please try again."
+  "notificationsPrefsUpdateFailed": "Could not update — please try again.",
+
+  "downloadsTitle": "Downloads",
+  "downloadsEmpty": "You haven't downloaded any lectures yet.\nTap the download button on any lecture to save it for offline viewing.",
+  "downloadsClearAll": "Remove all downloads",
+  "downloadsClearAllConfirmTitle": "Remove all downloads?",
+  "downloadsClearAllConfirmBody": "This will delete every downloaded lecture from this device. You can re-download anytime.",
+  "downloadsUsed": "{size} used",
+  "@downloadsUsed": {
+    "description": "Storage usage indicator on the Downloads page header.",
+    "placeholders": {
+      "size": { "type": "String", "example": "124 MB" }
+    }
+  },
+
+  "downloadCta": "Download",
+  "downloadInProgress": "Downloading",
+  "downloadResume": "Resume download",
+  "downloadCompleted": "Downloaded",
+  "downloadDelete": "Delete download"
 }

@@ -44,6 +44,9 @@ class RouteNames {
   // Notifications inbox + preferences
   static const String notificationsInbox = 'notifications-inbox';
   static const String notificationPreferences = 'notification-prefs';
+
+  // Offline downloads (within profile)
+  static const String downloads = 'downloads';
 }
 
 class RoutePaths {
@@ -88,4 +91,7 @@ class RoutePaths {
   // preferences is nested under profile/settings.
   static const String notificationsInbox = '/notifications';
   static const String notificationPreferences = 'notifications';
+
+  // Offline downloads (nested under profile)
+  static const String downloads = 'downloads';
 }

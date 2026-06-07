@@ -224,5 +224,23 @@
   "notificationsPrefsTopicAll": "Tất cả cập nhật",
   "notificationsPrefsTopicAllBlurb": "Nhận mọi thông báo dành cho cộng đồng.",
   "notificationsPrefsTopicInstrumentBlurb": "Khoá học, bài học và mẹo mới cho nhạc cụ này.",
-  "notificationsPrefsUpdateFailed": "Không thể cập nhật — vui lòng thử lại."
+  "notificationsPrefsUpdateFailed": "Không thể cập nhật — vui lòng thử lại.",
+
+  "downloadsTitle": "Đã tải về",
+  "downloadsEmpty": "Bạn chưa tải bài học nào.\nNhấn nút tải về trên bất kỳ bài học nào để xem ngoại tuyến.",
+  "downloadsClearAll": "Xoá tất cả bản tải",
+  "downloadsClearAllConfirmTitle": "Xoá tất cả bản tải?",
+  "downloadsClearAllConfirmBody": "Tất cả bài học đã tải sẽ bị xoá khỏi thiết bị. Bạn có thể tải lại bất cứ lúc nào.",
+  "downloadsUsed": "Đã dùng {size}",
+  "@downloadsUsed": {
+    "placeholders": {
+      "size": { "type": "String", "example": "124 MB" }
+    }
+  },
+
+  "downloadCta": "Tải về",
+  "downloadInProgress": "Đang tải",
+  "downloadResume": "Tiếp tục tải",
+  "downloadCompleted": "Đã tải",
+  "downloadDelete": "Xoá bản tải"
 }

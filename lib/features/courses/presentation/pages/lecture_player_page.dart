@@ -6,6 +6,8 @@ import 'package:ilearnit/features/courses/presentation/providers/curriculum_stat
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/error_view.dart';
 import '../../../../core/widgets/loading_indicator.dart';
+import '../../../downloads/presentation/providers/downloads_providers.dart';
+import '../../../downloads/presentation/widgets/lecture_download_button.dart';
 import '../../../progress/data/datasources/lecture_progress_datasource.dart';
 import '../../../progress/data/models/lecture_progress_model.dart';
 import '../../../progress/presentation/providers/progress_providers.dart';
@@ -175,19 +177,32 @@ class _VideoBody extends ConsumerWidget {
         .watch(lectureProgressByCourseProvider(courseId))
         .maybeWhen(data: (rows) => _findRow(rows, lecture.id), orElse: () => null);
 
+    // Prefer the local download when it's complete so the player works
+    // offline. `file://` is what video_player accepts on both platforms.
+    final localPath =
+        ref.watch(localMediaPathForLectureProvider(lecture.id));
+    final url = localPath != null
+        ? Uri.file(localPath).toString()
+        : lecture.mediaUrl!;
+
     return Column(
       children: [
         AspectRatio(
           aspectRatio: 16 / 9,
           child: VideoLecturePlayer(
-            url: lecture.mediaUrl!,
+            url: url,
             initialPositionSec: saved?.positionSec ?? 0,
             onTick: (pos, dur) =>
                 notifier.onTick(positionSec: pos, durationSec: dur),
             onPause: () => notifier.flush(),
           ),
         ),
-        Expanded(child: _LectureBody(lecture: lecture)),
+        Expanded(
+          child: _LectureBody(
+            lecture: lecture,
+            courseId: courseId,
+          ),
+        ),
       ],
     );
   }
@@ -210,17 +225,28 @@ class _AudioBody extends ConsumerWidget {
         .watch(lectureProgressByCourseProvider(courseId))
         .maybeWhen(data: (rows) => _findRow(rows, lecture.id), orElse: () => null);
 
+    final localPath =
+        ref.watch(localMediaPathForLectureProvider(lecture.id));
+    final url = localPath != null
+        ? Uri.file(localPath).toString()
+        : lecture.mediaUrl!;
+
     return Column(
       children: [
         AudioLecturePlayer(
-          url: lecture.mediaUrl!,
+          url: url,
           title: lecture.title,
           initialPositionSec: saved?.positionSec ?? 0,
           onTick: (pos, dur) =>
               notifier.onTick(positionSec: pos, durationSec: dur),
           onPause: () => notifier.flush(),
         ),
-        Expanded(child: _LectureBody(lecture: lecture)),
+        Expanded(
+          child: _LectureBody(
+            lecture: lecture,
+            courseId: courseId,
+          ),
+        ),
       ],
     );
   }
@@ -238,13 +264,22 @@ LectureProgressModel? _findRow(
   return null;
 }
 
-/// Description + downloadable resources, shared across video/audio bodies.
-class _LectureBody extends StatelessWidget {
-  const _LectureBody({required this.lecture});
+/// Description + download button + downloadable resources, shared across
+/// video/audio bodies.
+class _LectureBody extends ConsumerWidget {
+  const _LectureBody({required this.lecture, required this.courseId});
   final LectureEntity lecture;
+  final String courseId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // We grab the latest course title from the curriculum's parent state
+    // for the download manifest. Falls back to lecture title if the
+    // course detail hasn't resolved yet — the user can still download.
+    final courseTitle = ref
+        .watch(courseDetailNotifierProvider(courseId))
+        .maybeWhen(loaded: (c) => c.title, orElse: () => '');
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -256,6 +291,14 @@ class _LectureBody extends StatelessWidget {
             color: context.colors.onSurfaceVariant,
           ),
         ),
+        if (lecture.mediaUrl != null && lecture.mediaUrl!.isNotEmpty)
+          LectureDownloadButton(
+            courseId: courseId,
+            courseTitle: courseTitle,
+            lectureId: lecture.id,
+            lectureTitle: lecture.title,
+            mediaUrl: lecture.mediaUrl!,
+          ),
         if (lecture.description != null && lecture.description!.isNotEmpty) ...[
           const SizedBox(height: 16),
           Text(lecture.description!, style: context.textTheme.bodyLarge),

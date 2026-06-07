@@ -1261,6 +1261,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not update — please try again.'**
   String get notificationsPrefsUpdateFailed;
+
+  /// No description provided for @downloadsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads'**
+  String get downloadsTitle;
+
+  /// No description provided for @downloadsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t downloaded any lectures yet.\nTap the download button on any lecture to save it for offline viewing.'**
+  String get downloadsEmpty;
+
+  /// No description provided for @downloadsClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all downloads'**
+  String get downloadsClearAll;
+
+  /// No description provided for @downloadsClearAllConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all downloads?'**
+  String get downloadsClearAllConfirmTitle;
+
+  /// No description provided for @downloadsClearAllConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will delete every downloaded lecture from this device. You can re-download anytime.'**
+  String get downloadsClearAllConfirmBody;
+
+  /// Storage usage indicator on the Downloads page header.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} used'**
+  String downloadsUsed(String size);
+
+  /// No description provided for @downloadCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get downloadCta;
+
+  /// No description provided for @downloadInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading'**
+  String get downloadInProgress;
+
+  /// No description provided for @downloadResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume download'**
+  String get downloadResume;
+
+  /// No description provided for @downloadCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded'**
+  String get downloadCompleted;
+
+  /// No description provided for @downloadDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete download'**
+  String get downloadDelete;
 }
 
 class _AppLocalizationsDelegate

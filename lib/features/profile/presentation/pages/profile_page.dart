@@ -6,6 +6,7 @@ import 'package:ilearnit/core/routing/route_names.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/extensions.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../auth/presentation/providers/auth_state.dart';
 import 'package:ilearnit/features/auth/domain/entities/user_entity.dart';
@@ -87,6 +88,12 @@ class ProfilePage extends ConsumerWidget {
           title: const Text('Watch history'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {},
+        ),
+        ListTile(
+          leading: const Icon(Icons.cloud_download_outlined),
+          title: Text(AppLocalizations.of(context).downloadsTitle),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.pushNamed(RouteNames.downloads),
         ),
         ListTile(
           leading: const Icon(Icons.settings_outlined),

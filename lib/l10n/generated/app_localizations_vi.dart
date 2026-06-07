@@ -644,4 +644,41 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get notificationsPrefsUpdateFailed =>
       'Không thể cập nhật — vui lòng thử lại.';
+
+  @override
+  String get downloadsTitle => 'Đã tải về';
+
+  @override
+  String get downloadsEmpty =>
+      'Bạn chưa tải bài học nào.\nNhấn nút tải về trên bất kỳ bài học nào để xem ngoại tuyến.';
+
+  @override
+  String get downloadsClearAll => 'Xoá tất cả bản tải';
+
+  @override
+  String get downloadsClearAllConfirmTitle => 'Xoá tất cả bản tải?';
+
+  @override
+  String get downloadsClearAllConfirmBody =>
+      'Tất cả bài học đã tải sẽ bị xoá khỏi thiết bị. Bạn có thể tải lại bất cứ lúc nào.';
+
+  @override
+  String downloadsUsed(String size) {
+    return 'Đã dùng $size';
+  }
+
+  @override
+  String get downloadCta => 'Tải về';
+
+  @override
+  String get downloadInProgress => 'Đang tải';
+
+  @override
+  String get downloadResume => 'Tiếp tục tải';
+
+  @override
+  String get downloadCompleted => 'Đã tải';
+
+  @override
+  String get downloadDelete => 'Xoá bản tải';
 }

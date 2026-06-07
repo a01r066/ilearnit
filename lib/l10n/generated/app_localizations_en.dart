@@ -647,4 +647,41 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get notificationsPrefsUpdateFailed =>
       'Could not update — please try again.';
+
+  @override
+  String get downloadsTitle => 'Downloads';
+
+  @override
+  String get downloadsEmpty =>
+      'You haven\'t downloaded any lectures yet.\nTap the download button on any lecture to save it for offline viewing.';
+
+  @override
+  String get downloadsClearAll => 'Remove all downloads';
+
+  @override
+  String get downloadsClearAllConfirmTitle => 'Remove all downloads?';
+
+  @override
+  String get downloadsClearAllConfirmBody =>
+      'This will delete every downloaded lecture from this device. You can re-download anytime.';
+
+  @override
+  String downloadsUsed(String size) {
+    return '$size used';
+  }
+
+  @override
+  String get downloadCta => 'Download';
+
+  @override
+  String get downloadInProgress => 'Downloading';
+
+  @override
+  String get downloadResume => 'Resume download';
+
+  @override
+  String get downloadCompleted => 'Downloaded';
+
+  @override
+  String get downloadDelete => 'Delete download';
 }
