@@ -6,6 +6,7 @@ import '../../../../core/notifications/presentation/widgets/notification_bell.da
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/extensions.dart';
+import '../../../../core/widgets/skeleton.dart';
 import '../../../subscriptions/presentation/providers/subscription_providers.dart';
 import '../../data/models/songbook_model.dart';
 import '../providers/songbook_providers.dart';
@@ -33,10 +34,18 @@ class SongbooksPage extends ConsumerWidget {
     return Scaffold(
       body: SafeArea(
         bottom: false,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const _BrandHeader(),
+        child: RefreshIndicator(
+          onRefresh: () async {
+            // Recently viewed reads from prefs synchronously — invalidate
+            // it too so the FutureProvider re-runs.
+            ref.invalidate(recentlyViewedSongbooksProvider);
+            ref.invalidate(bestsellersStreamProvider);
+          },
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            children: [
+              const _BrandHeader(),
             if (!hasSubscription) const _TrialBanner(),
             const SizedBox(height: 16),
             const _SearchBarRow(),
@@ -82,7 +91,8 @@ class SongbooksPage extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -282,19 +292,21 @@ class _CarouselSkeleton extends StatelessWidget {
                   )),
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 260,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: 4,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (_, __) => Container(
-              width: 160,
-              height: 216,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(4),
+        SkeletonShimmer(
+          child: SizedBox(
+            height: 260,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: 4,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              // 160×216 mirrors the portrait songbook covers — see
+              // SongbookCard for the source dimensions.
+              itemBuilder: (_, __) => const SkeletonBox(
+                width: 160,
+                height: 216,
+                borderRadius: 4,
               ),
             ),
           ),

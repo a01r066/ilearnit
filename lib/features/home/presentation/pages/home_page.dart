@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/extensions.dart';
-import '../../../../core/widgets/loading_indicator.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../../core/notifications/presentation/widgets/notification_bell.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
@@ -13,6 +12,7 @@ import '../../../courses/domain/entities/course_entity.dart';
 import '../../../courses/domain/entities/instrument_category.dart';
 import '../../../courses/presentation/providers/courses_providers.dart';
 import '../../../courses/presentation/widgets/course_card.dart';
+import '../../../courses/presentation/widgets/course_carousel_skeleton.dart';
 import '../../../progress/presentation/widgets/continue_learning_rail.dart';
 
 class HomePage extends ConsumerWidget {
@@ -26,9 +26,21 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          children: [
+        child: RefreshIndicator(
+          onRefresh: () async {
+            // Invalidate every provider this screen consumes so a single
+            // gesture reloads the full page. Each `ref.refresh` returns
+            // the fresh value; we discard them and rely on the consuming
+            // widgets to re-render on the next frame.
+            ref.invalidate(featuredCoursesProvider);
+            for (final c in InstrumentCategory.values) {
+              ref.invalidate(popularByInstrumentProvider(c));
+            }
+          },
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 8, 8),
               child: Row(
@@ -79,10 +91,7 @@ class HomePage extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             featured.when(
-              loading: () => const SizedBox(
-                height: 220,
-                child: LoadingIndicator(),
-              ),
+              loading: () => const CourseCarouselSkeleton(),
               error: (e, _) => SizedBox(
                 height: 220,
                 child: Center(child: Text(e.toString())),
@@ -123,6 +132,7 @@ class HomePage extends ConsumerWidget {
               _PopularInstrumentSection(category: c),
             ],
           ],
+          ),
         ),
       ),
     );
@@ -150,10 +160,7 @@ class _PopularInstrumentSection extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         async.when(
-          loading: () => const SizedBox(
-            height: 220,
-            child: LoadingIndicator(),
-          ),
+          loading: () => const CourseCarouselSkeleton(),
           error: (e, _) => SizedBox(
             height: 220,
             child: Center(child: Text(e.toString())),

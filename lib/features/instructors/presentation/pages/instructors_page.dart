@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/utils/extensions.dart';
+import '../../../../core/widgets/skeleton.dart';
 import '../../data/models/instructor_model.dart';
 import '../providers/instructor_providers.dart';
 
@@ -27,41 +28,82 @@ class InstructorsPage extends ConsumerWidget {
           ),
         ],
       ),
-      body: list.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text('$e',
-                style: TextStyle(color: context.colors.error)),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(instructorsListProvider);
+        },
+        child: list.when(
+          loading: () => const _InstructorListSkeleton(),
+          error: (e, _) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text('$e',
+                  style: TextStyle(color: context.colors.error)),
+            ),
+          ),
+          data: (items) {
+            if (items.isEmpty) {
+              // Wrap in ListView so the RefreshIndicator gesture still
+              // works when the catalogue is empty.
+              return ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 80),
+                  Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.person_search_rounded, size: 56),
+                        SizedBox(height: 12),
+                        Text(
+                          'No instructors yet.',
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }
+            return ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const Divider(height: 1),
+              itemBuilder: (_, i) => _InstructorRow(instructor: items[i]),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// Skeleton rows that mirror `_InstructorRow`'s layout — 56×56 avatar +
+/// two text lines.
+class _InstructorListSkeleton extends StatelessWidget {
+  const _InstructorListSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SkeletonShimmer(
+      child: ListView.separated(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        itemCount: 6,
+        separatorBuilder: (_, __) => const Divider(height: 1),
+        itemBuilder: (_, __) => const ListTile(
+          leading: SkeletonBox(width: 56, height: 56, borderRadius: 4),
+          title: Padding(
+            padding: EdgeInsets.only(top: 8, right: 80),
+            child: SkeletonText(height: 14),
+          ),
+          subtitle: Padding(
+            padding: EdgeInsets.only(top: 8, right: 140),
+            child: SkeletonText(height: 12),
           ),
         ),
-        data: (items) {
-          if (items.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.person_search_rounded, size: 56),
-                    SizedBox(height: 12),
-                    Text(
-                      'No instructors yet.',
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-          return ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (_, i) => _InstructorRow(instructor: items[i]),
-          );
-        },
       ),
     );
   }

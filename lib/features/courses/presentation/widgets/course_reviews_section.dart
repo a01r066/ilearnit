@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/extensions.dart';
+import '../../../../core/widgets/skeleton.dart';
 import '../../../purchases/presentation/providers/purchases_providers.dart';
 import '../../data/models/course_review_model.dart';
 import '../providers/reviews_providers.dart';
@@ -33,10 +34,7 @@ class CourseReviewsSection extends ConsumerWidget {
             )),
         const SizedBox(height: 16),
         reviews.when(
-          loading: () => const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(child: CircularProgressIndicator()),
-          ),
+          loading: () => const _ReviewsSkeleton(),
           error: (e, _) => Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Text('Failed to load reviews: $e',
@@ -257,6 +255,64 @@ class _ReviewTile extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Three-row shimmer placeholder that matches `_ReviewTile`'s layout —
+/// circle avatar + name + stars + body lines. Rendered while the live
+/// `courseReviewsProvider` stream is in flight.
+class _ReviewsSkeleton extends StatelessWidget {
+  const _ReviewsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SkeletonShimmer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Summary row mirror: big avg + stars + count line.
+          Row(
+            children: const [
+              SkeletonBox(width: 80, height: 36),
+              SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SkeletonBox(width: 100, height: 18),
+                  SizedBox(height: 6),
+                  SkeletonText(width: 70, height: 12),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          for (var i = 0; i < 3; i++) ...[
+            if (i != 0) const Divider(height: 24),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                SkeletonAvatar(size: 40),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SkeletonText(width: 140, height: 14),
+                      SizedBox(height: 6),
+                      SkeletonText(width: 80, height: 11),
+                      SizedBox(height: 10),
+                      SkeletonText(height: 12),
+                      SizedBox(height: 6),
+                      SkeletonText(width: 220, height: 12),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
