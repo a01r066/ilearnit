@@ -690,4 +690,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coursesEndOfList => 'You\'ve reached the end.';
+
+  @override
+  String get wishlistTitle => 'Saved courses';
+
+  @override
+  String get wishlistSubtitleEmpty => 'Bookmark a course to come back to it';
+
+  @override
+  String wishlistSubtitleCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count courses saved',
+      one: '1 course saved',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get wishlistEmptyTitle => 'No saved courses yet';
+
+  @override
+  String get wishlistEmptyBody =>
+      'Tap the heart on any course card to save it for later. You\'ll be notified when the price drops.';
+
+  @override
+  String get wishlistBrowseCta => 'Browse courses';
+
+  @override
+  String get wishlistAddTooltip => 'Save for later';
+
+  @override
+  String get wishlistRemoveTooltip => 'Remove from saved';
+
+  @override
+  String get wishlistError => 'Could not update — please try again.';
+
+  @override
+  String get wishlistSignInPrompt => 'Sign in to save courses.';
+
+  @override
+  String get wishlistUntitled => 'Untitled course';
 }

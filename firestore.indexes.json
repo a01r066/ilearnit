@@ -6,6 +6,13 @@
       "fields": [
         { "fieldPath": "userId", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "wishlist",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "courseId", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

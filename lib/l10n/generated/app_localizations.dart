@@ -1339,6 +1339,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You\'ve reached the end.'**
   String get coursesEndOfList;
+
+  /// No description provided for @wishlistTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved courses'**
+  String get wishlistTitle;
+
+  /// No description provided for @wishlistSubtitleEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmark a course to come back to it'**
+  String get wishlistSubtitleEmpty;
+
+  /// Pluralized subtitle on the Profile → Saved tile.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 course saved} other{{count} courses saved}}'**
+  String wishlistSubtitleCount(int count);
+
+  /// No description provided for @wishlistEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved courses yet'**
+  String get wishlistEmptyTitle;
+
+  /// No description provided for @wishlistEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the heart on any course card to save it for later. You\'ll be notified when the price drops.'**
+  String get wishlistEmptyBody;
+
+  /// No description provided for @wishlistBrowseCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse courses'**
+  String get wishlistBrowseCta;
+
+  /// No description provided for @wishlistAddTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Save for later'**
+  String get wishlistAddTooltip;
+
+  /// No description provided for @wishlistRemoveTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from saved'**
+  String get wishlistRemoveTooltip;
+
+  /// No description provided for @wishlistError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update — please try again.'**
+  String get wishlistError;
+
+  /// No description provided for @wishlistSignInPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to save courses.'**
+  String get wishlistSignInPrompt;
+
+  /// No description provided for @wishlistUntitled.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled course'**
+  String get wishlistUntitled;
 }
 
 class _AppLocalizationsDelegate

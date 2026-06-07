@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../wishlist/presentation/widgets/bookmark_button.dart';
 import '../../domain/entities/course_entity.dart';
 import '../../domain/entities/instrument_category.dart';
 
@@ -48,16 +49,30 @@ class CourseCard extends StatelessWidget {
                     const BorderRadius.vertical(top: Radius.circular(16)),
                 child: AspectRatio(
                   aspectRatio: 16 / 9,
-                  child: course.thumbnailUrl.isEmpty
-                      ? Container(color: _accent.withValues(alpha: 0.15))
-                      : CachedNetworkImage(
-                          imageUrl: course.thumbnailUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (_, __) =>
-                              Container(color: Colors.black12),
-                          errorWidget: (_, __, ___) =>
-                              Container(color: _accent.withValues(alpha: 0.15)),
-                        ),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: course.thumbnailUrl.isEmpty
+                            ? Container(color: _accent.withValues(alpha: 0.15))
+                            : CachedNetworkImage(
+                                imageUrl: course.thumbnailUrl,
+                                fit: BoxFit.cover,
+                                placeholder: (_, __) =>
+                                    Container(color: Colors.black12),
+                                errorWidget: (_, __, ___) => Container(
+                                    color: _accent.withValues(alpha: 0.15)),
+                              ),
+                      ),
+                      // Bookmark overlay — top-right corner. The button
+                      // stops its own tap from bubbling into the card's
+                      // `onTap`, so heart-toggling never routes away.
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: BookmarkButton(course: course),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               Flexible(

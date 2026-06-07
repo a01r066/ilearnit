@@ -245,5 +245,22 @@
   "downloadDelete": "Xoá bản tải",
 
   "coursesLoadingMore": "Đang tải thêm khoá học…",
-  "coursesEndOfList": "Bạn đã xem hết danh sách."
+  "coursesEndOfList": "Bạn đã xem hết danh sách.",
+
+  "wishlistTitle": "Khoá học đã lưu",
+  "wishlistSubtitleEmpty": "Lưu khoá học để xem lại sau",
+  "wishlistSubtitleCount": "Đã lưu {count} khoá học",
+  "@wishlistSubtitleCount": {
+    "placeholders": {
+      "count": { "type": "int", "example": "3" }
+    }
+  },
+  "wishlistEmptyTitle": "Chưa có khoá học nào được lưu",
+  "wishlistEmptyBody": "Chạm trái tim trên bất kỳ khoá học nào để lưu lại. Bạn sẽ được thông báo khi giá giảm.",
+  "wishlistBrowseCta": "Khám phá khoá học",
+  "wishlistAddTooltip": "Lưu để xem sau",
+  "wishlistRemoveTooltip": "Bỏ khỏi danh sách lưu",
+  "wishlistError": "Không thể cập nhật — vui lòng thử lại.",
+  "wishlistSignInPrompt": "Đăng nhập để lưu khoá học.",
+  "wishlistUntitled": "Khoá học chưa đặt tên"
 }

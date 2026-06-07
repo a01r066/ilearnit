@@ -687,4 +687,40 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get coursesEndOfList => 'Bạn đã xem hết danh sách.';
+
+  @override
+  String get wishlistTitle => 'Khoá học đã lưu';
+
+  @override
+  String get wishlistSubtitleEmpty => 'Lưu khoá học để xem lại sau';
+
+  @override
+  String wishlistSubtitleCount(int count) {
+    return 'Đã lưu $count khoá học';
+  }
+
+  @override
+  String get wishlistEmptyTitle => 'Chưa có khoá học nào được lưu';
+
+  @override
+  String get wishlistEmptyBody =>
+      'Chạm trái tim trên bất kỳ khoá học nào để lưu lại. Bạn sẽ được thông báo khi giá giảm.';
+
+  @override
+  String get wishlistBrowseCta => 'Khám phá khoá học';
+
+  @override
+  String get wishlistAddTooltip => 'Lưu để xem sau';
+
+  @override
+  String get wishlistRemoveTooltip => 'Bỏ khỏi danh sách lưu';
+
+  @override
+  String get wishlistError => 'Không thể cập nhật — vui lòng thử lại.';
+
+  @override
+  String get wishlistSignInPrompt => 'Đăng nhập để lưu khoá học.';
+
+  @override
+  String get wishlistUntitled => 'Khoá học chưa đặt tên';
 }

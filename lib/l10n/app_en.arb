@@ -317,5 +317,23 @@
   "downloadDelete": "Delete download",
 
   "coursesLoadingMore": "Loading more courses…",
-  "coursesEndOfList": "You've reached the end."
+  "coursesEndOfList": "You've reached the end.",
+
+  "wishlistTitle": "Saved courses",
+  "wishlistSubtitleEmpty": "Bookmark a course to come back to it",
+  "wishlistSubtitleCount": "{count, plural, =1{1 course saved} other{{count} courses saved}}",
+  "@wishlistSubtitleCount": {
+    "description": "Pluralized subtitle on the Profile → Saved tile.",
+    "placeholders": {
+      "count": { "type": "int", "example": "3" }
+    }
+  },
+  "wishlistEmptyTitle": "No saved courses yet",
+  "wishlistEmptyBody": "Tap the heart on any course card to save it for later. You'll be notified when the price drops.",
+  "wishlistBrowseCta": "Browse courses",
+  "wishlistAddTooltip": "Save for later",
+  "wishlistRemoveTooltip": "Remove from saved",
+  "wishlistError": "Could not update — please try again.",
+  "wishlistSignInPrompt": "Sign in to save courses.",
+  "wishlistUntitled": "Untitled course"
 }

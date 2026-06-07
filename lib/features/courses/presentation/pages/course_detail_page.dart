@@ -11,6 +11,7 @@ import '../../../progress/presentation/providers/progress_providers.dart';
 import '../../../progress/presentation/widgets/course_progress_card.dart';
 import '../../../purchases/presentation/providers/purchases_providers.dart';
 import '../../../purchases/presentation/widgets/buy_course_button.dart';
+import '../../../wishlist/presentation/widgets/bookmark_button.dart';
 import '../../domain/entities/course_entity.dart';
 import '../../domain/entities/lecture_entity.dart';
 import '../providers/course_detail_state.dart';
@@ -74,6 +75,14 @@ class _Loaded extends ConsumerWidget {
         SliverAppBar(
           expandedHeight: 240,
           pinned: true,
+          actions: [
+            BookmarkButton(
+              course: course,
+              style: BookmarkButtonStyle.appBar,
+              size: 24,
+            ),
+            const SizedBox(width: 4),
+          ],
           flexibleSpace: FlexibleSpaceBar(
             title: Text(
               course.title,

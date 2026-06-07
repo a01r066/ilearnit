@@ -75,6 +75,14 @@ service cloud.firestore {
         // Creates are server-only.
         allow create: if false;
       }
+
+      // --- Wishlist / "Saved courses" -------------------------------------
+      // Owner-only by design. Other users cannot see what you've saved.
+      // The price-drop Cloud Function uses a collectionGroup query via the
+      // Admin SDK and bypasses these rules.
+      match /wishlist/{courseId} {
+        allow read, write: if isSignedIn() && uid() == userId;
+      }
     }
 
     // ============================================================

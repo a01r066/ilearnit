@@ -47,6 +47,9 @@ class RouteNames {
 
   // Offline downloads (within profile)
   static const String downloads = 'downloads';
+
+  // Wishlist / saved courses (within profile)
+  static const String wishlist = 'wishlist';
 }
 
 class RoutePaths {
@@ -94,4 +97,7 @@ class RoutePaths {
 
   // Offline downloads (nested under profile)
   static const String downloads = 'downloads';
+
+  // Wishlist (nested under profile)
+  static const String wishlist = 'wishlist';
 }

@@ -12,6 +12,7 @@ import '../../../auth/presentation/providers/auth_state.dart';
 import 'package:ilearnit/features/auth/domain/entities/user_entity.dart';
 import '../../../purchases/presentation/widgets/restore_purchases_tile.dart';
 import '../../../subscriptions/presentation/providers/subscription_providers.dart';
+import '../../../wishlist/presentation/providers/wishlist_providers.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -79,9 +80,18 @@ class ProfilePage extends ConsumerWidget {
         ),
         ListTile(
           leading: const Icon(Icons.bookmark_outline),
-          title: const Text('Saved courses'),
+          title: Text(AppLocalizations.of(context).wishlistTitle),
+          subtitle: Consumer(
+            builder: (context, ref, _) {
+              final t = AppLocalizations.of(context);
+              final count =
+                  ref.watch(wishlistCountProvider).value ?? 0;
+              if (count == 0) return Text(t.wishlistSubtitleEmpty);
+              return Text(t.wishlistSubtitleCount(count));
+            },
+          ),
           trailing: const Icon(Icons.chevron_right),
-          onTap: () {},
+          onTap: () => context.pushNamed(RouteNames.wishlist),
         ),
         ListTile(
           leading: const Icon(Icons.history),

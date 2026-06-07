@@ -351,6 +351,11 @@ export const deleteAccount = onCall(async (request) => {
     await deleteAuthoredCourseReviews(uid);
     await deleteAuthoredSongbookReviews(uid);
 
+    // 3a. Wishlist subcollection.
+    await deleteSubcollection(
+      db.collection('users').doc(uid).collection('wishlist'),
+    );
+
     // 4. Storage objects under users/{uid}/.
     try {
       await storage.bucket().deleteFiles({prefix: `users/${uid}/`});
@@ -449,3 +454,104 @@ async function deleteSubcollection(
     if (snap.size < 200) return;
   }
 }
+
+// ---------- 5. course price drop → wishlist watchers ---------------------
+
+/**
+ * Rank of each [PriceTier]. Lower number == cheaper. Keep in lockstep
+ * with `lib/features/purchases/domain/entities/price_tier.dart`.
+ */
+const PRICE_TIER_RANK: Record<string, number> = {
+  basic: 0,
+  standard: 1,
+  premium: 2,
+};
+
+/**
+ * Fires on `courses/{id}` update. When the priceTier drops (e.g. an
+ * instructor reclassifies a `premium` course to `standard`), fan a push +
+ * inbox row out to every user who has the course on their wishlist.
+ *
+ * Indexed on `wishlist` collection-group via the `courseId` field — see
+ * `firestore.indexes.json`.
+ *
+ * For very popular courses (thousands of savers) this fan-out can blow
+ * past Firestore's per-call write quota. We page the results and accept
+ * the limitation that a Cloud Function timeout would lose the tail.
+ * That's fine for v1 — escalate to a queue-based fan-out when a course
+ * crosses ~5k saves.
+ */
+export const onCoursePriceDrop = onDocumentUpdated(
+  'courses/{courseId}',
+  async (event) => {
+    const before = event.data?.before.data();
+    const after = event.data?.after.data();
+    if (!before || !after) return;
+
+    const beforeTier = (before.priceTier as string | undefined) ?? 'standard';
+    const afterTier = (after.priceTier as string | undefined) ?? 'standard';
+    if (beforeTier === afterTier) return;
+
+    const beforeRank = PRICE_TIER_RANK[beforeTier] ?? 1;
+    const afterRank = PRICE_TIER_RANK[afterTier] ?? 1;
+    if (afterRank >= beforeRank) return; // not a drop
+
+    const courseId = event.params.courseId;
+    const courseTitle =
+      (after.title as string | undefined) ?? 'a saved course';
+
+    logger.info(
+      `onCoursePriceDrop: ${courseId} ${beforeTier} → ${afterTier}`,
+    );
+
+    // Find every wishlist doc that references this course.
+    const snap = await db
+      .collectionGroup('wishlist')
+      .where('courseId', '==', courseId)
+      .get();
+    if (snap.empty) return;
+
+    // Each wishlist doc lives under `users/{uid}/wishlist/{courseId}` —
+    // the saver's uid is the parent doc id.
+    const savers: string[] = [];
+    for (const d of snap.docs) {
+      const userRef = d.ref.parent.parent;
+      if (userRef) savers.push(userRef.id);
+    }
+
+    // Update the denormalized `priceTier` field on each saver's wishlist
+    // doc so the Saved page reflects the new price immediately.
+    {
+      const updateBatch = db.batch();
+      for (const d of snap.docs) {
+        updateBatch.set(
+          d.ref,
+          {priceTier: afterTier},
+          {merge: true},
+        );
+      }
+      await updateBatch.commit();
+    }
+
+    const notification = {
+      title: 'Price drop on a saved course',
+      body: `${courseTitle} is now available at a lower tier.`,
+    };
+    const data = dataOnly({
+      type: 'broadcast',
+      route: `/courses/${courseId}`,
+      courseId,
+    });
+
+    // Fan out — 1:1 push + inbox doc per saver. Parallel but capped to
+    // 20 at a time so we don't hammer the FCM quota.
+    const chunkSize = 20;
+    for (let i = 0; i < savers.length; i += chunkSize) {
+      const chunk = savers.slice(i, i + chunkSize);
+      await Promise.all(chunk.map((uid) => notifyUser(uid, notification, data)));
+    }
+    logger.info(
+      `onCoursePriceDrop: notified ${savers.length} wishlisters of ${courseId}`,
+    );
+  },
+);
