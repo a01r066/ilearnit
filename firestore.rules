@@ -283,6 +283,17 @@ service cloud.firestore {
     }
 
     // ============================================================
+    // site_content/{slug}  — landing-page CMS
+    // ============================================================
+    // Public read so the static marketing site (anonymous web users)
+    // can pull the latest doc from JS. Admin-only write — instructors
+    // can't tamper with the landing page.
+    match /site_content/{slug} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ============================================================
     // notification_broadcasts/{broadcastId}
     // ============================================================
     // Admin queues a broadcast. The Cloud Function picks it up and writes

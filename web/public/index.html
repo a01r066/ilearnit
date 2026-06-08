@@ -54,17 +54,23 @@
     <section class="hero">
       <div class="container hero-grid">
         <div>
-          <span class="eyebrow">Online classical lessons</span>
-          <h1>Master <em>guitar, piano,&nbsp;and violin</em> with concert-level instructors.</h1>
-          <p class="lead">
+          <span class="eyebrow" data-cms="hero.eyebrow">Online classical lessons</span>
+          <h1 data-cms="hero.title">Master <em>guitar, piano,&nbsp;and violin</em> with concert-level instructors.</h1>
+          <p class="lead" data-cms="hero.subtitle">
             iLearnIt brings world-class classical musicians into your living room.
             Stream structured courses, download sheet music and exercises, and
             practice on your own schedule — phone, tablet, or both.
           </p>
 
           <div class="hero-ctas">
-            <a class="btn btn-primary" href="#download">Start learning today</a>
-            <a class="btn btn-ghost" href="#instruments">Browse instruments</a>
+            <a class="btn btn-primary"
+               href="#download"
+               data-cms="hero.ctaPrimaryLabel"
+               data-cms-href="hero.ctaPrimaryHref">Start learning today</a>
+            <a class="btn btn-ghost"
+               href="#instruments"
+               data-cms="hero.ctaSecondaryLabel"
+               data-cms-href="hero.ctaSecondaryHref">Browse instruments</a>
           </div>
 
           <div class="store-badges" id="download">
@@ -125,7 +131,19 @@
           <p class="sub">Stream lectures, download sheet music, replay difficult passages — everything you need to actually finish a piece.</p>
         </div>
 
-        <div class="features">
+        <!-- Template used by cms.js when site_content/landing.features is set. -->
+        <template id="cms-tpl-feature">
+          <article class="feature">
+            <div class="icon">{{icon}}</div>
+            <h3>{{title}}</h3>
+            <p>{{description}}</p>
+          </article>
+        </template>
+
+        <div class="features"
+             data-cms-list="features"
+             data-cms-template="feature">
+          <!-- Static fallback content (overwritten if Firestore has features). -->
           <article class="feature">
             <div class="icon">▶</div>
             <h3>Stream-quality video</h3>
@@ -168,7 +186,22 @@
           <p class="sub">No subscriptions. Pay once, own the course forever. Free previews on every course before you commit.</p>
         </div>
 
-        <div class="pricing">
+        <template id="cms-tpl-tier">
+          <article data-if-isFeatured="tier featured">
+            <h3>{{name}}</h3>
+            <p class="muted">{{billingNote}}</p>
+            <div class="price">{{priceLabel}}</div>
+            <ul>
+              {{#perks}}<li>{{.}}</li>{{/perks}}
+            </ul>
+            <a class="btn btn-primary" href="{{ctaHref}}">{{ctaLabel}}</a>
+          </article>
+        </template>
+
+        <div class="pricing"
+             data-cms-list="pricingTiers"
+             data-cms-template="tier">
+          <!-- Static fallback -->
           <article class="tier">
             <h3>Basic</h3>
             <p class="muted">Introductory courses — perfect for first-time students.</p>
@@ -219,7 +252,16 @@
           <p class="sub">Quick answers — for more detail visit the <a href="/help.html">help center</a>.</p>
         </div>
 
-        <div class="faq">
+        <template id="cms-tpl-faq">
+          <details>
+            <summary>{{question}}</summary>
+            <p>{{answer}}</p>
+          </details>
+        </template>
+
+        <div class="faq"
+             data-cms-list="faqs"
+             data-cms-template="faq">
           <details>
             <summary>Is there a free trial?</summary>
             <p>Every course includes free preview lectures — typically the first two of each section. Browse the curriculum, watch the previews, and only pay for the course if you find it useful.</p>
@@ -277,10 +319,12 @@
 
         <div class="contact-card">
           <ul class="contact-list">
-            <li><strong>Support</strong> <a href="mailto:support@ilearnit.info">support@ilearnit.info</a></li>
-            <li><strong>Press</strong> <a href="mailto:press@ilearnit.info">press@ilearnit.info</a></li>
-            <li><strong>Instructors</strong> <a href="mailto:instructors@ilearnit.info">instructors@ilearnit.info</a></li>
-            <li><strong>Mailing address</strong> iLearnIt, 1 Conservatory Way, Hanoi, Vietnam</li>
+            <li><strong>Email</strong>
+                <a data-cms="contact.email"
+                   data-cms-href="contact.email"
+                   href="mailto:support@ilearnit.info">support@ilearnit.info</a></li>
+            <li><strong>Phone</strong> <span data-cms="contact.phone">—</span></li>
+            <li><strong>Mailing address</strong> <span data-cms="contact.address">iLearnIt, 1 Conservatory Way, Hanoi, Vietnam</span></li>
           </ul>
           <div>
             <p>Need help with a specific course or your account? The fastest path is <a href="/help.html">the help center</a> — it has step-by-step articles for the most common questions.</p>
@@ -332,5 +376,11 @@
   </footer>
 
   <script src="/assets/js/main.js" defer></script>
+
+  <!-- ── CMS: hydrate hero / features / pricing / FAQ / contact from Firestore ── -->
+  <!-- Uses the Firebase compat SDK so cms.js can stay a plain script (no modules / no bundler). -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="/assets/js/cms.js" defer></script>
 </body>
 </html>

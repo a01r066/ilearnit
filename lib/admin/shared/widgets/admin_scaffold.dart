@@ -145,6 +145,11 @@ class AdminScaffold extends ConsumerWidget {
           icon: Icons.insights_outlined,
           path: AdminRoutes.analyticsPath,
         ),
+        _NavItem(
+          label: 'Landing page',
+          icon: Icons.web_outlined,
+          path: AdminRoutes.landingPagePath,
+        ),
       ],
     ];
   }
