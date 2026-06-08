@@ -59,6 +59,9 @@ class RouteNames {
 
   // Q&A thread (nested under courseDetail → lecturePlayer)
   static const String questionThread = 'question-thread';
+
+  // Notes (within profile)
+  static const String notes = 'notes';
 }
 
 class RoutePaths {
@@ -120,4 +123,7 @@ class RoutePaths {
   // Q&A thread — nested under lecture player route:
   // /courses/:id/lectures/:lectureId/qa/:questionId?sectionId=...
   static const String questionThread = 'qa/:questionId';
+
+  // Notes (nested under profile)
+  static const String notes = 'notes';
 }

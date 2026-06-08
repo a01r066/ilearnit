@@ -15,6 +15,7 @@ import '../../features/courses/presentation/pages/courses_page.dart';
 import '../../features/courses/presentation/pages/lecture_player_page.dart';
 import '../../features/downloads/presentation/pages/downloads_page.dart';
 import '../../features/learning_paths/presentation/pages/learning_path_detail_page.dart';
+import '../../features/notes/presentation/pages/notes_page.dart';
 import '../../features/practice/presentation/pages/practice_page.dart';
 import '../../features/qa/presentation/pages/question_thread_page.dart';
 import '../../features/wishlist/presentation/pages/wishlist_page.dart';
@@ -199,6 +200,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                         builder: (_, s) => LecturePlayerPage(
                           courseId: s.pathParameters['id']!,
                           lectureId: s.pathParameters['lectureId']!,
+                          initialPositionSec: int.tryParse(
+                            s.uri.queryParameters['at'] ?? '',
+                          ),
                         ),
                         routes: [
                           GoRoute(
@@ -305,6 +309,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                     path: RoutePaths.practice,
                     name: RouteNames.practice,
                     builder: (_, __) => const PracticePage(),
+                  ),
+                  GoRoute(
+                    path: RoutePaths.notes,
+                    name: RouteNames.notes,
+                    builder: (_, __) => const NotesPage(),
                   ),
                   GoRoute(
                     path: RoutePaths.subscription,

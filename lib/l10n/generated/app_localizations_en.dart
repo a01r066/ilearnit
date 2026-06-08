@@ -844,8 +844,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Sign in to ask the first question on this lecture.';
 
   @override
-  String get qaEmptyAuthenticated =>
-      'No questions yet — be the first to ask.';
+  String get qaEmptyAuthenticated => 'No questions yet — be the first to ask.';
 
   @override
   String qaSeeAll(int count) {
@@ -887,4 +886,82 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get qaVerifiedInstructor => 'Verified instructor';
+
+  @override
+  String get notesSectionHeader => 'My notes';
+
+  @override
+  String get notesAddCta => 'Add note';
+
+  @override
+  String get notesAddTitle => 'New note';
+
+  @override
+  String get notesEditTitle => 'Edit note';
+
+  @override
+  String get notesBodyHint => 'What did you notice? Jot it down.';
+
+  @override
+  String get notesNoTimestamp => 'No timestamp';
+
+  @override
+  String get notesClearTimestamp => 'Clear';
+
+  @override
+  String get notesSaveNew => 'Save note';
+
+  @override
+  String get notesSaveChanges => 'Save changes';
+
+  @override
+  String get notesEmptyAnonymous =>
+      'Sign in to start taking notes on this lecture.';
+
+  @override
+  String get notesEmptyAuthenticated =>
+      'No notes yet — tap \"Add note\" to capture a thought.';
+
+  @override
+  String notesMoreInProfile(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count more in My notes',
+      one: '1 more in My notes',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notesEdit => 'Edit';
+
+  @override
+  String get notesDelete => 'Delete';
+
+  @override
+  String get notesCancel => 'Cancel';
+
+  @override
+  String get notesDeleted => 'Note deleted';
+
+  @override
+  String get notesDeleteConfirmTitle => 'Delete this note?';
+
+  @override
+  String get notesDeleteConfirmBody => 'This cannot be undone.';
+
+  @override
+  String get notesPageTitle => 'My notes';
+
+  @override
+  String get notesProfileSubtitle =>
+      'Your timestamped thoughts across every lecture.';
+
+  @override
+  String get notesEmptyPageTitle => 'Nothing here yet';
+
+  @override
+  String get notesEmptyPageBody =>
+      'Open any lecture and tap \"Add note\" to start your library.';
 }

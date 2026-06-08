@@ -83,6 +83,14 @@ service cloud.firestore {
       match /wishlist/{courseId} {
         allow read, write: if isSignedIn() && uid() == userId;
       }
+
+      // --- Private lecture notes ------------------------------------------
+      // Owner-only. Notes are personal mnemonics — no admin read access,
+      // no cross-user query. Account deletion cleans these up via the
+      // `deleteAccount` Cloud Function (Admin SDK bypasses rules).
+      match /notes/{noteId} {
+        allow read, write: if isSignedIn() && uid() == userId;
+      }
     }
 
     // ============================================================

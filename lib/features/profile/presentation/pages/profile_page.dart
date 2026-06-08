@@ -114,6 +114,14 @@ class ProfilePage extends ConsumerWidget {
           onTap: () => context.pushNamed(RouteNames.practice),
         ),
         ListTile(
+          leading: const Icon(Icons.sticky_note_2_outlined),
+          title: Text(AppLocalizations.of(context).notesPageTitle),
+          subtitle:
+              Text(AppLocalizations.of(context).notesProfileSubtitle),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.pushNamed(RouteNames.notes),
+        ),
+        ListTile(
           leading: const Icon(Icons.settings_outlined),
           title: const Text('Settings'),
           trailing: const Icon(Icons.chevron_right),

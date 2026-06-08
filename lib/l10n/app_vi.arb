@@ -330,5 +330,33 @@
   "qaAnonymous": "Học viên",
   "qaReplyHint": "Viết trả lời…",
   "qaSend": "Gửi",
-  "qaVerifiedInstructor": "Giảng viên đã xác minh"
+  "qaVerifiedInstructor": "Giảng viên đã xác minh",
+
+  "notesSectionHeader": "Ghi chú của tôi",
+  "notesAddCta": "Thêm ghi chú",
+  "notesAddTitle": "Ghi chú mới",
+  "notesEditTitle": "Sửa ghi chú",
+  "notesBodyHint": "Bạn vừa nhận ra điều gì? Ghi lại nhé.",
+  "notesNoTimestamp": "Không gắn thời điểm",
+  "notesClearTimestamp": "Bỏ",
+  "notesSaveNew": "Lưu ghi chú",
+  "notesSaveChanges": "Lưu thay đổi",
+  "notesEmptyAnonymous": "Đăng nhập để bắt đầu ghi chú cho bài giảng này.",
+  "notesEmptyAuthenticated": "Chưa có ghi chú — nhấn \"Thêm ghi chú\" để bắt đầu.",
+  "notesMoreInProfile": "{count, plural, =1{Còn 1 ghi chú trong Ghi chú của tôi} other{Còn {count} ghi chú trong Ghi chú của tôi}}",
+  "@notesMoreInProfile": {
+    "placeholders": {
+      "count": { "type": "int", "example": "3" }
+    }
+  },
+  "notesEdit": "Sửa",
+  "notesDelete": "Xóa",
+  "notesCancel": "Hủy",
+  "notesDeleted": "Đã xóa ghi chú",
+  "notesDeleteConfirmTitle": "Xóa ghi chú này?",
+  "notesDeleteConfirmBody": "Hành động này không thể hoàn tác.",
+  "notesPageTitle": "Ghi chú của tôi",
+  "notesProfileSubtitle": "Mọi ghi chú có gắn thời điểm trên các bài giảng.",
+  "notesEmptyPageTitle": "Chưa có gì ở đây",
+  "notesEmptyPageBody": "Mở bất kỳ bài giảng và nhấn \"Thêm ghi chú\" để bắt đầu."
 }

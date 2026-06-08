@@ -11,6 +11,8 @@ import '../../../downloads/presentation/widgets/lecture_download_button.dart';
 import '../../../progress/data/datasources/lecture_progress_datasource.dart';
 import '../../../progress/data/models/lecture_progress_model.dart';
 import '../../../progress/presentation/providers/progress_providers.dart';
+import '../../../notes/presentation/providers/notes_providers.dart';
+import '../../../notes/presentation/widgets/lecture_notes_section.dart';
 import '../../../qa/presentation/widgets/lecture_qa_section.dart';
 import '../../domain/entities/course_section_entity.dart';
 import '../../domain/entities/lecture_entity.dart';
@@ -39,10 +41,17 @@ class LecturePlayerPage extends ConsumerWidget {
     super.key,
     required this.courseId,
     required this.lectureId,
+    this.initialPositionSec,
   });
 
   final String courseId;
   final String lectureId;
+
+  /// Optional jump-to override. When the page is opened with
+  /// `?at=N` (e.g. tapping a note's timestamp from the standalone
+  /// "My notes" page), the player seeks to N seconds on load instead
+  /// of resuming from the saved progress position.
+  final int? initialPositionSec;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -92,6 +101,9 @@ class LecturePlayerPage extends ConsumerWidget {
           courseId: courseId,
           sectionId: sectionId ?? '',
           lecture: lecture,
+          initialPositionSec: initialPositionSec,
+          courseTitle: courseTitle,
+          courseThumbnailUrl: thumbnailUrl,
         );
       },
     );
@@ -135,11 +147,17 @@ class _LecturePlayerScaffold extends ConsumerWidget {
     required this.courseId,
     required this.sectionId,
     required this.lecture,
+    required this.courseTitle,
+    required this.courseThumbnailUrl,
+    this.initialPositionSec,
   });
 
   final String courseId;
   final String sectionId;
   final LectureEntity lecture;
+  final String courseTitle;
+  final String? courseThumbnailUrl;
+  final int? initialPositionSec;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -158,12 +176,18 @@ class _LecturePlayerScaffold extends ConsumerWidget {
           courseId: courseId,
           sectionId: sectionId,
           lecture: lecture,
+          courseTitle: courseTitle,
+          courseThumbnailUrl: courseThumbnailUrl,
+          initialPositionOverrideSec: initialPositionSec,
         );
       case LectureType.audio:
         return _AudioBody(
           courseId: courseId,
           sectionId: sectionId,
           lecture: lecture,
+          courseTitle: courseTitle,
+          courseThumbnailUrl: courseThumbnailUrl,
+          initialPositionOverrideSec: initialPositionSec,
         );
       case LectureType.pdf:
       case LectureType.doc:
@@ -177,10 +201,16 @@ class _VideoBody extends ConsumerWidget {
     required this.courseId,
     required this.sectionId,
     required this.lecture,
+    required this.courseTitle,
+    required this.courseThumbnailUrl,
+    this.initialPositionOverrideSec,
   });
   final String courseId;
   final String sectionId;
   final LectureEntity lecture;
+  final String courseTitle;
+  final String? courseThumbnailUrl;
+  final int? initialPositionOverrideSec;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -202,15 +232,25 @@ class _VideoBody extends ConsumerWidget {
         ? Uri.file(localPath).toString()
         : lecture.mediaUrl!;
 
+    final positions = ref.read(playbackPositionRegistryProvider);
+
     return Column(
       children: [
         AspectRatio(
           aspectRatio: 16 / 9,
           child: VideoLecturePlayer(
             url: url,
-            initialPositionSec: saved?.positionSec ?? 0,
-            onTick: (pos, dur) =>
-                notifier.onTick(positionSec: pos, durationSec: dur),
+            // Notes jump-to-timestamp (`?at=`) wins over the saved
+            // progress position so the user lands where their note
+            // pointed.
+            initialPositionSec:
+                initialPositionOverrideSec ?? saved?.positionSec ?? 0,
+            onTick: (pos, dur) {
+              notifier.onTick(positionSec: pos, durationSec: dur);
+              // Cheap O(1) write — used by the "Add note" button to
+              // pre-fill timestampSec without resubscribing.
+              positions.put(lecture.id, pos);
+            },
             onPause: () => notifier.flush(),
           ),
         ),
@@ -219,6 +259,8 @@ class _VideoBody extends ConsumerWidget {
             lecture: lecture,
             courseId: courseId,
             sectionId: sectionId,
+            courseTitle: courseTitle,
+            courseThumbnailUrl: courseThumbnailUrl,
           ),
         ),
       ],
@@ -231,10 +273,16 @@ class _AudioBody extends ConsumerWidget {
     required this.courseId,
     required this.sectionId,
     required this.lecture,
+    required this.courseTitle,
+    required this.courseThumbnailUrl,
+    this.initialPositionOverrideSec,
   });
   final String courseId;
   final String sectionId;
   final LectureEntity lecture;
+  final String courseTitle;
+  final String? courseThumbnailUrl;
+  final int? initialPositionOverrideSec;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -254,14 +302,19 @@ class _AudioBody extends ConsumerWidget {
         ? Uri.file(localPath).toString()
         : lecture.mediaUrl!;
 
+    final positions = ref.read(playbackPositionRegistryProvider);
+
     return Column(
       children: [
         AudioLecturePlayer(
           url: url,
           title: lecture.title,
-          initialPositionSec: saved?.positionSec ?? 0,
-          onTick: (pos, dur) =>
-              notifier.onTick(positionSec: pos, durationSec: dur),
+          initialPositionSec:
+              initialPositionOverrideSec ?? saved?.positionSec ?? 0,
+          onTick: (pos, dur) {
+            notifier.onTick(positionSec: pos, durationSec: dur);
+            positions.put(lecture.id, pos);
+          },
           onPause: () => notifier.flush(),
         ),
         Expanded(
@@ -269,6 +322,8 @@ class _AudioBody extends ConsumerWidget {
             lecture: lecture,
             courseId: courseId,
             sectionId: sectionId,
+            courseTitle: courseTitle,
+            courseThumbnailUrl: courseThumbnailUrl,
           ),
         ),
       ],
@@ -295,19 +350,21 @@ class _LectureBody extends ConsumerWidget {
     required this.lecture,
     required this.courseId,
     required this.sectionId,
+    required this.courseTitle,
+    required this.courseThumbnailUrl,
   });
   final LectureEntity lecture;
   final String courseId;
   final String sectionId;
+  final String courseTitle;
+  final String? courseThumbnailUrl;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // We grab the latest course title from the curriculum's parent state
-    // for the download manifest. Falls back to lecture title if the
-    // course detail hasn't resolved yet — the user can still download.
-    final courseTitle = ref
-        .watch(courseDetailNotifierProvider(courseId))
-        .maybeWhen(loaded: (c) => c.title, orElse: () => '');
+    // `courseTitle` and `courseThumbnailUrl` are passed in from the
+    // parent (already resolved against `courseDetailNotifierProvider`)
+    // so the download button and notes section can use them without
+    // re-watching the same provider here.
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -338,6 +395,28 @@ class _LectureBody extends ConsumerWidget {
           const SizedBox(height: 8),
           for (final r in lecture.resources)
             DocumentLectureResourceTile(resource: r),
+        ],
+        // ---- Notes ----------------------------------------------------
+        // Embedded above the Q&A section so the user's own thoughts are
+        // primary. Read-cheap when the user is signed out — the
+        // provider short-circuits to an empty stream.
+        if (sectionId.isNotEmpty) ...[
+          const SizedBox(height: 32),
+          const Divider(height: 1),
+          const SizedBox(height: 16),
+          LectureNotesSection(
+            courseId: courseId,
+            courseTitle: courseTitle,
+            courseThumbnailUrl: courseThumbnailUrl,
+            sectionId: sectionId,
+            lectureId: lecture.id,
+            lectureTitle: lecture.title,
+            // No-op for now — wiring the actual player seek requires
+            // either a controller passed down from the player widget or
+            // a Riverpod "seek bus" similar to the position registry.
+            // Tracked as a follow-up.
+            onJumpTo: null,
+          ),
         ],
         // ---- Q&A ------------------------------------------------------
         // Only render when we managed to resolve the parent section id

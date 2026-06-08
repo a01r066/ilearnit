@@ -403,5 +403,33 @@
   "qaAnonymous": "Student",
   "qaReplyHint": "Write a reply…",
   "qaSend": "Send",
-  "qaVerifiedInstructor": "Verified instructor"
+  "qaVerifiedInstructor": "Verified instructor",
+
+  "notesSectionHeader": "My notes",
+  "notesAddCta": "Add note",
+  "notesAddTitle": "New note",
+  "notesEditTitle": "Edit note",
+  "notesBodyHint": "What did you notice? Jot it down.",
+  "notesNoTimestamp": "No timestamp",
+  "notesClearTimestamp": "Clear",
+  "notesSaveNew": "Save note",
+  "notesSaveChanges": "Save changes",
+  "notesEmptyAnonymous": "Sign in to start taking notes on this lecture.",
+  "notesEmptyAuthenticated": "No notes yet — tap \"Add note\" to capture a thought.",
+  "notesMoreInProfile": "{count, plural, =1{1 more in My notes} other{{count} more in My notes}}",
+  "@notesMoreInProfile": {
+    "placeholders": {
+      "count": { "type": "int", "example": "3" }
+    }
+  },
+  "notesEdit": "Edit",
+  "notesDelete": "Delete",
+  "notesCancel": "Cancel",
+  "notesDeleted": "Note deleted",
+  "notesDeleteConfirmTitle": "Delete this note?",
+  "notesDeleteConfirmBody": "This cannot be undone.",
+  "notesPageTitle": "My notes",
+  "notesProfileSubtitle": "Your timestamped thoughts across every lecture.",
+  "notesEmptyPageTitle": "Nothing here yet",
+  "notesEmptyPageBody": "Open any lecture and tap \"Add note\" to start your library."
 }

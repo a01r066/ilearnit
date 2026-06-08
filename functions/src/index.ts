@@ -356,6 +356,11 @@ export const deleteAccount = onCall(async (request) => {
       db.collection('users').doc(uid).collection('wishlist'),
     );
 
+    // 3b. Private lecture notes.
+    await deleteSubcollection(
+      db.collection('users').doc(uid).collection('notes'),
+    );
+
     // 4. Storage objects under users/{uid}/.
     try {
       await storage.bucket().deleteFiles({prefix: `users/${uid}/`});

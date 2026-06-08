@@ -829,8 +829,7 @@ class AppLocalizationsVi extends AppLocalizations {
       'Đăng nhập để đặt câu hỏi đầu tiên cho bài giảng này.';
 
   @override
-  String get qaEmptyAuthenticated =>
-      'Chưa có câu hỏi — hãy là người đầu tiên.';
+  String get qaEmptyAuthenticated => 'Chưa có câu hỏi — hãy là người đầu tiên.';
 
   @override
   String qaSeeAll(int count) {
@@ -872,4 +871,82 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get qaVerifiedInstructor => 'Giảng viên đã xác minh';
+
+  @override
+  String get notesSectionHeader => 'Ghi chú của tôi';
+
+  @override
+  String get notesAddCta => 'Thêm ghi chú';
+
+  @override
+  String get notesAddTitle => 'Ghi chú mới';
+
+  @override
+  String get notesEditTitle => 'Sửa ghi chú';
+
+  @override
+  String get notesBodyHint => 'Bạn vừa nhận ra điều gì? Ghi lại nhé.';
+
+  @override
+  String get notesNoTimestamp => 'Không gắn thời điểm';
+
+  @override
+  String get notesClearTimestamp => 'Bỏ';
+
+  @override
+  String get notesSaveNew => 'Lưu ghi chú';
+
+  @override
+  String get notesSaveChanges => 'Lưu thay đổi';
+
+  @override
+  String get notesEmptyAnonymous =>
+      'Đăng nhập để bắt đầu ghi chú cho bài giảng này.';
+
+  @override
+  String get notesEmptyAuthenticated =>
+      'Chưa có ghi chú — nhấn \"Thêm ghi chú\" để bắt đầu.';
+
+  @override
+  String notesMoreInProfile(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Còn $count ghi chú trong Ghi chú của tôi',
+      one: 'Còn 1 ghi chú trong Ghi chú của tôi',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notesEdit => 'Sửa';
+
+  @override
+  String get notesDelete => 'Xóa';
+
+  @override
+  String get notesCancel => 'Hủy';
+
+  @override
+  String get notesDeleted => 'Đã xóa ghi chú';
+
+  @override
+  String get notesDeleteConfirmTitle => 'Xóa ghi chú này?';
+
+  @override
+  String get notesDeleteConfirmBody => 'Hành động này không thể hoàn tác.';
+
+  @override
+  String get notesPageTitle => 'Ghi chú của tôi';
+
+  @override
+  String get notesProfileSubtitle =>
+      'Mọi ghi chú có gắn thời điểm trên các bài giảng.';
+
+  @override
+  String get notesEmptyPageTitle => 'Chưa có gì ở đây';
+
+  @override
+  String get notesEmptyPageBody =>
+      'Mở bất kỳ bài giảng và nhấn \"Thêm ghi chú\" để bắt đầu.';
 }

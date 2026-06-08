@@ -1663,6 +1663,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Verified instructor'**
   String get qaVerifiedInstructor;
+
+  /// No description provided for @notesSectionHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'My notes'**
+  String get notesSectionHeader;
+
+  /// No description provided for @notesAddCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Add note'**
+  String get notesAddCta;
+
+  /// No description provided for @notesAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New note'**
+  String get notesAddTitle;
+
+  /// No description provided for @notesEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit note'**
+  String get notesEditTitle;
+
+  /// No description provided for @notesBodyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What did you notice? Jot it down.'**
+  String get notesBodyHint;
+
+  /// No description provided for @notesNoTimestamp.
+  ///
+  /// In en, this message translates to:
+  /// **'No timestamp'**
+  String get notesNoTimestamp;
+
+  /// No description provided for @notesClearTimestamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get notesClearTimestamp;
+
+  /// No description provided for @notesSaveNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Save note'**
+  String get notesSaveNew;
+
+  /// No description provided for @notesSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get notesSaveChanges;
+
+  /// No description provided for @notesEmptyAnonymous.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to start taking notes on this lecture.'**
+  String get notesEmptyAnonymous;
+
+  /// No description provided for @notesEmptyAuthenticated.
+  ///
+  /// In en, this message translates to:
+  /// **'No notes yet — tap \"Add note\" to capture a thought.'**
+  String get notesEmptyAuthenticated;
+
+  /// No description provided for @notesMoreInProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 more in My notes} other{{count} more in My notes}}'**
+  String notesMoreInProfile(int count);
+
+  /// No description provided for @notesEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get notesEdit;
+
+  /// No description provided for @notesDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get notesDelete;
+
+  /// No description provided for @notesCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get notesCancel;
+
+  /// No description provided for @notesDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Note deleted'**
+  String get notesDeleted;
+
+  /// No description provided for @notesDeleteConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this note?'**
+  String get notesDeleteConfirmTitle;
+
+  /// No description provided for @notesDeleteConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This cannot be undone.'**
+  String get notesDeleteConfirmBody;
+
+  /// No description provided for @notesPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My notes'**
+  String get notesPageTitle;
+
+  /// No description provided for @notesProfileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your timestamped thoughts across every lecture.'**
+  String get notesProfileSubtitle;
+
+  /// No description provided for @notesEmptyPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet'**
+  String get notesEmptyPageTitle;
+
+  /// No description provided for @notesEmptyPageBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open any lecture and tap \"Add note\" to start your library.'**
+  String get notesEmptyPageBody;
 }
 
 class _AppLocalizationsDelegate
