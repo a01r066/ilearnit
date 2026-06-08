@@ -173,6 +173,19 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  ResultVoid updateRatingPromptStamp(DateTime when) async {
+    if (!await _network.isConnected) {
+      return const Left(Failure.network());
+    }
+    try {
+      await _remote.updateRatingPromptStamp(when);
+      return const Right(null);
+    } catch (e, st) {
+      return Left(mapToFailure(e, st));
+    }
+  }
+
+  @override
   ResultVoid updateProfile({
     String? primaryInstrument,
     String? skillLevel,

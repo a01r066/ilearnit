@@ -63,6 +63,12 @@ abstract interface class AuthRemoteDataSource {
     String? skillLevel,
     String? displayName,
   });
+
+  /// Stamp the last-rating-prompt timestamp on the user doc so the
+  /// 90-day cooldown survives reinstalls. Best-effort — failures are
+  /// swallowed by the caller because the local `PrefsService` value is
+  /// still authoritative for gating.
+  Future<void> updateRatingPromptStamp(DateTime when);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -557,5 +563,20 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         // truth for everything that matters in our UI.
       }
     }
+  }
+
+  @override
+  Future<void> updateRatingPromptStamp(DateTime when) async {
+    final user = _requireUser();
+    // We write under a `metadata` map so future profile fields can
+    // share the same bag without inflating the top-level user shape.
+    await _users.doc(user.uid).set(
+      {
+        'metadata': {
+          'lastRatingPromptAt': Timestamp.fromDate(when),
+        },
+      },
+      SetOptions(merge: true),
+    );
   }
 }

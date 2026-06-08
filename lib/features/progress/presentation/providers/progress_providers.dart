@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../../shared/providers/firebase_providers.dart';
+import '../../../app_rating/presentation/providers/app_rating_providers.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../data/datasources/lecture_progress_datasource.dart';
 import '../../data/models/course_progress_model.dart';
@@ -102,6 +103,17 @@ final lectureProgressNotifierProvider = StateNotifierProvider.autoDispose
   (ref, key) {
     final user = ref.watch(currentUserProvider);
     final registry = ref.watch(progressMetaRegistryProvider);
+    final rating = ref.watch(appRatingNotifierProvider);
+
+    // "Natural moment" hook: bump the rating counter + maybe prompt.
+    // Done as a fire-and-forget; the rating service handles all the
+    // gating internally so we don't need to add another conditional
+    // here.
+    void onCompleted() {
+      // ignore: discarded_futures — fire-and-forget by design.
+      rating.recordCompletedLecture();
+    }
+
     // A guest user shouldn't reach the player at all (gated upstream),
     // but defensively return a no-op notifier so we don't NPE.
     if (user == null) {
@@ -119,6 +131,7 @@ final lectureProgressNotifierProvider = StateNotifierProvider.autoDispose
       courseId: key.courseId,
       lectureId: key.lectureId,
       metaProvider: () => registry.get(key.courseId),
+      onLectureCompleted: onCompleted,
     );
   },
 );

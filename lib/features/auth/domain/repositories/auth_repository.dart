@@ -73,6 +73,11 @@ abstract interface class AuthRepository {
     String? skillLevel,
     String? displayName,
   });
+
+  /// Mirror the last-rating-prompt stamp to the user doc. Drives the
+  /// 90-day cooldown for the in-app review prompt; survives reinstalls
+  /// because `PrefsService` is wiped on a fresh install.
+  ResultVoid updateRatingPromptStamp(DateTime when);
 }
 
 /// Shared code used by social sign-in implementations to signal that the user

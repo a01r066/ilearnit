@@ -24,6 +24,7 @@ class LectureProgressNotifier extends StateNotifier<LectureProgressState> {
     required String courseId,
     required String lectureId,
     required this.metaProvider,
+    this.onLectureCompleted,
     Duration throttle = const Duration(seconds: 10),
   })  : _datasource = datasource,
         _userId = userId,
@@ -37,6 +38,11 @@ class LectureProgressNotifier extends StateNotifier<LectureProgressState> {
   final String _courseId;
   final String _lectureId;
   final Duration _throttle;
+
+  /// Fired once per notifier when the lecture transitions to completed.
+  /// Drives the in-app rating prompt's "completed lecture count" gate
+  /// (P1-12) plus any other "natural moment" hooks added later.
+  final void Function()? onLectureCompleted;
 
   /// Pulled lazily on every flush so notifiers don't have to be torn down
   /// when the underlying course doc (title / cover) is edited by an admin.
@@ -67,6 +73,12 @@ class LectureProgressNotifier extends StateNotifier<LectureProgressState> {
       // increments the completedCount even if the user closes the page
       // within the next throttle window.
       unawaited(_flushImmediate());
+      // Fire the "natural moment" hook (in-app rating, future
+      // certificate generation, etc.). Guarded against synchronous
+      // throws so a misbehaving listener can't poison the player.
+      try {
+        onLectureCompleted?.call();
+      } catch (_) {}
       return;
     }
 

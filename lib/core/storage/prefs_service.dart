@@ -65,5 +65,55 @@ class PrefsService {
   Future<void> clearRecentSongbooks() =>
       _prefs.remove(AppConstants.kRecentSongbooks);
 
+  // ---------- App rating prompt ------------------------------------------
+
+  /// First-launch timestamp. Set once by [setInstalledAtIfMissing];
+  /// never overwritten so the 7-day floor survives every relaunch.
+  DateTime? get installedAt {
+    final raw = _prefs.getInt(AppConstants.kInstalledAt);
+    return raw == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(raw);
+  }
+
+  Future<void> setInstalledAtIfMissing(DateTime now) async {
+    if (_prefs.containsKey(AppConstants.kInstalledAt)) return;
+    await _prefs.setInt(
+      AppConstants.kInstalledAt,
+      now.millisecondsSinceEpoch,
+    );
+  }
+
+  /// Monotonic count of completed lectures across all courses. Drives
+  /// the "after the user finishes their 3rd lecture" rule.
+  int get completedLectureCount =>
+      _prefs.getInt(AppConstants.kCompletedLectureCount) ?? 0;
+
+  Future<void> incrementCompletedLectureCount() => _prefs.setInt(
+        AppConstants.kCompletedLectureCount,
+        completedLectureCount + 1,
+      );
+
+  DateTime? get lastRatingPromptAt {
+    final raw = _prefs.getInt(AppConstants.kLastRatingPromptAt);
+    return raw == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(raw);
+  }
+
+  Future<void> setLastRatingPromptAt(DateTime when) => _prefs.setInt(
+        AppConstants.kLastRatingPromptAt,
+        when.millisecondsSinceEpoch,
+      );
+
+  /// QA helper — clears all three rating-related keys so the prompt
+  /// can be re-tested without a clean install. Not exposed in the UI;
+  /// invoke from a debug menu or `flutter run --dart-define=…`.
+  Future<void> resetRatingPromptForQa() async {
+    await _prefs.remove(AppConstants.kCompletedLectureCount);
+    await _prefs.remove(AppConstants.kLastRatingPromptAt);
+    await _prefs.remove(AppConstants.kInstalledAt);
+  }
+
   Future<void> clearAll() => _prefs.clear();
 }

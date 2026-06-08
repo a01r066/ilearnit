@@ -38,6 +38,9 @@ Future<void> bootstrap() async {
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   final prefs = await PrefsService.create();
+  // Stamp the first-launch timestamp — gates the 7-day floor on the
+  // in-app rating prompt (P1-12). No-op on subsequent launches.
+  await prefs.setInstalledAtIfMissing(DateTime.now());
 
   FlutterError.onError = (details) {
     if (kDebugMode) {
