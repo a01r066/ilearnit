@@ -555,3 +555,77 @@ export const onCoursePriceDrop = onDocumentUpdated(
     );
   },
 );
+
+// ---------- 7. course question created ------------------------------------
+
+/**
+ * Fires when a learner posts a new question on a lecture:
+ * `courses/{cid}/sections/{sid}/lectures/{lid}/questions/{qid}`.
+ *
+ * DMs the course's instructor so they can jump in and answer. The mobile
+ * app deep-links to the thread page at:
+ *   /courses/{cid}/lectures/{lid}/qa/{qid}?sectionId={sid}
+ *
+ * No-ops if:
+ *   • The question is being authored by the instructor themselves.
+ *   • The course doc is missing or has no `instructorId`.
+ *
+ * Cap: this trigger fans out to a single user (the instructor), so no
+ * batching is needed — we lean on `notifyUser` to handle FCM + inbox.
+ */
+export const onCourseQuestionCreated = onDocumentCreated(
+  'courses/{cid}/sections/{sid}/lectures/{lid}/questions/{qid}',
+  async (event) => {
+    const d = event.data?.data();
+    if (!d) return;
+
+    const {cid, sid, lid, qid} = event.params;
+    const authorId = d.userId as string | undefined;
+    const authorName =
+      (d.userName as string | undefined) ?? 'A student';
+    const body = (d.body as string | undefined) ?? '';
+
+    // Look up the course's instructor.
+    const courseSnap = await db.collection('courses').doc(cid).get();
+    if (!courseSnap.exists) {
+      logger.warn(`onCourseQuestionCreated: course ${cid} not found`);
+      return;
+    }
+    const course = courseSnap.data() ?? {};
+    const instructorId = course.instructorId as string | undefined;
+    if (!instructorId) {
+      logger.warn(`onCourseQuestionCreated: course ${cid} has no instructorId`);
+      return;
+    }
+
+    // Don't notify the instructor about their own question (rare, but
+    // possible if the instructor is also testing student flows).
+    if (authorId && authorId === instructorId) return;
+
+    const courseTitle =
+      (course.title as string | undefined) ?? 'your course';
+    // Trim long bodies — push notifications truncate aggressively.
+    const preview =
+      body.length > 140 ? `${body.substring(0, 137)}…` : body;
+
+    await notifyUser(
+      instructorId,
+      {
+        title: `New question on ${courseTitle}`,
+        body: `${authorName}: ${preview}`,
+      },
+      dataOnly({
+        type: 'course_question_created',
+        courseId: cid,
+        sectionId: sid,
+        lectureId: lid,
+        questionId: qid,
+        route: `/courses/${cid}/lectures/${lid}/qa/${qid}?sectionId=${sid}`,
+      }),
+    );
+
+    logger.info(
+      `onCourseQuestionCreated: notified instructor ${instructorId} of question ${qid}`,
+    );
+  },
+);

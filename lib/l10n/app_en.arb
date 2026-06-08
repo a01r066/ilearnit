@@ -374,5 +374,34 @@
   "tunerHintInTune": "In tune.",
   "tunerHintFlat": "Tune up.",
   "tunerHintSharp": "Tune down.",
-  "tunerPermissionDenied": "Microphone access is required. Re-enable it in Settings → iLearnIt → Microphone."
+  "tunerPermissionDenied": "Microphone access is required. Re-enable it in Settings → iLearnIt → Microphone.",
+
+  "qaSectionHeader": "Questions",
+  "qaAsk": "Ask a question",
+  "qaAskTitle": "Ask a question",
+  "qaQuestionLabel": "Your question",
+  "qaQuestionHint": "What's on your mind? Be specific so the instructor can help.",
+  "qaPostQuestion": "Post question",
+  "qaEmptyAnonymous": "Sign in to ask the first question on this lecture.",
+  "qaEmptyAuthenticated": "No questions yet — be the first to ask.",
+  "qaSeeAll": "See all {count}",
+  "@qaSeeAll": {
+    "placeholders": {
+      "count": { "type": "int", "example": "12" }
+    }
+  },
+  "qaReplyCount": "{count, plural, =0{No replies} =1{1 reply} other{{count} replies}}",
+  "@qaReplyCount": {
+    "placeholders": {
+      "count": { "type": "int", "example": "3" }
+    }
+  },
+  "qaThreadTitle": "Question",
+  "qaThreadMissing": "This question is no longer available.",
+  "qaReplies": "Replies",
+  "qaNoRepliesYet": "No replies yet. Start the conversation.",
+  "qaAnonymous": "Student",
+  "qaReplyHint": "Write a reply…",
+  "qaSend": "Send",
+  "qaVerifiedInstructor": "Verified instructor"
 }

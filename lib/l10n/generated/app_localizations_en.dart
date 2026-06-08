@@ -819,4 +819,72 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tunerPermissionDenied =>
       'Microphone access is required. Re-enable it in Settings → iLearnIt → Microphone.';
+
+  @override
+  String get qaSectionHeader => 'Questions';
+
+  @override
+  String get qaAsk => 'Ask a question';
+
+  @override
+  String get qaAskTitle => 'Ask a question';
+
+  @override
+  String get qaQuestionLabel => 'Your question';
+
+  @override
+  String get qaQuestionHint =>
+      'What\'s on your mind? Be specific so the instructor can help.';
+
+  @override
+  String get qaPostQuestion => 'Post question';
+
+  @override
+  String get qaEmptyAnonymous =>
+      'Sign in to ask the first question on this lecture.';
+
+  @override
+  String get qaEmptyAuthenticated =>
+      'No questions yet — be the first to ask.';
+
+  @override
+  String qaSeeAll(int count) {
+    return 'See all $count';
+  }
+
+  @override
+  String qaReplyCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count replies',
+      one: '1 reply',
+      zero: 'No replies',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get qaThreadTitle => 'Question';
+
+  @override
+  String get qaThreadMissing => 'This question is no longer available.';
+
+  @override
+  String get qaReplies => 'Replies';
+
+  @override
+  String get qaNoRepliesYet => 'No replies yet. Start the conversation.';
+
+  @override
+  String get qaAnonymous => 'Student';
+
+  @override
+  String get qaReplyHint => 'Write a reply…';
+
+  @override
+  String get qaSend => 'Send';
+
+  @override
+  String get qaVerifiedInstructor => 'Verified instructor';
 }

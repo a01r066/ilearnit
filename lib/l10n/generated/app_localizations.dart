@@ -1555,6 +1555,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Microphone access is required. Re-enable it in Settings → iLearnIt → Microphone.'**
   String get tunerPermissionDenied;
+
+  /// No description provided for @qaSectionHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get qaSectionHeader;
+
+  /// No description provided for @qaAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask a question'**
+  String get qaAsk;
+
+  /// No description provided for @qaAskTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask a question'**
+  String get qaAskTitle;
+
+  /// No description provided for @qaQuestionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your question'**
+  String get qaQuestionLabel;
+
+  /// No description provided for @qaQuestionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s on your mind? Be specific so the instructor can help.'**
+  String get qaQuestionHint;
+
+  /// No description provided for @qaPostQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Post question'**
+  String get qaPostQuestion;
+
+  /// No description provided for @qaEmptyAnonymous.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to ask the first question on this lecture.'**
+  String get qaEmptyAnonymous;
+
+  /// No description provided for @qaEmptyAuthenticated.
+  ///
+  /// In en, this message translates to:
+  /// **'No questions yet — be the first to ask.'**
+  String get qaEmptyAuthenticated;
+
+  /// No description provided for @qaSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all {count}'**
+  String qaSeeAll(int count);
+
+  /// No description provided for @qaReplyCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No replies} =1{1 reply} other{{count} replies}}'**
+  String qaReplyCount(int count);
+
+  /// No description provided for @qaThreadTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Question'**
+  String get qaThreadTitle;
+
+  /// No description provided for @qaThreadMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'This question is no longer available.'**
+  String get qaThreadMissing;
+
+  /// No description provided for @qaReplies.
+  ///
+  /// In en, this message translates to:
+  /// **'Replies'**
+  String get qaReplies;
+
+  /// No description provided for @qaNoRepliesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No replies yet. Start the conversation.'**
+  String get qaNoRepliesYet;
+
+  /// No description provided for @qaAnonymous.
+  ///
+  /// In en, this message translates to:
+  /// **'Student'**
+  String get qaAnonymous;
+
+  /// No description provided for @qaReplyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a reply…'**
+  String get qaReplyHint;
+
+  /// No description provided for @qaSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get qaSend;
+
+  /// No description provided for @qaVerifiedInstructor.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified instructor'**
+  String get qaVerifiedInstructor;
 }
 
 class _AppLocalizationsDelegate

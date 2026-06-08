@@ -56,6 +56,9 @@ class RouteNames {
 
   // Practice tools (within profile)
   static const String practice = 'practice';
+
+  // Q&A thread (nested under courseDetail → lecturePlayer)
+  static const String questionThread = 'question-thread';
 }
 
 class RoutePaths {
@@ -113,4 +116,8 @@ class RoutePaths {
 
   // Practice tools (nested under profile)
   static const String practice = 'practice';
+
+  // Q&A thread — nested under lecture player route:
+  // /courses/:id/lectures/:lectureId/qa/:questionId?sectionId=...
+  static const String questionThread = 'qa/:questionId';
 }

@@ -153,6 +153,84 @@ service cloud.firestore {
             || (isInstructor()
                 && get(/databases/$(database)/documents/courses/$(courseId))
                      .data.instructorId == uid());
+
+          // --- Q&A: per-lecture questions ---------------------------------
+          // Public read so unauthenticated browsers can see what learners
+          // are asking (drives course discovery). Writes are author-only,
+          // with two carve-outs:
+          //   1. Any signed-in user who just posted a reply can bump
+          //      `replyCount` (FieldValue.increment) on the parent
+          //      question. We can't actually validate the increment
+          //      amount in rules — we trust the client to bump by ±1.
+          //   2. An instructor reply also flips `isInstructorAnswered` to
+          //      true; rules allow any signed-in user to set this true
+          //      because verifying "this writer just authored an
+          //      instructor reply" would require a cross-collection
+          //      lookup that's not cheap. The badge itself is locked at
+          //      reply-write time via the denormalized `isInstructor`
+          //      field on the reply doc.
+          match /questions/{questionId} {
+            allow read: if true;
+
+            allow create: if isSignedIn()
+              && request.resource.data.userId == uid()
+              && request.resource.data.body is string
+              && request.resource.data.body.size() >= 5
+              && request.resource.data.body.size() <= 2000;
+
+            // Author edits their own body / updatedAt.
+            allow update: if isSignedIn()
+              && resource.data.userId == uid()
+              && request.resource.data.diff(resource.data).affectedKeys()
+                  .hasOnly(['body', 'updatedAt']);
+
+            // Aggregator carve-out: any signed-in user can bump
+            // replyCount + isInstructorAnswered (pair with the reply
+            // create). Admin override below for moderation.
+            allow update: if isSignedIn()
+              && request.resource.data.diff(resource.data).affectedKeys()
+                  .hasOnly(['replyCount', 'isInstructorAnswered']);
+
+            // Course's instructor or admin can hard-delete / moderate.
+            allow update, delete: if isAdmin()
+              || (isInstructor()
+                  && get(/databases/$(database)/documents/courses/$(courseId))
+                       .data.instructorId == uid());
+
+            // Author can delete their own thread.
+            allow delete: if isSignedIn() && resource.data.userId == uid();
+
+            // --- Replies subcollection ------------------------------------
+            match /replies/{replyId} {
+              allow read: if true;
+
+              allow create: if isSignedIn()
+                && request.resource.data.userId == uid()
+                && request.resource.data.body is string
+                && request.resource.data.body.size() >= 1
+                && request.resource.data.body.size() <= 2000
+                // `isInstructor: true` is only allowed if the writer
+                // truly is the course's instructor (or an admin).
+                // Prevents student impersonation of the verified badge.
+                && (
+                  request.resource.data.isInstructor == false
+                  || isAdmin()
+                  || get(/databases/$(database)/documents/courses/$(courseId))
+                       .data.instructorId == uid()
+                );
+
+              allow update: if isSignedIn()
+                && resource.data.userId == uid()
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['body', 'updatedAt']);
+
+              allow delete: if isAdmin()
+                || (isSignedIn() && resource.data.userId == uid())
+                || (isInstructor()
+                    && get(/databases/$(database)/documents/courses/$(courseId))
+                         .data.instructorId == uid());
+            }
+          }
         }
       }
     }

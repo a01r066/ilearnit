@@ -301,5 +301,34 @@
   "tunerHintInTune": "Đúng nhịp.",
   "tunerHintFlat": "Lên dây.",
   "tunerHintSharp": "Hạ dây.",
-  "tunerPermissionDenied": "Cần quyền truy cập micro. Bật lại trong Cài đặt → iLearnIt → Micro."
+  "tunerPermissionDenied": "Cần quyền truy cập micro. Bật lại trong Cài đặt → iLearnIt → Micro.",
+
+  "qaSectionHeader": "Câu hỏi",
+  "qaAsk": "Đặt câu hỏi",
+  "qaAskTitle": "Đặt câu hỏi",
+  "qaQuestionLabel": "Câu hỏi của bạn",
+  "qaQuestionHint": "Bạn cần hỏi gì? Hãy cụ thể để giảng viên dễ trả lời.",
+  "qaPostQuestion": "Gửi câu hỏi",
+  "qaEmptyAnonymous": "Đăng nhập để đặt câu hỏi đầu tiên cho bài giảng này.",
+  "qaEmptyAuthenticated": "Chưa có câu hỏi — hãy là người đầu tiên.",
+  "qaSeeAll": "Xem tất cả {count}",
+  "@qaSeeAll": {
+    "placeholders": {
+      "count": { "type": "int", "example": "12" }
+    }
+  },
+  "qaReplyCount": "{count, plural, =0{Chưa có trả lời} =1{1 trả lời} other{{count} trả lời}}",
+  "@qaReplyCount": {
+    "placeholders": {
+      "count": { "type": "int", "example": "3" }
+    }
+  },
+  "qaThreadTitle": "Câu hỏi",
+  "qaThreadMissing": "Câu hỏi này không còn khả dụng.",
+  "qaReplies": "Trả lời",
+  "qaNoRepliesYet": "Chưa có trả lời. Hãy bắt đầu trò chuyện.",
+  "qaAnonymous": "Học viên",
+  "qaReplyHint": "Viết trả lời…",
+  "qaSend": "Gửi",
+  "qaVerifiedInstructor": "Giảng viên đã xác minh"
 }

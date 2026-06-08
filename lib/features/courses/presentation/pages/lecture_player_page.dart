@@ -11,6 +11,7 @@ import '../../../downloads/presentation/widgets/lecture_download_button.dart';
 import '../../../progress/data/datasources/lecture_progress_datasource.dart';
 import '../../../progress/data/models/lecture_progress_model.dart';
 import '../../../progress/presentation/providers/progress_providers.dart';
+import '../../../qa/presentation/widgets/lecture_qa_section.dart';
 import '../../domain/entities/course_section_entity.dart';
 import '../../domain/entities/lecture_entity.dart';
 import '../../domain/entities/lecture_type.dart';
@@ -89,6 +90,7 @@ class LecturePlayerPage extends ConsumerWidget {
 
         return _LecturePlayerScaffold(
           courseId: courseId,
+          sectionId: sectionId ?? '',
           lecture: lecture,
         );
       },
@@ -131,10 +133,12 @@ class LecturePlayerPage extends ConsumerWidget {
 class _LecturePlayerScaffold extends ConsumerWidget {
   const _LecturePlayerScaffold({
     required this.courseId,
+    required this.sectionId,
     required this.lecture,
   });
 
   final String courseId;
+  final String sectionId;
   final LectureEntity lecture;
 
   @override
@@ -150,9 +154,17 @@ class _LecturePlayerScaffold extends ConsumerWidget {
   Widget _buildBody(BuildContext context, WidgetRef ref) {
     switch (lecture.type) {
       case LectureType.video:
-        return _VideoBody(courseId: courseId, lecture: lecture);
+        return _VideoBody(
+          courseId: courseId,
+          sectionId: sectionId,
+          lecture: lecture,
+        );
       case LectureType.audio:
-        return _AudioBody(courseId: courseId, lecture: lecture);
+        return _AudioBody(
+          courseId: courseId,
+          sectionId: sectionId,
+          lecture: lecture,
+        );
       case LectureType.pdf:
       case LectureType.doc:
         return DocumentLectureView(lecture: lecture);
@@ -161,8 +173,13 @@ class _LecturePlayerScaffold extends ConsumerWidget {
 }
 
 class _VideoBody extends ConsumerWidget {
-  const _VideoBody({required this.courseId, required this.lecture});
+  const _VideoBody({
+    required this.courseId,
+    required this.sectionId,
+    required this.lecture,
+  });
   final String courseId;
+  final String sectionId;
   final LectureEntity lecture;
 
   @override
@@ -201,6 +218,7 @@ class _VideoBody extends ConsumerWidget {
           child: _LectureBody(
             lecture: lecture,
             courseId: courseId,
+            sectionId: sectionId,
           ),
         ),
       ],
@@ -209,8 +227,13 @@ class _VideoBody extends ConsumerWidget {
 }
 
 class _AudioBody extends ConsumerWidget {
-  const _AudioBody({required this.courseId, required this.lecture});
+  const _AudioBody({
+    required this.courseId,
+    required this.sectionId,
+    required this.lecture,
+  });
   final String courseId;
+  final String sectionId;
   final LectureEntity lecture;
 
   @override
@@ -245,6 +268,7 @@ class _AudioBody extends ConsumerWidget {
           child: _LectureBody(
             lecture: lecture,
             courseId: courseId,
+            sectionId: sectionId,
           ),
         ),
       ],
@@ -267,9 +291,14 @@ LectureProgressModel? _findRow(
 /// Description + download button + downloadable resources, shared across
 /// video/audio bodies.
 class _LectureBody extends ConsumerWidget {
-  const _LectureBody({required this.lecture, required this.courseId});
+  const _LectureBody({
+    required this.lecture,
+    required this.courseId,
+    required this.sectionId,
+  });
   final LectureEntity lecture;
   final String courseId;
+  final String sectionId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -309,6 +338,21 @@ class _LectureBody extends ConsumerWidget {
           const SizedBox(height: 8),
           for (final r in lecture.resources)
             DocumentLectureResourceTile(resource: r),
+        ],
+        // ---- Q&A ------------------------------------------------------
+        // Only render when we managed to resolve the parent section id
+        // from the curriculum. Missing sectionId means the lecture lookup
+        // raced ahead of curriculum load — the section will appear once
+        // the rebuild completes.
+        if (sectionId.isNotEmpty) ...[
+          const SizedBox(height: 32),
+          const Divider(height: 1),
+          const SizedBox(height: 16),
+          LectureQASection(
+            courseId: courseId,
+            sectionId: sectionId,
+            lectureId: lecture.id,
+          ),
         ],
       ],
     );

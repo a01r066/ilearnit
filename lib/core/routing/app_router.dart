@@ -16,6 +16,7 @@ import '../../features/courses/presentation/pages/lecture_player_page.dart';
 import '../../features/downloads/presentation/pages/downloads_page.dart';
 import '../../features/learning_paths/presentation/pages/learning_path_detail_page.dart';
 import '../../features/practice/presentation/pages/practice_page.dart';
+import '../../features/qa/presentation/pages/question_thread_page.dart';
 import '../../features/wishlist/presentation/pages/wishlist_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/instructors/presentation/pages/instructor_detail_page.dart';
@@ -199,6 +200,25 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                           courseId: s.pathParameters['id']!,
                           lectureId: s.pathParameters['lectureId']!,
                         ),
+                        routes: [
+                          GoRoute(
+                            path: RoutePaths.questionThread,
+                            name: RouteNames.questionThread,
+                            builder: (_, s) => QuestionThreadPage(
+                              courseId: s.pathParameters['id']!,
+                              lectureId:
+                                  s.pathParameters['lectureId']!,
+                              questionId:
+                                  s.pathParameters['questionId']!,
+                              // sectionId is needed to find the right
+                              // Firestore subpath. Passed via query so
+                              // bookmarkable URLs still work.
+                              sectionId:
+                                  s.uri.queryParameters['sectionId'] ??
+                                      '',
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

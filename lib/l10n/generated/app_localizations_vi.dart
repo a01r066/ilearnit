@@ -804,4 +804,72 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get tunerPermissionDenied =>
       'Cần quyền truy cập micro. Bật lại trong Cài đặt → iLearnIt → Micro.';
+
+  @override
+  String get qaSectionHeader => 'Câu hỏi';
+
+  @override
+  String get qaAsk => 'Đặt câu hỏi';
+
+  @override
+  String get qaAskTitle => 'Đặt câu hỏi';
+
+  @override
+  String get qaQuestionLabel => 'Câu hỏi của bạn';
+
+  @override
+  String get qaQuestionHint =>
+      'Bạn cần hỏi gì? Hãy cụ thể để giảng viên dễ trả lời.';
+
+  @override
+  String get qaPostQuestion => 'Gửi câu hỏi';
+
+  @override
+  String get qaEmptyAnonymous =>
+      'Đăng nhập để đặt câu hỏi đầu tiên cho bài giảng này.';
+
+  @override
+  String get qaEmptyAuthenticated =>
+      'Chưa có câu hỏi — hãy là người đầu tiên.';
+
+  @override
+  String qaSeeAll(int count) {
+    return 'Xem tất cả $count';
+  }
+
+  @override
+  String qaReplyCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count trả lời',
+      one: '1 trả lời',
+      zero: 'Chưa có trả lời',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get qaThreadTitle => 'Câu hỏi';
+
+  @override
+  String get qaThreadMissing => 'Câu hỏi này không còn khả dụng.';
+
+  @override
+  String get qaReplies => 'Trả lời';
+
+  @override
+  String get qaNoRepliesYet => 'Chưa có trả lời. Hãy bắt đầu trò chuyện.';
+
+  @override
+  String get qaAnonymous => 'Học viên';
+
+  @override
+  String get qaReplyHint => 'Viết trả lời…';
+
+  @override
+  String get qaSend => 'Gửi';
+
+  @override
+  String get qaVerifiedInstructor => 'Giảng viên đã xác minh';
 }
