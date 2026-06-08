@@ -20,6 +20,7 @@ import '../learning_paths/presentation/admin_learning_paths_page.dart';
 import '../learning_paths/presentation/learning_path_editor_page.dart';
 import '../songbooks/presentation/admin_songbooks_page.dart';
 import '../songbooks/presentation/songbook_editor_page.dart';
+import '../analytics/presentation/pages/admin_analytics_page.dart';
 import '../subscriptions/presentation/admin_subscriptions_page.dart';
 import '../shared/providers/admin_providers.dart';
 import '../shared/widgets/admin_scaffold.dart';
@@ -142,6 +143,11 @@ final adminGoRouterProvider = Provider<GoRouter>((ref) {
                 ),
               ),
             ],
+          ),
+          GoRoute(
+            path: AdminRoutes.analyticsPath,
+            name: AdminRoutes.analytics,
+            builder: (_, __) => const AdminAnalyticsPage(),
           ),
         ],
       ),

@@ -105,9 +105,70 @@ class AdminDashboardPage extends ConsumerWidget {
                   onTap: () =>
                       context.goNamed(AdminRoutes.subscriptions),
                 ),
+              if (role.isAdmin)
+                _NavTile(
+                  label: 'Revenue + cohorts',
+                  caption: 'MRR, conversion, retention',
+                  icon: Icons.insights_outlined,
+                  onTap: () =>
+                      context.goNamed(AdminRoutes.analytics),
+                ),
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Click-through tile with no live count. Used for the analytics
+/// dashboard entry where the headline number (MRR) requires a full
+/// users-collection scan and shouldn't run on every dashboard mount.
+class _NavTile extends StatelessWidget {
+  const _NavTile({
+    required this.label,
+    required this.caption,
+    required this.icon,
+    required this.onTap,
+  });
+  final String label;
+  final String caption;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SizedBox(
+      width: 220,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(icon, color: theme.colorScheme.primary),
+                const SizedBox(height: 16),
+                Text(
+                  'Open',
+                  style: theme.textTheme.displaySmall,
+                ),
+                const SizedBox(height: 4),
+                Text(label,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    )),
+                Text(caption,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    )),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

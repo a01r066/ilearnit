@@ -25,6 +25,7 @@ class AdminRoutes {
   static const String subscriptions = 'admin-subscriptions';
   static const String learningPaths = 'admin-learning-paths';
   static const String learningPathEditor = 'admin-learning-path-editor';
+  static const String analytics = 'admin-analytics';
 
   // Path templates
   static const String loginPath = '/login';
@@ -43,4 +44,5 @@ class AdminRoutes {
   static const String subscriptionsPath = '/admin/subscriptions';
   static const String learningPathsPath = '/admin/learning-paths';
   static const String learningPathEditorPath = '/admin/learning-paths/:id';
+  static const String analyticsPath = '/admin/analytics';
 }

@@ -140,6 +140,11 @@ class AdminScaffold extends ConsumerWidget {
           icon: Icons.notifications_outlined,
           path: AdminRoutes.notificationsPath,
         ),
+        _NavItem(
+          label: 'Analytics',
+          icon: Icons.insights_outlined,
+          path: AdminRoutes.analyticsPath,
+        ),
       ],
     ];
   }
@@ -201,13 +206,21 @@ class _SideNav extends StatelessWidget {
             ),
             const Divider(height: 1),
             const SizedBox(height: 8),
-            for (var i = 0; i < items.length; i++)
-              _NavTile(
-                item: items[i],
-                selected: i == selectedIndex,
-                onTap: () => onSelect(i),
+            // Scroll the nav items when the side bar gets short (or the
+            // number of items grows). Without Expanded + ListView, a
+            // tall list pushes the user footer off the bottom of the
+            // viewport.
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: items.length,
+                itemBuilder: (_, i) => _NavTile(
+                  item: items[i],
+                  selected: i == selectedIndex,
+                  onTap: () => onSelect(i),
+                ),
               ),
-            const Spacer(),
+            ),
             const Divider(height: 1),
             Padding(
               padding: const EdgeInsets.all(16),
