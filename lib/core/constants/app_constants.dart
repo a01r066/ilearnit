@@ -29,6 +29,11 @@ class AppConstants {
   static const String kCompletedLectureCount = 'completed_lecture_count';
   static const String kLastRatingPromptAt = 'last_rating_prompt_at';
 
+  // Observability — user toggle to opt out of Analytics + Performance +
+  // Crashlytics collection. Stored as a single boolean for simplicity;
+  // legally we can defend either three-toggle or single-toggle UX.
+  static const String kObservabilityOptOut = 'observability_opt_out';
+
   // Search
   static const int recentSearchesLimit = 8;
   // Songbooks

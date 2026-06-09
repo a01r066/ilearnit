@@ -37,6 +37,12 @@ dependencies:
   cloud_firestore: ^6.3.0
   firebase_storage: ^13.3.0
   firebase_messaging: ^16.2.0
+  # Observability — Crashlytics for crash + non-fatal reporting,
+  # Performance for trace metrics, Analytics for event tracking
+  # (also drives the GoRouter screen-view observer).
+  firebase_crashlytics: ^5.0.0
+  firebase_performance: ^0.11.0
+  firebase_analytics: ^12.0.0
 
   # Local notifications — used to display FCM messages while app is foregrounded
   flutter_local_notifications: ^17.2.4

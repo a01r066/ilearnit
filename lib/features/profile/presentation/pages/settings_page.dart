@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ilearnit/core/observability/observability_providers.dart';
 import 'package:ilearnit/core/routing/route_names.dart';
 import 'package:ilearnit/core/theme/app_colors.dart';
+import 'package:ilearnit/shared/providers/storage_providers.dart';
 import 'package:ilearnit/features/legal/presentation/pages/legal_document_page.dart';
 import 'package:ilearnit/features/profile/presentation/providers/locale_provider.dart';
 import 'package:ilearnit/features/profile/presentation/providers/locale_state.dart';
@@ -98,6 +100,15 @@ class SettingsPage extends ConsumerWidget {
 
         const Divider(height: 32),
 
+        // --- Privacy --------------------------------------------------
+        // Single toggle for Analytics + Performance + Crashlytics.
+        // Off → all three SDKs stop collecting on next launch (the
+        // bootstrap reads this on init); already-buffered events are
+        // dropped per SDK semantics.
+        _PrivacyToggle(),
+
+        const Divider(height: 32),
+
         // --- Danger zone ---
         ListTile(
           leading: const Icon(Icons.delete_forever_rounded,
@@ -179,6 +190,53 @@ class _SectionDescription extends StatelessWidget {
         text,
         style: Theme.of(context).textTheme.bodySmall,
       ),
+    );
+  }
+}
+
+/// Master switch for Crashlytics + Performance + Analytics. The
+/// stored value is the *opt-out* boolean — a fresh install is
+/// opted-in. Toggling flips all three SDKs immediately and is
+/// re-applied at the next launch by `bootstrap.dart`.
+class _PrivacyToggle extends ConsumerStatefulWidget {
+  @override
+  ConsumerState<_PrivacyToggle> createState() => _PrivacyToggleState();
+}
+
+class _PrivacyToggleState extends ConsumerState<_PrivacyToggle> {
+  late bool _enabled;
+
+  @override
+  void initState() {
+    super.initState();
+    _enabled = !ref.read(prefsProvider).observabilityOptOut;
+  }
+
+  Future<void> _onChanged(bool value) async {
+    setState(() => _enabled = value);
+    await ref.read(prefsProvider).setObservabilityOptOut(!value);
+    await ref.read(crashlyticsServiceProvider).applyCollectionPolicy(
+          userOptIn: value,
+        );
+    await ref.read(performanceServiceProvider).setEnabled(value);
+    await ref.read(analyticsServiceProvider).setEnabled(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _SectionHeader(label: t.settingsPrivacySection),
+        SwitchListTile(
+          secondary: const Icon(Icons.privacy_tip_outlined),
+          title: Text(t.settingsAnalyticsTitle),
+          subtitle: Text(t.settingsAnalyticsSubtitle),
+          value: _enabled,
+          onChanged: _onChanged,
+        ),
+      ],
     );
   }
 }

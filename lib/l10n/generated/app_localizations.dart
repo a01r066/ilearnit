@@ -1795,6 +1795,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open any lecture and tap \"Add note\" to start your library.'**
   String get notesEmptyPageBody;
+
+  /// No description provided for @settingsPrivacySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get settingsPrivacySection;
+
+  /// No description provided for @settingsAnalyticsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send anonymous usage data'**
+  String get settingsAnalyticsTitle;
+
+  /// No description provided for @settingsAnalyticsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Helps us spot crashes and improve the app. Toggle off to stop all collection.'**
+  String get settingsAnalyticsSubtitle;
 }
 
 class _AppLocalizationsDelegate

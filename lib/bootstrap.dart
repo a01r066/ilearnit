@@ -10,6 +10,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/app.dart';
 import 'core/notifications/data/fcm_service.dart';
 import 'core/notifications/presentation/notification_providers.dart';
+import 'core/observability/observability_bootstrap.dart';
+import 'core/observability/observability_providers.dart';
 import 'core/storage/prefs_service.dart';
 import 'features/purchases/presentation/providers/purchases_providers.dart';
 import 'features/subscriptions/presentation/providers/subscription_providers.dart';
@@ -42,18 +44,47 @@ Future<void> bootstrap() async {
   // in-app rating prompt (P1-12). No-op on subsequent launches.
   await prefs.setInstalledAtIfMissing(DateTime.now());
 
-  FlutterError.onError = (details) {
-    if (kDebugMode) {
-      FlutterError.dumpErrorToConsole(details);
-    }
-    // TODO(observability): forward to Crashlytics in prod once configured.
-  };
-
   final container = ProviderContainer(
     overrides: [
       prefsProvider.overrideWithValue(prefs),
     ],
   );
+
+  // ----- Observability ----------------------------------------------------
+  //
+  // Wire Crashlytics' global error handlers before any other code can
+  // throw so the first crash on a cold-start path is captured. Honour
+  // the user opt-out flag stored in prefs (defaults to "opted-in" but
+  // still gated on `kReleaseMode` for Crashlytics — see the policy
+  // method).
+  final userOptIn = !prefs.observabilityOptOut;
+  final crashlytics = container.read(crashlyticsServiceProvider);
+  await crashlytics.installErrorHandlers();
+  await crashlytics.applyCollectionPolicy(userOptIn: userOptIn);
+
+  final performance = container.read(performanceServiceProvider);
+  await performance.setEnabled(userOptIn);
+
+  final analytics = container.read(analyticsServiceProvider);
+  await analytics.setEnabled(userOptIn);
+  // Fire-and-forget — the first `app_start` event also unsticks the
+  // Analytics dashboard latency on debug devices.
+  unawaited(analytics.logAppStart());
+
+  // Activate the auth → Crashlytics/Analytics user-identity link. The
+  // provider attaches a `ref.listen` on `currentUserProvider`; reading
+  // it once is enough to keep the subscription alive.
+  container.read(observabilityAuthLinkProvider);
+
+  // Catch anything FlutterError.onError doesn't already handle and
+  // fall back to console logging in debug.
+  if (kDebugMode) {
+    final prev = FlutterError.onError;
+    FlutterError.onError = (details) {
+      FlutterError.dumpErrorToConsole(details);
+      prev?.call(details);
+    };
+  }
 
   // Eagerly initialize the IAP listener so background purchases that the
   // OS delivers before any UI renders are still captured. Reading the

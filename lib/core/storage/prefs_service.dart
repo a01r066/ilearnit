@@ -115,5 +115,16 @@ class PrefsService {
     await _prefs.remove(AppConstants.kInstalledAt);
   }
 
+  // ----- Observability opt-out -----------------------------------------
+
+  /// `false` (default) → Crashlytics / Performance / Analytics may run
+  /// per the build-mode policy (debug off, release on). When the user
+  /// flips this to `true` we shut them down at the SDK layer.
+  bool get observabilityOptOut =>
+      _prefs.getBool(AppConstants.kObservabilityOptOut) ?? false;
+
+  Future<void> setObservabilityOptOut(bool value) =>
+      _prefs.setBool(AppConstants.kObservabilityOptOut, value);
+
   Future<void> clearAll() => _prefs.clear();
 }

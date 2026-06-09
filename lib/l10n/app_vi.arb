@@ -358,5 +358,9 @@
   "notesPageTitle": "Ghi chú của tôi",
   "notesProfileSubtitle": "Mọi ghi chú có gắn thời điểm trên các bài giảng.",
   "notesEmptyPageTitle": "Chưa có gì ở đây",
-  "notesEmptyPageBody": "Mở bất kỳ bài giảng và nhấn \"Thêm ghi chú\" để bắt đầu."
+  "notesEmptyPageBody": "Mở bất kỳ bài giảng và nhấn \"Thêm ghi chú\" để bắt đầu.",
+
+  "settingsPrivacySection": "Quyền riêng tư",
+  "settingsAnalyticsTitle": "Gửi dữ liệu sử dụng ẩn danh",
+  "settingsAnalyticsSubtitle": "Giúp chúng tôi phát hiện lỗi và cải thiện ứng dụng. Tắt để dừng mọi thu thập."
 }

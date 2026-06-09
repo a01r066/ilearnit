@@ -32,6 +32,7 @@ import '../../features/songbooks/presentation/pages/songbooks_page.dart';
 import '../../features/subscriptions/presentation/pages/subscription_checkout_page.dart';
 import '../../features/subscriptions/presentation/pages/subscription_page.dart';
 import '../../shared/providers/storage_providers.dart';
+import '../observability/observability_providers.dart';
 import 'route_names.dart';
 import 'shell_scaffold.dart';
 
@@ -57,11 +58,17 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   // tick. `onboardingDone` is read synchronously off SharedPreferences.
   final prefs = ref.read(prefsProvider);
 
+  // Auto `screen_view` events. The observer reads route names off
+  // each pushed `Page`, so every named `GoRoute` lands in Analytics
+  // without per-page wiring.
+  final analyticsObserver = ref.read(firebaseAnalyticsObserverProvider);
+
   return GoRouter(
     navigatorKey: _rootKey,
     initialLocation: RoutePaths.splash,
     debugLogDiagnostics: true,
     refreshListenable: notifier,
+    observers: [analyticsObserver],
     redirect: (context, state) {
       final auth = notifier.value;
       final loc = state.matchedLocation;

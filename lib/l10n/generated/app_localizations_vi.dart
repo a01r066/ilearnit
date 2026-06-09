@@ -949,4 +949,14 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get notesEmptyPageBody =>
       'Mở bất kỳ bài giảng và nhấn \"Thêm ghi chú\" để bắt đầu.';
+
+  @override
+  String get settingsPrivacySection => 'Quyền riêng tư';
+
+  @override
+  String get settingsAnalyticsTitle => 'Gửi dữ liệu sử dụng ẩn danh';
+
+  @override
+  String get settingsAnalyticsSubtitle =>
+      'Giúp chúng tôi phát hiện lỗi và cải thiện ứng dụng. Tắt để dừng mọi thu thập.';
 }

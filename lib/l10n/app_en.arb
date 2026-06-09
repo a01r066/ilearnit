@@ -431,5 +431,9 @@
   "notesPageTitle": "My notes",
   "notesProfileSubtitle": "Your timestamped thoughts across every lecture.",
   "notesEmptyPageTitle": "Nothing here yet",
-  "notesEmptyPageBody": "Open any lecture and tap \"Add note\" to start your library."
+  "notesEmptyPageBody": "Open any lecture and tap \"Add note\" to start your library.",
+
+  "settingsPrivacySection": "Privacy",
+  "settingsAnalyticsTitle": "Send anonymous usage data",
+  "settingsAnalyticsSubtitle": "Helps us spot crashes and improve the app. Toggle off to stop all collection."
 }

@@ -964,4 +964,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get notesEmptyPageBody =>
       'Open any lecture and tap \"Add note\" to start your library.';
+
+  @override
+  String get settingsPrivacySection => 'Privacy';
+
+  @override
+  String get settingsAnalyticsTitle => 'Send anonymous usage data';
+
+  @override
+  String get settingsAnalyticsSubtitle =>
+      'Helps us spot crashes and improve the app. Toggle off to stop all collection.';
 }
