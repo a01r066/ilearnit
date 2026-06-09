@@ -7,8 +7,8 @@ import '../../../features/courses/data/models/course_model.dart';
 import '../../routing/admin_route_names.dart';
 import '../../shared/providers/admin_providers.dart';
 
-/// Lists courses owned by the signed-in instructor + a button to create a
-/// new one.
+/// Minimal "My courses" — flat page, no Card / no FilledButton inside a
+/// flexed Row / no Image.network without a sized error fallback.
 class InstructorMyCoursesPage extends ConsumerWidget {
   const InstructorMyCoursesPage({super.key});
 
@@ -30,13 +30,17 @@ class InstructorMyCoursesPage extends ConsumerWidget {
           Row(
             children: [
               Expanded(
-                child: Text('My courses', style: theme.textTheme.headlineMedium),
+                child: Text('My courses',
+                    style: theme.textTheme.headlineMedium),
               ),
-              FilledButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text('New course'),
-                onPressed: () => _createCourse(context, ref, user.id,
-                    user.displayName ?? user.email),
+              SizedBox(
+                width: 180,
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.add),
+                  label: const Text('New course'),
+                  onPressed: () => _createCourse(context, ref, user.id,
+                      user.displayName ?? user.email),
+                ),
               ),
             ],
           ),
@@ -124,6 +128,10 @@ class InstructorMyCoursesPage extends ConsumerWidget {
   }
 }
 
+/// Hand-rolled row — InkWell over a Container instead of `Card +
+/// ListTile`. `Image.network` always has explicit width/height + an
+/// `errorBuilder`, so a failed thumbnail can't collapse to zero size
+/// and trigger the hover hit-test assert.
 class _CourseRow extends StatelessWidget {
   const _CourseRow({required this.course, required this.onOpen});
   final CourseModel course;
@@ -132,40 +140,71 @@ class _CourseRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
+    return Material(
+      color: theme.colorScheme.surface,
+      borderRadius: BorderRadius.circular(12),
       clipBehavior: Clip.antiAlias,
-      child: ListTile(
-        leading: SizedBox(
-          width: 60,
-          height: 40,
-          child: course.thumbnailUrl.isEmpty
-              ? Container(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  child: const Icon(Icons.image_outlined),
-                )
-              : Image.network(course.thumbnailUrl, fit: BoxFit.cover),
-        ),
-        title: Text(course.title),
-        subtitle: Text(
-          '${course.category} · ${course.level} · '
-          '${course.lessonCount} lessons',
-          style: theme.textTheme.bodySmall,
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (course.isFeatured)
-              Chip(
-                label: const Text('Featured'),
-                visualDensity: VisualDensity.compact,
-                backgroundColor:
-                    theme.colorScheme.primary.withValues(alpha: 0.10),
-              ),
-            const SizedBox(width: 8),
-            const Icon(Icons.chevron_right),
-          ],
-        ),
+      child: InkWell(
         onTap: onOpen,
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border.all(color: theme.dividerColor),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 60,
+                height: 40,
+                child: course.thumbnailUrl.isEmpty
+                    ? Container(
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        child: const Icon(Icons.image_outlined),
+                      )
+                    : Image.network(
+                        course.thumbnailUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: theme.colorScheme.surfaceContainerHighest,
+                          child:
+                              const Icon(Icons.broken_image_outlined),
+                        ),
+                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(course.title,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600)),
+                    Text(
+                      '${course.category} · ${course.level} · '
+                      '${course.lessonCount} lessons',
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              if (course.isFeatured)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 4),
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary
+                        .withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text('Featured',
+                      style: TextStyle(fontSize: 12)),
+                ),
+              const Icon(Icons.chevron_right),
+            ],
+          ),
+        ),
       ),
     );
   }

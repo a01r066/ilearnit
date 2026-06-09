@@ -310,16 +310,21 @@ class _FormState extends ConsumerState<_Form> {
               ],
             ),
             const SizedBox(height: 32),
-            FilledButton.icon(
-              onPressed: _saving ? null : _save,
-              icon: _saving
-                  ? const SizedBox(
-                      height: 16,
-                      width: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.save_outlined),
-              label: const Text('Save changes'),
+            // Bounded SizedBox so the Column stretch can't propagate
+            // infinity into the M3 button's intrinsic-width pass.
+            SizedBox(
+              width: 200,
+              child: FilledButton.icon(
+                onPressed: _saving ? null : _save,
+                icon: _saving
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.save_outlined),
+                label: const Text('Save changes'),
+              ),
             ),
           ],
         ),
@@ -363,7 +368,13 @@ class _ImageBlock extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             child: url == null
                 ? const Center(child: Icon(Icons.image_outlined, size: 48))
-                : Image.network(url!, fit: BoxFit.cover),
+                : Image.network(
+                    url!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Center(
+                      child: Icon(Icons.broken_image_outlined, size: 48),
+                    ),
+                  ),
           ),
         ),
         if (running)
@@ -372,10 +383,15 @@ class _ImageBlock extends StatelessWidget {
             child: LinearProgressIndicator(value: progress!.fraction),
           ),
         const SizedBox(height: 8),
-        OutlinedButton.icon(
-          onPressed: onPick,
-          icon: const Icon(Icons.upload_outlined),
-          label: Text(url == null ? 'Upload' : 'Replace'),
+        // Bounded SizedBox for the upload button — same reasoning as
+        // every other M3 button in the admin portal.
+        SizedBox(
+          width: 160,
+          child: OutlinedButton.icon(
+            onPressed: onPick,
+            icon: const Icon(Icons.upload_outlined),
+            label: Text(url == null ? 'Upload' : 'Replace'),
+          ),
         ),
       ],
     );

@@ -21,6 +21,8 @@ import '../learning_paths/presentation/learning_path_editor_page.dart';
 import '../songbooks/presentation/admin_songbooks_page.dart';
 import '../songbooks/presentation/songbook_editor_page.dart';
 import '../analytics/presentation/pages/admin_analytics_page.dart';
+import '../instructors/presentation/admin_instructor_profiles_page.dart';
+import '../instructors/presentation/instructor_profile_editor_page.dart';
 import '../site_content/presentation/pages/admin_landing_content_page.dart';
 import '../subscriptions/presentation/admin_subscriptions_page.dart';
 import '../shared/providers/admin_providers.dart';
@@ -154,6 +156,18 @@ final adminGoRouterProvider = Provider<GoRouter>((ref) {
             path: AdminRoutes.landingPagePath,
             name: AdminRoutes.landingPage,
             builder: (_, __) => const AdminLandingContentPage(),
+          ),
+          GoRoute(
+            path: AdminRoutes.instructorProfilesPath,
+            name: AdminRoutes.instructorProfiles,
+            builder: (_, __) => const AdminInstructorProfilesPage(),
+          ),
+          GoRoute(
+            path: AdminRoutes.instructorProfileEditorPath,
+            name: AdminRoutes.instructorProfileEditor,
+            builder: (_, s) => InstructorProfileEditorPage(
+              instructorId: s.pathParameters['id']!,
+            ),
           ),
         ],
       ),

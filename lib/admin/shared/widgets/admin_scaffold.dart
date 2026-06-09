@@ -121,6 +121,11 @@ class AdminScaffold extends ConsumerWidget {
           path: AdminRoutes.instructorsPath,
         ),
         _NavItem(
+          label: 'Instructor profiles',
+          icon: Icons.badge_outlined,
+          path: AdminRoutes.instructorProfilesPath,
+        ),
+        _NavItem(
           label: 'Songbooks',
           icon: Icons.menu_book_outlined,
           path: AdminRoutes.songbooksPath,

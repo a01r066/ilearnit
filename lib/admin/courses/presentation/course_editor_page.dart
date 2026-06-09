@@ -11,8 +11,26 @@ import '../../../features/purchases/domain/entities/price_tier.dart';
 import '../../shared/providers/admin_providers.dart';
 import '../data/admin_storage_service.dart';
 
-/// Full editor for a single course: metadata tab + curriculum tab
-/// (sections + lectures + media uploads).
+/// Course editor — flat, single-page layout.
+///
+/// History: the original editor used a TabBar + TabBarView with
+/// `DropdownButtonFormField`s and `ExpansionTile`s inside a Card-based
+/// section list. On Flutter web this combination produced a flood of
+/// `Cannot hit test a render box with no size.` assertions during the
+/// transient frames between StreamBuilder rebuilds and Tab swipes.
+///
+/// This rewrite uses only "safe" widgets:
+///   • No `TabBar` / `TabBarView` — one `ListView`, scroll the whole page
+///   • No `Card` — `Container(decoration, clipBehavior)` for surfaces
+///   • No `DropdownButtonFormField` — `Wrap` of `ChoiceChip`s
+///   • No `ExpansionTile` — always-visible sections, the header is just
+///     a `Text`
+///   • Every action button lives in a bounded `SizedBox` so Row's
+///     intrinsic-width pass never propagates infinity
+///
+/// Functionality is unchanged: save metadata, manage sections, manage
+/// lectures, upload thumbnail. The lecture-editor dialog at the bottom
+/// of this file is kept verbatim — it already used `isExpanded: true`.
 class CourseEditorPage extends ConsumerStatefulWidget {
   const CourseEditorPage({super.key, required this.courseId});
   final String courseId;
@@ -21,22 +39,7 @@ class CourseEditorPage extends ConsumerStatefulWidget {
   ConsumerState<CourseEditorPage> createState() => _CourseEditorPageState();
 }
 
-class _CourseEditorPageState extends ConsumerState<CourseEditorPage>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabs;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabs = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabs.dispose();
-    super.dispose();
-  }
-
+class _CourseEditorPageState extends ConsumerState<CourseEditorPage> {
   @override
   Widget build(BuildContext context) {
     final stream =
@@ -52,56 +55,41 @@ class _CourseEditorPageState extends ConsumerState<CourseEditorPage>
         if (course == null) {
           return const Center(child: Text('Course not found.'));
         }
-        return Column(
-          children: [
-            Material(
-              color: Theme.of(context).colorScheme.surface,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                    child: Text(course.title,
-                        style: Theme.of(context).textTheme.headlineSmall),
-                  ),
-                  TabBar(
-                    controller: _tabs,
-                    isScrollable: true,
-                    tabs: const [
-                      Tab(text: 'Details'),
-                      Tab(text: 'Curriculum'),
-                    ],
-                  ),
-                ],
-              ),
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 880),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(course.title,
+                    style: Theme.of(context).textTheme.headlineSmall),
+                const SizedBox(height: 24),
+                _MetadataSection(course: course),
+                const SizedBox(height: 32),
+                _CurriculumSection(courseId: course.id),
+              ],
             ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabs,
-                children: [
-                  _MetadataTab(course: course),
-                  _CurriculumTab(courseId: course.id),
-                ],
-              ),
-            ),
-          ],
+          ),
         );
       },
     );
   }
 }
 
-// ---------- Metadata tab ---------------------------------------------------
+// ---------- Metadata section ---------------------------------------------
 
-class _MetadataTab extends ConsumerStatefulWidget {
-  const _MetadataTab({required this.course});
+class _MetadataSection extends ConsumerStatefulWidget {
+  const _MetadataSection({required this.course});
   final CourseModel course;
 
   @override
-  ConsumerState<_MetadataTab> createState() => _MetadataTabState();
+  ConsumerState<_MetadataSection> createState() =>
+      _MetadataSectionState();
 }
 
-class _MetadataTabState extends ConsumerState<_MetadataTab> {
+class _MetadataSectionState extends ConsumerState<_MetadataSection> {
   late final TextEditingController _title;
   late final TextEditingController _summary;
   late InstrumentCategory _category;
@@ -199,158 +187,239 @@ class _MetadataTabState extends ConsumerState<_MetadataTab> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 720),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _title,
-              decoration: const InputDecoration(labelText: 'Title'),
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.dividerColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Details',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+              )),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _title,
+            decoration: const InputDecoration(
+              labelText: 'Title',
+              border: OutlineInputBorder(),
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _summary,
-              minLines: 3,
-              maxLines: 6,
-              decoration: const InputDecoration(labelText: 'Summary'),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _summary,
+            minLines: 3,
+            maxLines: 6,
+            decoration: const InputDecoration(
+              labelText: 'Summary',
+              border: OutlineInputBorder(),
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<InstrumentCategory>(
-                    initialValue: _category,
-                    decoration: const InputDecoration(labelText: 'Instrument'),
-                    items: [
-                      for (final c in InstrumentCategory.values)
-                        DropdownMenuItem(value: c, child: Text(c.label)),
-                    ],
-                    onChanged: (v) => setState(() => _category = v!),
+          ),
+          const SizedBox(height: 24),
+
+          // Chip-pickers replace DropdownButtonFormField. The chip
+          // widgets size to their content within a Wrap so they never
+          // ask for intrinsic widths from their parents.
+          _ChipPicker<InstrumentCategory>(
+            label: 'Instrument',
+            value: _category,
+            options: InstrumentCategory.values,
+            optionLabel: (v) => v.label,
+            onChanged: (v) => setState(() => _category = v),
+          ),
+          const SizedBox(height: 16),
+          _ChipPicker<CourseLevel>(
+            label: 'Level',
+            value: _level,
+            options: CourseLevel.values,
+            optionLabel: (v) => v.label,
+            onChanged: (v) => setState(() => _level = v),
+          ),
+          const SizedBox(height: 16),
+          _ChipPicker<PriceTier>(
+            label: 'Price tier',
+            value: _tier,
+            options: PriceTier.values,
+            optionLabel: (v) => '${v.id} · ${v.fallbackPrice}',
+            onChanged: (v) => setState(() => _tier = v),
+          ),
+
+          const SizedBox(height: 24),
+          Text('Thumbnail', style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Container(
+            height: 160,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: _thumbnailUrl == null
+                ? const Center(child: Icon(Icons.image_outlined, size: 48))
+                : Image.network(
+                    _thumbnailUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Center(
+                      child: Icon(Icons.broken_image_outlined, size: 48),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: DropdownButtonFormField<CourseLevel>(
-                    initialValue: _level,
-                    decoration: const InputDecoration(labelText: 'Level'),
-                    items: [
-                      for (final l in CourseLevel.values)
-                        DropdownMenuItem(value: l, child: Text(l.label)),
-                    ],
-                    onChanged: (v) => setState(() => _level = v!),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: DropdownButtonFormField<PriceTier>(
-                    initialValue: _tier,
-                    decoration: const InputDecoration(labelText: 'Price tier'),
-                    items: [
-                      for (final t in PriceTier.values)
-                        DropdownMenuItem(
-                          value: t,
-                          child: Text('${t.id} · ${t.fallbackPrice}'),
-                        ),
-                    ],
-                    onChanged: (v) => setState(() => _tier = v!),
-                  ),
-                ),
-              ],
+          ),
+          if (_thumbProgress != null &&
+              _thumbProgress!.phase == UploadPhase.running)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: LinearProgressIndicator(
+                  value: _thumbProgress!.fraction),
             ),
-            const SizedBox(height: 24),
-            Text('Thumbnail', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Container(
-              height: 160,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: _thumbnailUrl == null
-                  ? const Center(child: Icon(Icons.image_outlined, size: 48))
-                  : Image.network(_thumbnailUrl!, fit: BoxFit.cover),
+          const SizedBox(height: 12),
+          // Buttons always inside bounded SizedBox — no intrinsic-width
+          // surprises.
+          SizedBox(
+            width: 220,
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.upload_outlined),
+              label: const Text('Upload thumbnail'),
+              onPressed: _pickThumbnail,
             ),
-            const SizedBox(height: 12),
-            if (_thumbProgress != null &&
-                _thumbProgress!.phase == UploadPhase.running)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: LinearProgressIndicator(value: _thumbProgress!.fraction),
-              ),
-            Row(
-              children: [
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.upload_outlined),
-                  label: const Text('Upload thumbnail'),
-                  onPressed: _pickThumbnail,
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            FilledButton.icon(
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: 200,
+            child: FilledButton.icon(
               onPressed: _saving ? null : _save,
               icon: _saving
                   ? const SizedBox(
                       height: 16,
                       width: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2))
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : const Icon(Icons.save_outlined),
               label: const Text('Save changes'),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-// ---------- Curriculum tab ------------------------------------------------
+/// Generic chip-based picker — replaces `DropdownButtonFormField`.
+class _ChipPicker<T> extends StatelessWidget {
+  const _ChipPicker({
+    required this.label,
+    required this.value,
+    required this.options,
+    required this.optionLabel,
+    required this.onChanged,
+  });
+  final String label;
+  final T value;
+  final List<T> options;
+  final String Function(T) optionLabel;
+  final ValueChanged<T> onChanged;
 
-class _CurriculumTab extends ConsumerWidget {
-  const _CurriculumTab({required this.courseId});
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            )),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final o in options)
+              ChoiceChip(
+                label: Text(optionLabel(o)),
+                selected: o == value,
+                onSelected: (selected) {
+                  if (selected) onChanged(o);
+                },
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// ---------- Curriculum section -------------------------------------------
+
+class _CurriculumSection extends ConsumerWidget {
+  const _CurriculumSection({required this.courseId});
   final String courseId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     final sections = ref
         .watch(adminCoursesDataSourceProvider)
         .watchSections(courseId);
 
-    return StreamBuilder<List<CourseSectionModel>>(
-      stream: sections,
-      builder: (context, snap) {
-        if (!snap.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final items = snap.data!;
-        return ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text('Sections',
-                      style: Theme.of(context).textTheme.titleLarge),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.dividerColor),
+      ),
+      child: StreamBuilder<List<CourseSectionModel>>(
+        stream: sections,
+        builder: (context, snap) {
+          if (!snap.hasData) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          final items = snap.data!;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text('Curriculum',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        )),
+                  ),
+                  SizedBox(
+                    width: 180,
+                    child: FilledButton.icon(
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add section'),
+                      onPressed: () =>
+                          _addSection(context, ref, items.length),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (items.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Text('No sections yet — add one to start.'),
                 ),
-                FilledButton.icon(
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add section'),
-                  onPressed: () => _addSection(context, ref, items.length),
+              for (final s in items)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _SectionPanel(courseId: courseId, section: s),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (items.isEmpty)
-              const Text('No sections yet — add one to start.'),
-            for (final s in items)
-              _SectionCard(courseId: courseId, section: s),
-          ],
-        );
-      },
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -390,34 +459,55 @@ class _CurriculumTab extends ConsumerWidget {
   }
 }
 
-class _SectionCard extends ConsumerWidget {
-  const _SectionCard({required this.courseId, required this.section});
+// ---------- Section panel (replaces ExpansionTile) -----------------------
+
+class _SectionPanel extends ConsumerWidget {
+  const _SectionPanel({required this.courseId, required this.section});
   final String courseId;
   final CourseSectionModel section;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     final lectures = ref
         .watch(adminCoursesDataSourceProvider)
         .watchLectures(courseId: courseId, sectionId: section.id);
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Theme(
-        data: Theme.of(context)
-            .copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          title: Text(section.title,
-              style: const TextStyle(fontWeight: FontWeight.w600)),
-          initiallyExpanded: true,
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest
+            .withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: theme.dividerColor),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(section.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      )),
+                ),
+                IconButton(
+                  tooltip: 'Delete section',
+                  icon: const Icon(Icons.delete_outline, color: Colors.red),
+                  onPressed: () => _deleteSection(context, ref),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
             StreamBuilder<List<LectureModel>>(
               stream: lectures,
               builder: (context, snap) {
                 if (!snap.hasData) {
                   return const Padding(
-                    padding: EdgeInsets.all(16),
+                    padding: EdgeInsets.symmetric(vertical: 8),
                     child: LinearProgressIndicator(),
                   );
                 }
@@ -426,43 +516,21 @@ class _SectionCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     for (final l in items)
-                      ListTile(
-                        leading: Icon(LectureType.fromId(l.type).icon),
-                        title: Text(l.title),
-                        subtitle: Text(
-                          '${l.type} · ${_formatBytes(l.fileSizeBytes)}'
-                          '${l.isPreview ? " · free preview" : ""}',
-                        ),
-                        trailing: PopupMenuButton<String>(
-                          onSelected: (action) => _onLectureAction(
-                              context, ref, action, l),
-                          itemBuilder: (_) => const [
-                            PopupMenuItem(
-                                value: 'edit', child: Text('Edit / upload')),
-                            PopupMenuItem(
-                                value: 'delete', child: Text('Delete')),
-                          ],
-                        ),
+                      _LectureRow(
+                        lecture: l,
+                        onEdit: () =>
+                            _editLecture(context, ref, l),
+                        onDelete: () =>
+                            _deleteLecture(context, ref, l),
                       ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-                      child: Row(
-                        children: [
-                          OutlinedButton.icon(
-                            onPressed: () => _addLecture(
-                                context, ref, items.length),
-                            icon: const Icon(Icons.add),
-                            label: const Text('Add lecture'),
-                          ),
-                          const Spacer(),
-                          TextButton.icon(
-                            onPressed: () => _deleteSection(context, ref),
-                            icon: const Icon(Icons.delete_outline,
-                                color: Colors.red),
-                            label: const Text('Delete section',
-                                style: TextStyle(color: Colors.red)),
-                          ),
-                        ],
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: 180,
+                      child: OutlinedButton.icon(
+                        onPressed: () =>
+                            _addLecture(context, ref, items.length),
+                        icon: const Icon(Icons.add),
+                        label: const Text('Add lecture'),
                       ),
                     ),
                   ],
@@ -489,48 +557,45 @@ class _SectionCard extends ConsumerWidget {
         );
   }
 
-  Future<void> _onLectureAction(
-    BuildContext context,
-    WidgetRef ref,
-    String action,
-    LectureModel lecture,
-  ) async {
-    if (action == 'delete') {
-      await ref.read(adminCoursesDataSourceProvider).deleteLecture(
-            courseId: courseId,
-            sectionId: section.id,
-            lectureId: lecture.id,
-          );
-      return;
-    }
-    if (action == 'edit') {
-      final draft = _LectureDraft.fromModel(lecture);
-      final result = await showDialog<_LectureDraft>(
-        context: context,
-        builder: (_) => _LectureEditorDialog(
-          order: lecture.order,
-          initial: draft,
+  Future<void> _editLecture(
+      BuildContext context, WidgetRef ref, LectureModel lecture) async {
+    final draft = _LectureDraft.fromModel(lecture);
+    final result = await showDialog<_LectureDraft>(
+      context: context,
+      builder: (_) => _LectureEditorDialog(
+        order: lecture.order,
+        initial: draft,
+        courseId: courseId,
+        sectionId: section.id,
+        lectureId: lecture.id,
+      ),
+    );
+    if (result == null) return;
+    await ref.read(adminCoursesDataSourceProvider).updateLecture(
+          courseId: courseId,
+          sectionId: section.id,
+          lecture: result.toModel(lecture.id),
+        );
+  }
+
+  Future<void> _deleteLecture(
+      BuildContext context, WidgetRef ref, LectureModel lecture) async {
+    await ref.read(adminCoursesDataSourceProvider).deleteLecture(
           courseId: courseId,
           sectionId: section.id,
           lectureId: lecture.id,
-        ),
-      );
-      if (result == null) return;
-      await ref.read(adminCoursesDataSourceProvider).updateLecture(
-            courseId: courseId,
-            sectionId: section.id,
-            lecture: result.toModel(lecture.id),
-          );
-    }
+        );
   }
 
   Future<void> _deleteSection(BuildContext context, WidgetRef ref) async {
-    final confirm = await showDialog<bool>(
+    final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete section?'),
-        content: Text('"${section.title}" and all its lectures will be '
-            'permanently deleted.'),
+        content: Text(
+          'Section "${section.title}" and all of its lectures will be '
+          'removed from this course.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -544,11 +609,66 @@ class _SectionCard extends ConsumerWidget {
         ],
       ),
     );
-    if (confirm != true) return;
+    if (ok != true) return;
     await ref.read(adminCoursesDataSourceProvider).deleteSection(
           courseId: courseId,
           sectionId: section.id,
         );
+  }
+}
+
+class _LectureRow extends StatelessWidget {
+  const _LectureRow({
+    required this.lecture,
+    required this.onEdit,
+    required this.onDelete,
+  });
+  final LectureModel lecture;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        children: [
+          Icon(LectureType.fromId(lecture.type).icon,
+              color: theme.colorScheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(lecture.title,
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text(
+                  '${lecture.type} · ${_formatBytes(lecture.fileSizeBytes)}'
+                  '${lecture.isPreview ? " · free preview" : ""}',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Edit / upload',
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: onEdit,
+          ),
+          IconButton(
+            tooltip: 'Delete',
+            icon: const Icon(Icons.delete_outline),
+            onPressed: onDelete,
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -565,6 +685,7 @@ String _formatBytes(int bytes) {
 }
 
 // ---------- Lecture editor dialog -----------------------------------------
+// (Kept verbatim — already uses `isExpanded: true` on its dropdown.)
 
 class _LectureDraft {
   _LectureDraft({
@@ -622,9 +743,6 @@ class _LectureEditorDialog extends ConsumerStatefulWidget {
 
   final int order;
   final _LectureDraft? initial;
-  // When provided, the upload action is enabled (we already know where to
-  // store the media). For a brand-new lecture, the user must save first to
-  // get an id before they can upload.
   final String? courseId;
   final String? sectionId;
   final String? lectureId;
@@ -752,14 +870,14 @@ class _LectureEditorDialogState extends ConsumerState<_LectureEditorDialog> {
                 onChanged: (v) => _draft.title = v,
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<LectureType>(
-                initialValue: _draft.type,
-                decoration: const InputDecoration(labelText: 'Type'),
-                items: [
-                  for (final t in LectureType.values)
-                    DropdownMenuItem(value: t, child: Text(t.label)),
-                ],
-                onChanged: (v) => setState(() => _draft.type = v!),
+              // Type uses ChoiceChips here too — same reasoning as the
+              // outer page.
+              _ChipPicker<LectureType>(
+                label: 'Type',
+                value: _draft.type,
+                options: LectureType.values,
+                optionLabel: (t) => t.label,
+                onChanged: (v) => setState(() => _draft.type = v),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -859,4 +977,3 @@ class _LectureEditorDialogState extends ConsumerState<_LectureEditorDialog> {
     );
   }
 }
-

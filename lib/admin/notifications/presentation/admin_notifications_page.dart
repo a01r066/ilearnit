@@ -101,6 +101,7 @@ class _AdminNotificationsPageState
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
                         initialValue: _topic,
+                        isExpanded: true,
                         decoration:
                             const InputDecoration(labelText: 'Topic'),
                         items: [

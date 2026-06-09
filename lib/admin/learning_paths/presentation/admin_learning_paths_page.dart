@@ -6,8 +6,10 @@ import '../../../features/learning_paths/data/models/learning_path_model.dart';
 import '../../routing/admin_route_names.dart';
 import '../../shared/providers/admin_providers.dart';
 
-/// Admin-only: every learning path (draft + published). Mirrors the
-/// AdminSongbooksPage structure — filter + list + actions.
+/// Minimal "Learning paths" list — mirrors My Courses + Songbooks
+/// list. No `DataTable`, no `Card`, no `Material` wrapper without
+/// explicit dimensions, no `FilledButton.icon` in an unconstrained
+/// Row.
 class AdminLearningPathsPage extends ConsumerStatefulWidget {
   const AdminLearningPathsPage({super.key});
 
@@ -30,34 +32,38 @@ class _AdminLearningPathsPageState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Title (own row).
+          Text('Learning paths', style: theme.textTheme.headlineMedium),
+          const SizedBox(height: 16),
+
+          // Filter + button row — bounded SizedBoxes on the right side.
           Row(
             children: [
               Expanded(
-                child: Text(
-                  'Learning paths',
-                  style: theme.textTheme.headlineMedium,
-                ),
-              ),
-              SizedBox(
-                width: 280,
                 child: TextField(
                   decoration: const InputDecoration(
                     prefixIcon: Icon(Icons.search),
                     hintText: 'Filter by title',
+                    border: OutlineInputBorder(),
                     isDense: true,
                   ),
                   onChanged: (v) => setState(() => _query = v),
                 ),
               ),
               const SizedBox(width: 12),
-              FilledButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text('New path'),
-                onPressed: () => _createDraft(context),
+              SizedBox(
+                width: 180,
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.add),
+                  label: const Text('New path'),
+                  onPressed: () => _createDraft(context),
+                ),
               ),
             ],
           ),
           const SizedBox(height: 16),
+
+          // List body.
           Expanded(
             child: StreamBuilder<List<LearningPathModel>>(
               stream: stream,
@@ -86,19 +92,17 @@ class _AdminLearningPathsPageState
                   return const Center(
                       child: Text('No learning paths yet.'));
                 }
-                return _Table(
-                  items: filtered,
-                  onEdit: (id) => context.goNamed(
-                    AdminRoutes.learningPathEditor,
-                    pathParameters: {'id': id},
+                return ListView.separated(
+                  itemCount: filtered.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (_, i) => _LearningPathRow(
+                    path: filtered[i],
+                    onEdit: () => context.goNamed(
+                      AdminRoutes.learningPathEditor,
+                      pathParameters: {'id': filtered[i].id},
+                    ),
+                    onDelete: () => _delete(context, filtered[i].id),
                   ),
-                  onDelete: (id) async {
-                    final ok = await _confirmDelete(context);
-                    if (!ok) return;
-                    await ref
-                        .read(adminLearningPathsDataSourceProvider)
-                        .delete(id);
-                  },
                 );
               },
             ),
@@ -123,7 +127,7 @@ class _AdminLearningPathsPageState
     );
   }
 
-  Future<bool> _confirmDelete(BuildContext context) async {
+  Future<void> _delete(BuildContext context, String id) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -145,87 +149,97 @@ class _AdminLearningPathsPageState
         ],
       ),
     );
-    return ok ?? false;
+    if (ok != true) return;
+    await ref.read(adminLearningPathsDataSourceProvider).delete(id);
   }
 }
 
-class _Table extends StatelessWidget {
-  const _Table({
-    required this.items,
+/// Hand-rolled row — same Material+InkWell+Container shape as the
+/// other admin list pages. Status uses a chip-style Container, actions
+/// are plain IconButtons.
+class _LearningPathRow extends StatelessWidget {
+  const _LearningPathRow({
+    required this.path,
     required this.onEdit,
     required this.onDelete,
   });
 
-  final List<LearningPathModel> items;
-  final ValueChanged<String> onEdit;
-  final ValueChanged<String> onDelete;
+  final LearningPathModel path;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Material(
-      borderRadius: BorderRadius.circular(8),
-      color: theme.colorScheme.surfaceContainerHighest,
-      child: SingleChildScrollView(
-        child: DataTable(
-          columns: const [
-            DataColumn(label: Text('Title')),
-            DataColumn(label: Text('Instrument')),
-            DataColumn(label: Text('Courses'), numeric: true),
-            DataColumn(label: Text('Hours'), numeric: true),
-            DataColumn(label: Text('Status')),
-            DataColumn(label: Text('')),
-          ],
-          rows: [
-            for (final p in items)
-              DataRow(
-                cells: [
-                  DataCell(
-                    SizedBox(
-                      width: 320,
-                      child: Text(
-                        p.title.isEmpty ? '(untitled)' : p.title,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                  DataCell(Text(p.instrument ?? '—')),
-                  DataCell(Text('${p.courseIds.length}')),
-                  DataCell(Text(p.totalHours.toStringAsFixed(0))),
-                  DataCell(
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: (p.isPublished ? Colors.green : Colors.amber)
-                            .withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(p.isPublished ? 'Published' : 'Draft'),
-                    ),
-                  ),
-                  DataCell(
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit_outlined),
-                          onPressed: () => onEdit(p.id),
-                          tooltip: 'Edit',
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline),
-                          onPressed: () => onDelete(p.id),
-                          tooltip: 'Delete',
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+      color: theme.colorScheme.surface,
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onEdit,
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border.all(color: theme.dividerColor),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: 4),
+              CircleAvatar(
+                backgroundColor:
+                    theme.colorScheme.primary.withValues(alpha: 0.12),
+                child: const Icon(Icons.timeline_outlined),
               ),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      path.title.isEmpty ? '(untitled)' : path.title,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      '${path.instrument ?? "Mixed"} · '
+                      '${path.courseIds.length} courses · '
+                      '${path.totalHours.toStringAsFixed(0)}h',
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 4),
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  color: (path.isPublished
+                          ? Colors.green
+                          : Colors.amber)
+                      .withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  path.isPublished ? 'Published' : 'Draft',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Edit',
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: onEdit,
+              ),
+              IconButton(
+                tooltip: 'Delete',
+                icon: const Icon(Icons.delete_outline),
+                onPressed: onDelete,
+              ),
+            ],
+          ),
         ),
       ),
     );

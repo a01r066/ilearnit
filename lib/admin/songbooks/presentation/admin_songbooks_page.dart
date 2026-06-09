@@ -6,8 +6,9 @@ import '../../../features/songbooks/data/models/songbook_model.dart';
 import '../../routing/admin_route_names.dart';
 import '../../shared/providers/admin_providers.dart';
 
-/// Admin-only: every songbook in the catalogue. Mirrors AdminCoursesPage —
-/// filter input, list of rows with bestseller chip + edit/delete actions.
+/// Minimal "Songbooks" list — flat page, no `Card` wrapping the list,
+/// no `ListTile`, no `PopupMenuButton`, no `FilledButton.icon` in an
+/// unconstrained Row. Image.network always has an `errorBuilder`.
 class AdminSongbooksPage extends ConsumerStatefulWidget {
   const AdminSongbooksPage({super.key});
 
@@ -29,32 +30,40 @@ class _AdminSongbooksPageState extends ConsumerState<AdminSongbooksPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Title row.
+          Text('Songbooks', style: theme.textTheme.headlineMedium),
+          const SizedBox(height: 16),
+
+          // Filter + button row — every right-side widget is in a
+          // bounded SizedBox.
           Row(
             children: [
               Expanded(
-                child: Text('Songbooks',
-                    style: theme.textTheme.headlineMedium),
-              ),
-              SizedBox(
-                width: 280,
                 child: TextField(
                   decoration: const InputDecoration(
                     prefixIcon: Icon(Icons.search),
                     hintText: 'Filter by title or publisher',
+                    border: OutlineInputBorder(),
+                    isDense: true,
                   ),
                   onChanged: (v) =>
                       setState(() => _query = v.toLowerCase()),
                 ),
               ),
               const SizedBox(width: 12),
-              FilledButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text('New songbook'),
-                onPressed: _createSongbook,
+              SizedBox(
+                width: 180,
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.add),
+                  label: const Text('New songbook'),
+                  onPressed: _createSongbook,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 16),
+
+          // List body.
           Expanded(
             child: StreamBuilder<List<SongbookModel>>(
               stream: stream,
@@ -74,12 +83,10 @@ class _AdminSongbooksPageState extends ConsumerState<AdminSongbooksPage> {
                         style: theme.textTheme.bodyLarge),
                   );
                 }
-                return Card(
-                  child: ListView.separated(
-                    itemCount: items.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (_, i) => _SongbookRow(book: items[i]),
-                  ),
+                return ListView.separated(
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (_, i) => _SongbookRow(book: items[i]),
                 );
               },
             ),
@@ -132,6 +139,10 @@ class _AdminSongbooksPageState extends ConsumerState<AdminSongbooksPage> {
   }
 }
 
+/// Hand-rolled row — Material+InkWell+Container rather than ListTile +
+/// PopupMenuButton. Each action is an `IconButton` so the row has no
+/// `[Expanded, FilledButton.icon]` mix to trigger the intrinsic-width
+/// pass.
 class _SongbookRow extends ConsumerWidget {
   const _SongbookRow({required this.book});
   final SongbookModel book;
@@ -139,90 +150,117 @@ class _SongbookRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    return ListTile(
-      leading: SizedBox(
-        width: 48,
-        height: 60,
-        child: book.coverUrl.isEmpty
-            ? Container(
-                color: theme.colorScheme.surfaceContainerHighest,
-                child: const Icon(Icons.book_outlined),
-              )
-            : Image.network(book.coverUrl, fit: BoxFit.cover),
-      ),
-      title: Text(book.title),
-      subtitle: Text(
-        '${book.instrument} · ${book.publisher.isEmpty ? "—" : book.publisher}',
-        style: theme.textTheme.bodySmall,
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (book.isBestseller)
-            Chip(
-              label: const Text('Bestseller'),
-              visualDensity: VisualDensity.compact,
-              backgroundColor:
-                  theme.colorScheme.primary.withValues(alpha: 0.10),
-            ),
-          const SizedBox(width: 8),
-          PopupMenuButton<String>(
-            onSelected: (a) => _action(context, ref, a),
-            itemBuilder: (_) => [
-              const PopupMenuItem(value: 'open', child: Text('Open editor')),
-              PopupMenuItem(
-                value: 'bestseller',
-                child: Text(book.isBestseller
-                    ? 'Unmark as bestseller'
-                    : 'Mark as bestseller'),
+    return Material(
+      color: theme.colorScheme.surface,
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => context.goNamed(
+          AdminRoutes.songbookEditor,
+          pathParameters: {'id': book.id},
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border.all(color: theme.dividerColor),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 48,
+                height: 60,
+                child: book.coverUrl.isEmpty
+                    ? Container(
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        child: const Icon(Icons.book_outlined),
+                      )
+                    : Image.network(
+                        book.coverUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: theme.colorScheme.surfaceContainerHighest,
+                          child:
+                              const Icon(Icons.broken_image_outlined),
+                        ),
+                      ),
               ),
-              const PopupMenuItem(value: 'delete', child: Text('Delete')),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(book.title,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600)),
+                    Text(
+                      '${book.instrument} · ${book.publisher.isEmpty ? "—" : book.publisher}',
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              if (book.isBestseller)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 4),
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary
+                        .withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text('Bestseller',
+                      style: TextStyle(fontSize: 12)),
+                ),
+              IconButton(
+                tooltip: book.isBestseller
+                    ? 'Unmark as bestseller'
+                    : 'Mark as bestseller',
+                icon: Icon(
+                  book.isBestseller ? Icons.star : Icons.star_border,
+                ),
+                onPressed: () => ref
+                    .read(adminSongbooksDataSourceProvider)
+                    .setBestseller(book.id, !book.isBestseller),
+              ),
+              IconButton(
+                tooltip: 'Delete',
+                icon: const Icon(Icons.delete_outline),
+                onPressed: () => _confirmDelete(context, ref),
+              ),
             ],
           ),
-        ],
-      ),
-      onTap: () => context.goNamed(
-        AdminRoutes.songbookEditor,
-        pathParameters: {'id': book.id},
+        ),
       ),
     );
   }
 
-  Future<void> _action(
-      BuildContext context, WidgetRef ref, String action) async {
-    final ds = ref.read(adminSongbooksDataSourceProvider);
-    switch (action) {
-      case 'open':
-        context.goNamed(AdminRoutes.songbookEditor,
-            pathParameters: {'id': book.id});
-        break;
-      case 'bestseller':
-        await ds.setBestseller(book.id, !book.isBestseller);
-        break;
-      case 'delete':
-        final ok = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Delete songbook?'),
-            content: Text(
-                '"${book.title}" and all of its reviews will be permanently '
-                'deleted from Firestore. Storage files (cover/banner) remain — '
-                'clean those up separately.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                onPressed: () => Navigator.of(ctx).pop(true),
-                child: const Text('Delete'),
-              ),
-            ],
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete songbook?'),
+        content: Text(
+          '"${book.title}" and all of its reviews will be permanently '
+          'deleted from Firestore. Storage files (cover/banner) remain '
+          '— clean those up separately.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
           ),
-        );
-        if (ok == true) await ds.delete(book.id);
-        break;
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) {
+      await ref.read(adminSongbooksDataSourceProvider).delete(book.id);
     }
   }
 }

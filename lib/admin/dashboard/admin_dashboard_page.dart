@@ -141,7 +141,12 @@ class _NavTile extends StatelessWidget {
     final theme = Theme.of(context);
     return SizedBox(
       width: 220,
-      child: Card(
+      // Material+InkWell directly under SizedBox — avoids Card's
+      // implicit margin + extra Material layer that intermittently
+      // hit-tests with zero size on web during route transitions.
+      child: Material(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
@@ -191,7 +196,12 @@ class _StatTile extends StatelessWidget {
     final theme = Theme.of(context);
     return SizedBox(
       width: 220,
-      child: Card(
+      // Material+InkWell directly under SizedBox — avoids Card's
+      // implicit margin + extra Material layer that intermittently
+      // hit-tests with zero size on web during route transitions.
+      child: Material(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
