@@ -695,6 +695,7 @@ class _LectureDraft {
     required this.durationSeconds,
     required this.isPreview,
     required this.mediaUrl,
+    required this.cloudflareVideoId,
     required this.fileSizeBytes,
     required this.order,
   });
@@ -706,6 +707,7 @@ class _LectureDraft {
         durationSeconds: m.durationSeconds,
         isPreview: m.isPreview,
         mediaUrl: m.mediaUrl,
+        cloudflareVideoId: m.cloudflareVideoId,
         fileSizeBytes: m.fileSizeBytes,
         order: m.order,
       );
@@ -716,6 +718,7 @@ class _LectureDraft {
   int durationSeconds;
   bool isPreview;
   String? mediaUrl;
+  String? cloudflareVideoId;
   int fileSizeBytes;
   int order;
 
@@ -727,6 +730,10 @@ class _LectureDraft {
         order: order,
         isPreview: isPreview,
         mediaUrl: mediaUrl,
+        cloudflareVideoId:
+            cloudflareVideoId?.trim().isEmpty == true
+                ? null
+                : cloudflareVideoId,
         description: description.isEmpty ? null : description,
         fileSizeBytes: fileSizeBytes,
       );
@@ -769,17 +776,23 @@ class _LectureEditorDialogState extends ConsumerState<_LectureEditorDialog> {
           durationSeconds: 0,
           isPreview: false,
           mediaUrl: null,
+          cloudflareVideoId: null,
           fileSizeBytes: 0,
           order: widget.order,
         );
     _title = TextEditingController(text: _draft.title);
     _description = TextEditingController(text: _draft.description);
+    _cloudflareId =
+        TextEditingController(text: _draft.cloudflareVideoId ?? '');
   }
+
+  late final TextEditingController _cloudflareId;
 
   @override
   void dispose() {
     _title.dispose();
     _description.dispose();
+    _cloudflareId.dispose();
     super.dispose();
   }
 
@@ -914,7 +927,35 @@ class _LectureEditorDialogState extends ConsumerState<_LectureEditorDialog> {
                 ],
               ),
               const Divider(height: 32),
-              Text('Media file',
+              // ---- Cloudflare Stream -----------------------------------
+              // When set, this UID takes precedence over the Firebase
+              // Storage `mediaUrl` below. The player resolves it through
+              // the `resolveStreamPlayback` Cloud Function so the API
+              // token stays server-side.
+              Text('Cloudflare Stream video',
+                  style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _cloudflareId,
+                decoration: const InputDecoration(
+                  labelText: 'Video UID (32 hex chars)',
+                  hintText: 'bf53017eb20e5db311c21d30ffb5a075',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                onChanged: (v) => _draft.cloudflareVideoId =
+                    v.trim().isEmpty ? null : v.trim(),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  'Find the UID in Cloudflare Stream → your video → URL '
+                  '(e.g. cloudflarestream.com/<uid>/manifest/video.m3u8).',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+              const Divider(height: 32),
+              Text('Media file (legacy fallback)',
                   style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 8),
               if (_draft.mediaUrl != null)

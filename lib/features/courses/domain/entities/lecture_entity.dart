@@ -17,6 +17,11 @@ abstract class LectureEntity with _$LectureEntity {
     @Default(0) int order,
     @Default(false) bool isPreview,
     String? mediaUrl, // streamable URL for video/audio, primary URL for documents
+    /// Cloudflare Stream video UID. When set, the player resolves it
+    /// through the `resolveStreamPlayback` Cloud Function to get a
+    /// fresh HLS URL. `mediaUrl` stays as a fallback for legacy
+    /// Firebase Storage-hosted lectures.
+    String? cloudflareVideoId,
     String? thumbnailUrl,
     String? description,
     @Default(<LectureResourceEntity>[]) List<LectureResourceEntity> resources,

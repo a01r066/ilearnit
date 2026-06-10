@@ -25,6 +25,19 @@ import {getStorage} from 'firebase-admin/storage';
 import {onDocumentCreated, onDocumentUpdated} from 'firebase-functions/v2/firestore';
 import {HttpsError, onCall} from 'firebase-functions/v2/https';
 import {logger} from 'firebase-functions/v2';
+import {defineSecret} from 'firebase-functions/params';
+
+// ---------- Cloudflare Stream secrets -------------------------------------
+//
+// The API token must NEVER be embedded in the Flutter client. Define it
+// as a Firebase Secret and reference it from `resolveStreamPlayback`.
+//
+// Set the secrets via the CLI before deploying:
+//   firebase functions:secrets:set CLOUDFLARE_API_TOKEN
+//   firebase functions:secrets:set CLOUDFLARE_ACCOUNT_ID
+//
+const CLOUDFLARE_API_TOKEN = defineSecret('CLOUDFLARE_API_TOKEN');
+const CLOUDFLARE_ACCOUNT_ID = defineSecret('CLOUDFLARE_ACCOUNT_ID');
 
 initializeApp();
 const db = getFirestore();
@@ -632,5 +645,107 @@ export const onCourseQuestionCreated = onDocumentCreated(
     logger.info(
       `onCourseQuestionCreated: notified instructor ${instructorId} of question ${qid}`,
     );
+  },
+);
+
+// ---------- 8. resolve Cloudflare Stream playback -------------------------
+
+interface StreamPlaybackResult {
+  hlsUrl: string | null;
+  dashUrl: string | null;
+  thumbnailUrl: string | null;
+  durationSec: number;
+  readyToStream: boolean;
+}
+
+/**
+ * Resolves a Cloudflare Stream video UID to playback URLs.
+ *
+ * The Flutter client sends `{videoId: "bf53017eb..."}` and gets back
+ * `{hlsUrl, dashUrl, thumbnailUrl, durationSec, readyToStream}`.
+ *
+ * The API token lives in a Firebase Secret and never leaves the
+ * server. We require auth on the client side so anonymous strangers
+ * can't enumerate the catalogue's video UIDs.
+ *
+ * Path: POST https://api.cloudflare.com/client/v4/accounts/{accountId}/stream/{videoId}
+ */
+export const resolveStreamPlayback = onCall(
+  {secrets: [CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID]},
+  async (request): Promise<StreamPlaybackResult> => {
+    if (!request.auth) {
+      throw new HttpsError(
+        'unauthenticated',
+        'Sign in to play this lecture.',
+      );
+    }
+
+    const videoId = (request.data?.videoId as string | undefined)?.trim();
+    if (!videoId) {
+      throw new HttpsError('invalid-argument', 'videoId is required.');
+    }
+    // Cloudflare Stream UIDs are 32-char hex.
+    if (!/^[a-f0-9]{32}$/i.test(videoId)) {
+      throw new HttpsError(
+        'invalid-argument',
+        'videoId must be a Cloudflare Stream UID (32 hex chars).',
+      );
+    }
+
+    const accountId = CLOUDFLARE_ACCOUNT_ID.value();
+    const token = CLOUDFLARE_API_TOKEN.value();
+    const url =
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}` +
+      `/stream/${videoId}`;
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        headers: {Authorization: `Bearer ${token}`},
+      });
+    } catch (e) {
+      logger.error(`Cloudflare fetch failed for ${videoId}: ${e}`);
+      throw new HttpsError(
+        'unavailable',
+        'Could not reach Cloudflare Stream.',
+      );
+    }
+
+    if (!response.ok) {
+      logger.warn(
+        `Cloudflare returned ${response.status} for video ${videoId}`,
+      );
+      // 404 / 403 from Cloudflare → surface as not-found to the client
+      // so the UI can show a "video missing" message.
+      throw new HttpsError(
+        response.status === 404 ? 'not-found' : 'internal',
+        `Cloudflare Stream returned ${response.status}.`,
+      );
+    }
+
+    interface CFResponse {
+      success: boolean;
+      result?: {
+        readyToStream?: boolean;
+        duration?: number;
+        thumbnail?: string;
+        playback?: {hls?: string; dash?: string};
+      };
+    }
+    const payload = (await response.json()) as CFResponse;
+    if (!payload.success || !payload.result) {
+      throw new HttpsError(
+        'internal',
+        'Cloudflare response was not successful.',
+      );
+    }
+
+    return {
+      hlsUrl: payload.result.playback?.hls ?? null,
+      dashUrl: payload.result.playback?.dash ?? null,
+      thumbnailUrl: payload.result.thumbnail ?? null,
+      durationSec: Math.round(payload.result.duration ?? 0),
+      readyToStream: payload.result.readyToStream === true,
+    };
   },
 );

@@ -33,9 +33,13 @@ class CourseCardSkeleton extends StatelessWidget {
               aspectRatio: 16 / 9,
               child: Container(color: base),
             ),
+            // Inner gaps trimmed from 10/10/12/12 to 8/8/8/8 — saves
+            // the ~5.2px overflow at narrow grid widths without
+            // changing the visual rhythm meaningfully.
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Chips row
@@ -46,15 +50,15 @@ class CourseCardSkeleton extends StatelessWidget {
                       _Bar(width: 64, height: 18, color: base),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   // Title — two lines
                   _Bar(width: double.infinity, height: 14, color: base),
                   const SizedBox(height: 6),
                   _Bar(width: 180, height: 14, color: base),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   // Instructor line
                   _Bar(width: 120, height: 12, color: base),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   // Stats row
                   Row(
                     children: [

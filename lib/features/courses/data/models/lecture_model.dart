@@ -19,6 +19,12 @@ abstract class LectureModel with _$LectureModel {
     @Default(0) int order,
     @Default(false) bool isPreview,
     String? mediaUrl,
+    /// Cloudflare Stream video UID (e.g. `bf53017eb20e5db311c21d30ffb5a075`).
+    /// When set, takes precedence over [mediaUrl] — the player resolves
+    /// the UID through the `resolveStreamPlayback` Cloud Function to
+    /// get a fresh HLS URL on demand. [mediaUrl] is kept as a fallback
+    /// for legacy lectures still hosted on Firebase Storage.
+    String? cloudflareVideoId,
     String? thumbnailUrl,
     String? description,
     @Default(<LectureResourceModel>[]) List<LectureResourceModel> resources,
@@ -36,6 +42,7 @@ abstract class LectureModel with _$LectureModel {
         order: order,
         isPreview: isPreview,
         mediaUrl: mediaUrl,
+        cloudflareVideoId: cloudflareVideoId,
         thumbnailUrl: thumbnailUrl,
         description: description,
         resources: resources.map((r) => r.toEntity()).toList(),

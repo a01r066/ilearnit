@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../../shared/providers/connectivity_provider.dart';
 import '../../../../shared/providers/firebase_providers.dart';
+import '../../data/datasources/cloudflare_stream_service.dart';
 import '../../data/datasources/courses_remote_datasource.dart';
 import '../../data/repositories/courses_repository_impl.dart';
 import '../../domain/entities/course_entity.dart';
@@ -20,6 +21,20 @@ final coursesRemoteDataSourceProvider = Provider<CoursesRemoteDataSource>(
     firestore: ref.watch(firestoreProvider),
   ),
 );
+
+/// Singleton Cloudflare Stream resolver. The in-memory cache lives as
+/// long as the provider container, so revisiting the same lecture
+/// within ~50 min doesn't re-invoke the Cloud Function.
+final cloudflareStreamServiceProvider = Provider<CloudflareStreamService>(
+  (_) => CloudflareStreamService(),
+);
+
+/// Resolves a single video UID to a playback object. Use:
+/// `ref.watch(cloudflareStreamPlaybackProvider(lecture.cloudflareVideoId!))`.
+final cloudflareStreamPlaybackProvider = FutureProvider.autoDispose
+    .family<CloudflareStreamPlayback, String>((ref, videoId) {
+  return ref.watch(cloudflareStreamServiceProvider).resolve(videoId);
+});
 
 final coursesRepositoryProvider = Provider<CoursesRepository>(
   (ref) => CoursesRepositoryImpl(

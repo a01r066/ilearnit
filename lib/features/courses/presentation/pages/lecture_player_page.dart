@@ -214,7 +214,9 @@ class _VideoBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (lecture.mediaUrl == null || lecture.mediaUrl!.isEmpty) {
+    final hasMedia = (lecture.mediaUrl?.isNotEmpty ?? false) ||
+        (lecture.cloudflareVideoId?.isNotEmpty ?? false);
+    if (!hasMedia) {
       return const Center(child: Text('Video unavailable.'));
     }
     final key =
@@ -224,36 +226,85 @@ class _VideoBody extends ConsumerWidget {
         .watch(lectureProgressByCourseProvider(courseId))
         .maybeWhen(data: (rows) => _findRow(rows, lecture.id), orElse: () => null);
 
-    // Prefer the local download when it's complete so the player works
-    // offline. `file://` is what video_player accepts on both platforms.
+    // Resolution order:
+    //   1. Local download (offline support) — Firebase Storage source.
+    //   2. Cloudflare Stream HLS via Cloud Function (preferred for prod).
+    //   3. Direct mediaUrl from Firebase Storage (legacy fallback).
     final localPath =
         ref.watch(localMediaPathForLectureProvider(lecture.id));
-    final url = localPath != null
-        ? Uri.file(localPath).toString()
-        : lecture.mediaUrl!;
 
     final positions = ref.read(playbackPositionRegistryProvider);
+    final cfId = lecture.cloudflareVideoId;
 
-    return Column(
-      children: [
-        AspectRatio(
+    Widget buildPlayer(String url) => AspectRatio(
           aspectRatio: 16 / 9,
           child: VideoLecturePlayer(
             url: url,
-            // Notes jump-to-timestamp (`?at=`) wins over the saved
-            // progress position so the user lands where their note
-            // pointed.
             initialPositionSec:
                 initialPositionOverrideSec ?? saved?.positionSec ?? 0,
             onTick: (pos, dur) {
               notifier.onTick(positionSec: pos, durationSec: dur);
-              // Cheap O(1) write — used by the "Add note" button to
-              // pre-fill timestampSec without resubscribing.
               positions.put(lecture.id, pos);
             },
             onPause: () => notifier.flush(),
           ),
+        );
+
+    Widget videoSlot;
+    if (localPath != null) {
+      // Offline / pre-downloaded — fastest path, skip resolution.
+      videoSlot = buildPlayer(Uri.file(localPath).toString());
+    } else if (cfId != null && cfId.isNotEmpty) {
+      // Cloudflare Stream — resolve via Cloud Function, then play HLS.
+      final playbackAsync =
+          ref.watch(cloudflareStreamPlaybackProvider(cfId));
+      videoSlot = playbackAsync.when(
+        loading: () => const AspectRatio(
+          aspectRatio: 16 / 9,
+          child:
+              ColoredBox(color: Colors.black, child: Center(child:
+                  CircularProgressIndicator(color: Colors.white))),
         ),
+        error: (e, _) => AspectRatio(
+          aspectRatio: 16 / 9,
+          child: ColoredBox(
+            color: Colors.black,
+            child: Center(
+              child: Text(
+                'Video unavailable: $e',
+                style: const TextStyle(color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ),
+        data: (p) {
+          final url = p.bestUrl;
+          if (url == null || !p.readyToStream) {
+            return const AspectRatio(
+              aspectRatio: 16 / 9,
+              child: ColoredBox(
+                color: Colors.black,
+                child: Center(
+                  child: Text(
+                    'Video still encoding — try again in a minute.',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            );
+          }
+          return buildPlayer(url);
+        },
+      );
+    } else {
+      // Legacy Firebase Storage URL.
+      videoSlot = buildPlayer(lecture.mediaUrl!);
+    }
+
+    return Column(
+      children: [
+        videoSlot,
         Expanded(
           child: _LectureBody(
             lecture: lecture,
