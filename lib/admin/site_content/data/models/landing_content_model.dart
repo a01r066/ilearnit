@@ -19,6 +19,7 @@ abstract class LandingContentModel with _$LandingContentModel {
     @Default(<FaqItemModel>[]) List<FaqItemModel> faqs,
     required AboutSectionModel about,
     @Default(<AboutStatModel>[]) List<AboutStatModel> aboutStats,
+    required InstructorCalloutModel instructorCallout,
     required NavSectionModel nav,
     required FooterSectionModel footer,
     required StoreBadgesModel storeBadges,
@@ -47,6 +48,7 @@ abstract class LandingContentModel with _$LandingContentModel {
       'footer': const <String, dynamic>{},
       'storeBadges': const <String, dynamic>{},
       'meta': const <String, dynamic>{},
+      'instructorCallout': const <String, dynamic>{},
       ...data,
     };
     return LandingContentModel.fromJson(patched);
@@ -61,6 +63,7 @@ abstract class LandingContentModel with _$LandingContentModel {
         faqs: faqs.map((f) => f.toEntity()).toList(),
         about: about.toEntity(),
         aboutStats: aboutStats.map((s) => s.toEntity()).toList(),
+        instructorCallout: instructorCallout.toEntity(),
         nav: nav.toEntity(),
         footer: footer.toEntity(),
         storeBadges: storeBadges.toEntity(),
@@ -81,6 +84,8 @@ abstract class LandingContentModel with _$LandingContentModel {
         faqs: e.faqs.map(FaqItemModel.fromEntity).toList(),
         about: AboutSectionModel.fromEntity(e.about),
         aboutStats: e.aboutStats.map(AboutStatModel.fromEntity).toList(),
+        instructorCallout:
+            InstructorCalloutModel.fromEntity(e.instructorCallout),
         nav: NavSectionModel.fromEntity(e.nav),
         footer: FooterSectionModel.fromEntity(e.footer),
         storeBadges: StoreBadgesModel.fromEntity(e.storeBadges),
@@ -298,6 +303,50 @@ abstract class AboutStatModel with _$AboutStatModel {
 
   static AboutStatModel fromEntity(AboutStat e) =>
       AboutStatModel(value: e.value, label: e.label);
+}
+
+// ─────────────────────────── Become an instructor ──────────
+
+@freezed
+abstract class InstructorCalloutModel with _$InstructorCalloutModel {
+  const InstructorCalloutModel._();
+
+  const factory InstructorCalloutModel({
+    @Default('') String eyebrow,
+    @Default('') String title,
+    @Default('') String subtitle,
+    @Default(<String>[]) List<String> perks,
+    @Default('Become an instructor') String ctaLabel,
+    @Default('/admin') String ctaHref,
+    @Default('') String secondaryCtaLabel,
+    @Default('') String secondaryCtaHref,
+  }) = _InstructorCalloutModel;
+
+  factory InstructorCalloutModel.fromJson(Map<String, dynamic> json) =>
+      _$InstructorCalloutModelFromJson(json);
+
+  InstructorCallout toEntity() => InstructorCallout(
+        eyebrow: eyebrow,
+        title: title,
+        subtitle: subtitle,
+        perks: perks,
+        ctaLabel: ctaLabel,
+        ctaHref: ctaHref,
+        secondaryCtaLabel: secondaryCtaLabel,
+        secondaryCtaHref: secondaryCtaHref,
+      );
+
+  static InstructorCalloutModel fromEntity(InstructorCallout e) =>
+      InstructorCalloutModel(
+        eyebrow: e.eyebrow,
+        title: e.title,
+        subtitle: e.subtitle,
+        perks: e.perks,
+        ctaLabel: e.ctaLabel,
+        ctaHref: e.ctaHref,
+        secondaryCtaLabel: e.secondaryCtaLabel,
+        secondaryCtaHref: e.secondaryCtaHref,
+      );
 }
 
 // ─────────────────────────── Nav / Footer chrome ─────────────

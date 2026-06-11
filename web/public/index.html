@@ -355,6 +355,51 @@
       </div>
     </section>
 
+    <!-- ── Become an instructor ──────────────────────────────────── -->
+    <!-- Marketing CTA that funnels teachers into the admin portal's
+         /apply flow. After they sign in (Google / Apple / email), the
+         admin router auto-redirects new students to /apply. Once an
+         admin approves at /admin/applications, role flips to
+         `instructor` and they land on /my-courses. -->
+    <section id="become-instructor" class="instructor-callout">
+      <div class="container instructor-callout-grid">
+        <div class="instructor-callout-copy">
+          <span class="eyebrow" data-cms="instructorCallout.eyebrow">Teach on iLearnIt</span>
+          <h2 data-cms="instructorCallout.title">Share your craft with thousands of students.</h2>
+          <p data-cms="instructorCallout.subtitle">
+            Apply to teach a course. Once approved, the admin portal gives you
+            the same toolkit our staff editors use — upload lectures, attach
+            sheet music, and publish on your own schedule.
+          </p>
+
+          <div class="instructor-callout-ctas">
+            <a class="btn btn-primary"
+               href="/admin"
+               data-cms="instructorCallout.ctaLabel"
+               data-cms-href="instructorCallout.ctaHref">Become an instructor</a>
+            <a class="btn btn-ghost"
+               href="/about.html"
+               data-cms="instructorCallout.secondaryCtaLabel"
+               data-cms-href="instructorCallout.secondaryCtaHref">Read the instructor agreement</a>
+          </div>
+        </div>
+
+        <template id="cms-tpl-instructor-perk">
+          <li>{{.}}</li>
+        </template>
+
+        <ul class="instructor-callout-perks"
+            data-cms-list="instructorCallout.perks"
+            data-cms-template="instructor-perk">
+          <!-- Static fallback (overwritten when instructorCallout.perks is set). -->
+          <li>A built-in audience of motivated music students.</li>
+          <li>You set the price; we handle billing, platform support, and distribution.</li>
+          <li>Manage courses, sections, and lectures from a single dashboard.</li>
+          <li>Editorial team available for feedback on pacing and recording.</li>
+        </ul>
+      </div>
+    </section>
+
     <!-- ── About ─────────────────────────────────────────────────── -->
     <section id="about">
       <div class="container about">

@@ -32,11 +32,30 @@ class InstructorApplicationDataSource {
           );
 
   /// Stream every pending application (admin view).
+  ///
+  /// Note we do NOT `.orderBy('appliedAt')` here — combining that with
+  /// the `where('status', …)` filter requires a composite index
+  /// (`status ASC, appliedAt ASC`) which a fresh Firestore project
+  /// doesn't have. Until that index is deployed, the query would fail
+  /// with `FAILED_PRECONDITION` and the page would spin forever.
+  ///
+  /// Pending applications are an admin-only queue — typically dozens,
+  /// not thousands — so sorting client-side in the page is cheap.
   Stream<List<InstructorApplication>> watchPending() => _applications
       .where('status', isEqualTo: ApplicationStatus.pending.id)
-      .orderBy('appliedAt')
       .snapshots()
-      .map((s) => s.docs.map(InstructorApplication.fromDoc).toList());
+      .map((s) {
+        final list =
+            s.docs.map(InstructorApplication.fromDoc).toList();
+        // Oldest first matches the previous server-side ordering so
+        // admins see the longest-waiting applicants at the top.
+        list.sort((a, b) {
+          final ax = a.appliedAt ?? DateTime.now();
+          final bx = b.appliedAt ?? DateTime.now();
+          return ax.compareTo(bx);
+        });
+        return list;
+      });
 
   /// Stream all applications regardless of status (admin history view).
   Stream<List<InstructorApplication>> watchAll() => _applications

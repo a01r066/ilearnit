@@ -202,12 +202,36 @@ const payload = {
     { value: '2,200+', label: 'Video & audio lessons' },
     { value: '3', label: 'Instruments' },
   ],
+  instructorCallout: {
+    eyebrow: 'Teach on iLearnIt',
+    title: 'Share your craft with thousands of students.',
+    subtitle:
+      'Apply to teach a course. Once approved, the admin portal gives ' +
+      'you the same toolkit our staff editors use — upload lectures, ' +
+      'attach sheet music, and publish on your own schedule.',
+    perks: [
+      'A built-in audience of motivated music students.',
+      'You set the price; we handle billing, platform support, and ' +
+        'distribution.',
+      'Manage courses, sections, and lectures from a single dashboard.',
+      'Editorial team available for feedback on pacing and recording.',
+    ],
+    ctaLabel: 'Become an instructor',
+    // Points at the admin portal login. After sign-in, brand-new users
+    // are auto-routed to /apply by the admin router's role guard, so we
+    // land them on /login rather than /apply directly (which would
+    // bounce them through /login anyway).
+    ctaHref: 'https://admin.ilearnit.info/login',
+    secondaryCtaLabel: 'Read the instructor agreement',
+    secondaryCtaHref: '/about.html#instructor-agreement',
+  },
   nav: {
     links: [
       { label: 'Instruments', href: '#instruments' },
       { label: 'Features', href: '#features' },
       { label: 'Pricing', href: '#pricing' },
       { label: 'FAQ', href: '#faq' },
+      { label: 'Teach', href: '#become-instructor' },
       { label: 'About', href: '/about.html' },
     ],
     ctaLabel: 'Get the app',

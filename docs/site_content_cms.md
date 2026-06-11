@@ -51,6 +51,16 @@ site_content/landing
   aboutStats: [
     { value: string, label: string }
   ]
+  instructorCallout: {
+    eyebrow                : string
+    title                  : string
+    subtitle               : string
+    perks                  : [string]
+    ctaLabel               : string  (e.g. "Become an instructor")
+    ctaHref                : string  → admin portal login URL
+    secondaryCtaLabel      : string
+    secondaryCtaHref       : string
+  }
   nav: {
     links: [ { label: string, href: string } ]
     ctaLabel               : string
@@ -91,6 +101,36 @@ We use one fat document instead of subcollections because the static
 landing site needs every section in a single round-trip — splitting
 adds round-trip latency without buying us anything (the editorial
 scope is small).
+
+### Become-an-instructor funnel
+
+The `instructorCallout` section funnels prospective teachers from the
+marketing page into the existing instructor-application pipeline that
+already lives in the admin portal:
+
+```
+landing page                        admin portal
+  Become-an-instructor CTA   ─►    /login  (Google / Apple / email)
+                                     │  new user → role: 'student'
+                                     ▼
+                                   /apply  (InstructorApplyPage)
+                                     │  writes instructor_applications/{uid}
+                                     │  status: 'pending'
+                                     ▼
+                                   /pending  (waits for admin review)
+                                     │
+                                     ▼ admin approves at /admin/applications
+                                     │  role flips to 'instructor'
+                                     ▼
+                                   /         (dashboard)
+                                   /my-courses  → can author courses
+```
+
+No new backend was needed — the apply flow ships with the existing
+admin portal (see `docs/admin_portal.md`). The CMS section is just
+the marketing front door. To re-route to the prod admin portal once
+it's live on a custom domain, edit `instructorCallout.ctaHref` in
+`/admin/landing-page`.
 
 ### Live data — featured courses
 
@@ -143,9 +183,10 @@ HTML for static crawlers — filed as polish.
 
 Path: `/admin/landing-page` (admin role required).
 
-Eleven sections — Hero, Instruments, Features (reorderable), Pricing,
-FAQ (reorderable), About + stats, Top nav, Footer (with link columns),
-Store badges, SEO/page metadata, Contact + social. Save publishes
+Twelve sections — Hero, Instruments, Features (reorderable), Pricing,
+FAQ (reorderable), About + stats, Become an instructor, Top nav,
+Footer (with link columns), Store badges, SEO/page metadata, Contact
++ social. Save publishes
 immediately; there is no separate draft / publish state. The "Save
 changes" button only lights up when the form draft diverges from the
 last loaded state (deep equality on the Freezed entities).

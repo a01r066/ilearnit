@@ -64,6 +64,8 @@ class SiteContentDataSource {
       'about': model.about.toJson(),
       'aboutStats':
           model.aboutStats.map((s) => s.toJson()).toList(),
+      // perks is List<String> so no nested-Model flattening needed.
+      'instructorCallout': model.instructorCallout.toJson(),
       'nav': {
         ...model.nav.toJson(),
         'links': model.nav.links.map((l) => l.toJson()).toList(),

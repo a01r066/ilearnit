@@ -39,6 +39,7 @@ abstract class LandingContent with _$LandingContent {
     @Default(<FaqItem>[]) List<FaqItem> faqs,
     required AboutSection about,
     @Default(<AboutStat>[]) List<AboutStat> aboutStats,
+    required InstructorCallout instructorCallout,
     required NavSection nav,
     required FooterSection footer,
     required StoreBadges storeBadges,
@@ -109,6 +110,26 @@ abstract class LandingContent with _$LandingContent {
           AboutStat(value: '2,200+', label: 'Video & audio lessons'),
           AboutStat(value: '3', label: 'Instruments'),
         ],
+        instructorCallout: InstructorCallout(
+          eyebrow: 'Teach on iLearnIt',
+          title: 'Share your craft with thousands of students.',
+          subtitle:
+              'Apply to teach a course. Once approved, the admin portal '
+              'gives you the same toolkit our staff editors use — upload '
+              'lectures, attach sheet music, and publish on your own '
+              'schedule.',
+          perks: [
+            'A built-in audience of motivated music students.',
+            'You set the price; we handle billing, platform support, and '
+                'distribution.',
+            'Manage courses, sections, and lectures from a single dashboard.',
+            'Editorial team available for feedback on pacing and recording.',
+          ],
+          ctaLabel: 'Become an instructor',
+          ctaHref: 'https://admin.ilearnit.info/login',
+          secondaryCtaLabel: 'Read the instructor agreement',
+          secondaryCtaHref: '/about.html#instructor-agreement',
+        ),
         nav: NavSection(
           links: [
             NavLink(label: 'Instruments', href: '#instruments'),
@@ -273,6 +294,31 @@ abstract class AboutStat with _$AboutStat {
     @Default('') String value,
     @Default('') String label,
   }) = _AboutStat;
+}
+
+// ─────────────────────────── Become an instructor ──────────
+
+/// Marketing-side callout that funnels teachers into the admin
+/// portal's `/apply` flow. The primary CTA's [ctaHref] should target
+/// the admin login page (or the public landing page describing the
+/// program); after they sign in, the admin router redirects students
+/// to `/apply` automatically.
+///
+/// [perks] is editor-controlled — bullet copy that promotes the
+/// program (revenue split, support, audience size). Entirely optional
+/// — an empty list hides the bullet block while keeping the section.
+@freezed
+abstract class InstructorCallout with _$InstructorCallout {
+  const factory InstructorCallout({
+    @Default('') String eyebrow,
+    @Default('') String title,
+    @Default('') String subtitle,
+    @Default(<String>[]) List<String> perks,
+    @Default('Become an instructor') String ctaLabel,
+    @Default('/admin') String ctaHref,
+    @Default('') String secondaryCtaLabel,
+    @Default('') String secondaryCtaHref,
+  }) = _InstructorCallout;
 }
 
 // ─────────────────────────── Nav / Footer chrome ─────────────

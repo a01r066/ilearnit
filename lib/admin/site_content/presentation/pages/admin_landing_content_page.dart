@@ -141,6 +141,8 @@ class AdminLandingContentPage extends ConsumerWidget {
           const SizedBox(height: 16),
           _AboutCard(state: state, notifier: notifier),
           const SizedBox(height: 16),
+          _InstructorCalloutCard(state: state, notifier: notifier),
+          const SizedBox(height: 16),
           _NavCard(state: state, notifier: notifier),
           const SizedBox(height: 16),
           _FooterCard(state: state, notifier: notifier),
@@ -967,6 +969,134 @@ class _AboutCard extends StatelessWidget {
                       tooltip: 'Remove',
                       icon: const Icon(Icons.delete_outline),
                       onPressed: () => notifier.removeAboutStat(i),
+                    ),
+                  ],
+                ),
+              ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------- Become an instructor -----------------------------------------
+
+class _InstructorCalloutCard extends StatelessWidget {
+  const _InstructorCalloutCard(
+      {required this.state, required this.notifier});
+  final SiteContentFormState state;
+  final SiteContentFormNotifier notifier;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = state.draft.instructorCallout;
+    return _SectionCard(
+      title: 'Become an instructor',
+      subtitle:
+          'Marketing callout funneling teachers into the admin portal '
+          'apply flow.',
+      trailing: TextButton.icon(
+        onPressed: notifier.addInstructorPerk,
+        icon: const Icon(Icons.add),
+        label: const Text('Add perk'),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _TF(
+            label: 'Eyebrow',
+            value: c.eyebrow,
+            onChanged: (v) =>
+                notifier.updateInstructorCallout(c.copyWith(eyebrow: v)),
+          ),
+          _TF(
+            label: 'Title',
+            value: c.title,
+            maxLines: 2,
+            onChanged: (v) =>
+                notifier.updateInstructorCallout(c.copyWith(title: v)),
+          ),
+          _TF(
+            label: 'Subtitle / body',
+            value: c.subtitle,
+            maxLines: 4,
+            onChanged: (v) =>
+                notifier.updateInstructorCallout(c.copyWith(subtitle: v)),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: _TF(
+                  label: 'Primary CTA label',
+                  value: c.ctaLabel,
+                  onChanged: (v) => notifier.updateInstructorCallout(
+                      c.copyWith(ctaLabel: v)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _TF(
+                  label: 'Primary CTA href',
+                  value: c.ctaHref,
+                  onChanged: (v) => notifier.updateInstructorCallout(
+                      c.copyWith(ctaHref: v)),
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: _TF(
+                  label: 'Secondary CTA label',
+                  value: c.secondaryCtaLabel,
+                  onChanged: (v) => notifier.updateInstructorCallout(
+                      c.copyWith(secondaryCtaLabel: v)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _TF(
+                  label: 'Secondary CTA href',
+                  value: c.secondaryCtaHref,
+                  onChanged: (v) => notifier.updateInstructorCallout(
+                      c.copyWith(secondaryCtaHref: v)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(),
+          const SizedBox(height: 8),
+          Text(
+            'Perks',
+            style: Theme.of(context)
+                .textTheme
+                .titleSmall
+                ?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 8),
+          if (c.perks.isEmpty)
+            const Text('No perks yet.')
+          else
+            for (var i = 0; i < c.perks.length; i++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _TF(
+                        label: 'Perk #${i + 1}',
+                        value: c.perks[i],
+                        maxLines: 2,
+                        onChanged: (v) =>
+                            notifier.updateInstructorPerk(i, v),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Remove',
+                      icon: const Icon(Icons.delete_outline),
+                      onPressed: () => notifier.removeInstructorPerk(i),
                     ),
                   ],
                 ),

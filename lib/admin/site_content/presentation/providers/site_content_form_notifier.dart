@@ -199,6 +199,47 @@ class SiteContentFormNotifier extends StateNotifier<SiteContentFormState> {
     );
   }
 
+  // Instructor callout (Become an instructor section)
+  void updateInstructorCallout(InstructorCallout v) {
+    state = state.copyWith(
+      draft: state.draft.copyWith(instructorCallout: v),
+    );
+  }
+
+  void addInstructorPerk() {
+    final next = [...state.draft.instructorCallout.perks, ''];
+    state = state.copyWith(
+      draft: state.draft.copyWith(
+        instructorCallout:
+            state.draft.instructorCallout.copyWith(perks: next),
+      ),
+    );
+  }
+
+  void updateInstructorPerk(int index, String value) {
+    final perks = state.draft.instructorCallout.perks;
+    if (index < 0 || index >= perks.length) return;
+    final next = [...perks]..[index] = value;
+    state = state.copyWith(
+      draft: state.draft.copyWith(
+        instructorCallout:
+            state.draft.instructorCallout.copyWith(perks: next),
+      ),
+    );
+  }
+
+  void removeInstructorPerk(int index) {
+    final perks = state.draft.instructorCallout.perks;
+    if (index < 0 || index >= perks.length) return;
+    final next = [...perks]..removeAt(index);
+    state = state.copyWith(
+      draft: state.draft.copyWith(
+        instructorCallout:
+            state.draft.instructorCallout.copyWith(perks: next),
+      ),
+    );
+  }
+
   // Nav
   void updateNavCta(String label, String href) {
     state = state.copyWith(
