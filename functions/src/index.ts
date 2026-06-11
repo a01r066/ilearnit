@@ -692,8 +692,31 @@ export const resolveStreamPlayback = onCall(
       );
     }
 
-    const accountId = CLOUDFLARE_ACCOUNT_ID.value();
-    const token = CLOUDFLARE_API_TOKEN.value();
+    // Trim aggressively — `firebase functions:secrets:set` reads from
+    // stdin and a trailing newline silently corrupts the Authorization
+    // header (request becomes `Bearer abc\n`) which Cloudflare rejects
+    // with 400. Same risk on the account id; a trailing `\n` in the URL
+    // path also triggers 400. Both are accepted as plain hex/alpha-num.
+    const accountId = CLOUDFLARE_ACCOUNT_ID.value().trim();
+    const token = CLOUDFLARE_API_TOKEN.value().trim();
+
+    if (!/^[a-f0-9]{32}$/i.test(accountId)) {
+      logger.error(
+        `CLOUDFLARE_ACCOUNT_ID malformed (length=${accountId.length}). ` +
+          'Re-set the secret without trailing whitespace.',
+      );
+      throw new HttpsError(
+        'failed-precondition',
+        'Server misconfiguration — account id invalid.',
+      );
+    }
+    if (!token) {
+      throw new HttpsError(
+        'failed-precondition',
+        'Server misconfiguration — token missing.',
+      );
+    }
+
     const url =
       `https://api.cloudflare.com/client/v4/accounts/${accountId}` +
       `/stream/${videoId}`;
@@ -712,14 +735,24 @@ export const resolveStreamPlayback = onCall(
     }
 
     if (!response.ok) {
+      // Read the body so we can see what Cloudflare is actually
+      // complaining about. The 400 path almost always carries a JSON
+      // `errors: [{code, message}]` array that names the bad field.
+      let bodyText = '';
+      try {
+        bodyText = (await response.text()).slice(0, 500);
+      } catch (_) {
+        /* ignore */
+      }
       logger.warn(
-        `Cloudflare returned ${response.status} for video ${videoId}`,
+        `Cloudflare returned ${response.status} for video ${videoId}. ` +
+          `Body: ${bodyText}`,
       );
       // 404 / 403 from Cloudflare → surface as not-found to the client
       // so the UI can show a "video missing" message.
       throw new HttpsError(
         response.status === 404 ? 'not-found' : 'internal',
-        `Cloudflare Stream returned ${response.status}.`,
+        `Cloudflare Stream returned ${response.status}: ${bodyText}`,
       );
     }
 

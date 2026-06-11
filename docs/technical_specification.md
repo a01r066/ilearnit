@@ -374,7 +374,9 @@ site_content/{slug}                                  Landing-page CMS (slug = "l
 }
 ```
 
-**`courses/{id}/sections/{sid}/lectures/{lid}`** (relevant new field bolded)
+**`courses/{id}/sections/{sid}/lectures/{lid}`** — lectures live as **individual Firestore docs in a subcollection** under each section, NOT as an embedded array on the section doc. The consumer's `CoursesRemoteDataSource.fetchSections` fetches the lectures subcollection per section in parallel (`Future.wait`) and hydrates the `lectures` field on each `CourseSectionModel` via `copyWith`. The admin writer and the Q&A / progress / notes / Cloudflare resolver all assume per-lecture docs.
+
+
 ```jsonc
 {
   "id": "lec_001",
