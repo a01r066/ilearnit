@@ -1,0 +1,24 @@
+# build_runner / json_serializable configuration.
+#
+# `explicit_to_json: true` makes every generated `toJson()` call
+# `.toJson()` on nested model values (including elements of `List<Model>`
+# and values of `Map<String, Model>`) instead of leaving them as raw
+# Dart objects. Without this, code like:
+#
+#   await firestore.set({...someModel.toJson()})
+#
+# fails at runtime with:
+#
+#   Unsupported field value: a custom _SomeChildModel object
+#
+# because the parent's `toJson()` left the child as a Dart instance
+# rather than a `Map<String, dynamic>` Firestore can serialize.
+#
+# Set globally so every existing `@JsonSerializable` model benefits
+# without per-class annotations.
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          explicit_to_json: true

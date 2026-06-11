@@ -15,7 +15,7 @@ spread across guitar (45) / piano (45) / violin (30).
 | --------------------- | ---------------------------------------------------- |
 | `instructors.json`    | Map keyed by doc id. Goes into `instructors/`.       |
 | `courses.json`        | Map keyed by doc id. Goes into `courses/`.           |
-| `sections.json`       | `{ courseId: [section, ...] }` — subcollection under each course. Lectures embedded as an array on each section. |
+| `sections.json`       | `{ courseId: [section, ...] }`. The JSON keeps lectures nested in a `lectures: [...]` array on each section for editor ergonomics, but the seed script unrolls them into the `lectures` sub-subcollection at write time — see "Wire format" below. |
 | `seed_firestore.js`   | Node.js seeder (Admin SDK, batched writes).          |
 | `package.json`        | Just for `firebase-admin` and convenience scripts.   |
 | `generate_seed.py`    | (Optional) regenerator — produces all three JSON files. |
@@ -149,35 +149,63 @@ user owns the course.
 }
 ```
 
+### Wire format on Firestore
+
+Lectures live as **their own docs** under each section, not as an embedded
+array — same shape the admin portal writes via
+`AdminCoursesDataSource.createLecture`. The consumer reader
+(`CoursesRemoteDataSource.fetchSections`) hydrates each
+`CourseSectionModel.lectures` field by reading the lectures
+sub-subcollection in parallel.
+
+```
+courses/{courseId}                                 (top-level doc)
+  sections/{sectionId}                             (id, title, order)
+    lectures/{lectureId}                           (id, title, type, durationSeconds, …)
+```
+
 ### `courses/{id}/sections/{sectionId}`
+
 ```ts
 {
   id: string,
   title: string,
   order: number,                        // 0-based
-  lectures: Array<{
-    id: string,
-    title: string,
-    type: 'video' | 'audio' | 'pdf' | 'doc',
-    durationSeconds: number,
-    order: number,
-    isPreview: boolean,                 // free outside enrollment
-    mediaUrl: string,                   // primary stream/download URL
-    thumbnailUrl: string | null,
-    description: string,
-    fileSizeBytes: number,
-    resources: Array<{                  // ancillary downloads
-      name: string,
-      url: string,
-      format: 'pdf' | 'docx' | 'mp3' | …,
-      sizeBytes: number,
-    }>,
+}
+```
+
+> The section doc carries **no embedded lectures array**. The seed
+> script strips it before writing — `sections.json` keeps the nested
+> shape only as a source-format convenience for hand-editing diffs.
+
+### `courses/{id}/sections/{sectionId}/lectures/{lectureId}`
+
+```ts
+{
+  id: string,
+  title: string,
+  type: 'video' | 'audio' | 'pdf' | 'doc',
+  durationSeconds: number,
+  order: number,
+  isPreview: boolean,                   // free outside enrollment
+  mediaUrl: string | null,              // legacy Firebase Storage URL
+  cloudflareVideoId: string | null,     // 32-hex Cloudflare Stream UID (preferred)
+  thumbnailUrl: string | null,
+  description: string,
+  fileSizeBytes: number,
+  resources: Array<{                    // ancillary downloads
+    name: string,
+    url: string,
+    format: 'pdf' | 'docx' | 'mp3' | …,
+    sizeBytes: number,
   }>,
 }
 ```
 
 The Flutter `CoursesRepositoryImpl.fetchSections(courseId)` reads
-`courses/{id}/sections` ordered by `order` — no composite index needed.
+`courses/{id}/sections` ordered by `order`, then fans out one
+parallel read per section to fetch `lectures` ordered by `order` —
+no composite indexes needed.
 
 The Flutter app's `CoursesRepositoryImpl.fetchFeatured()` queries
 `where('isFeatured', isEqualTo: true)` — composite index on

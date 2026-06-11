@@ -43,12 +43,43 @@ class SiteContentDataSource {
   /// custom _HeroSectionModel object"). Calling `.toJson()` on each
   /// piece guarantees plain Maps reach Firestore.
   Future<void> save(LandingContentModel model) async {
+    // Same freezed/json_serializable gotcha that the top-level fields
+    // already work around: `nav.toJson()` and `footer.toJson()` return
+    // a Map whose nested LIST fields are still raw model objects
+    // (Firestore then rejects with "Unsupported field value: a custom
+    // _NavLinkModel object"). Build those sub-maps manually so every
+    // list-of-Model gets explicitly serialized via `.toJson()`.
+    //
+    // Same precaution as `pricingTiers.map((p) => p.toJson())` at the
+    // top level — applied one nesting deeper for nav.links + each
+    // footer column's links.
     final json = <String, dynamic>{
       'hero': model.hero.toJson(),
+      'instruments':
+          model.instruments.map((i) => i.toJson()).toList(),
       'features': model.features.map((f) => f.toJson()).toList(),
       'pricingTiers':
           model.pricingTiers.map((p) => p.toJson()).toList(),
       'faqs': model.faqs.map((f) => f.toJson()).toList(),
+      'about': model.about.toJson(),
+      'aboutStats':
+          model.aboutStats.map((s) => s.toJson()).toList(),
+      'nav': {
+        ...model.nav.toJson(),
+        'links': model.nav.links.map((l) => l.toJson()).toList(),
+      },
+      'footer': {
+        ...model.footer.toJson(),
+        'columns': model.footer.columns
+            .map((col) => {
+                  ...col.toJson(),
+                  'links':
+                      col.links.map((l) => l.toJson()).toList(),
+                })
+            .toList(),
+      },
+      'storeBadges': model.storeBadges.toJson(),
+      'meta': model.meta.toJson(),
       'contact': model.contact.toJson(),
       'updatedAt': FieldValue.serverTimestamp(),
     };

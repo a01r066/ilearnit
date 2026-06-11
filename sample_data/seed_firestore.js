@@ -34,13 +34,28 @@ const fs = require('fs');
 const path = require('path');
 
 // ── CLI args ─────────────────────────────────────────────────────────
-const args = process.argv.slice(2).reduce((acc, raw) => {
-  if (raw.startsWith('--')) {
-    const [key, value] = raw.replace(/^--/, '').split('=');
-    acc[key] = value === undefined ? true : value;
+// Accept both `--flavor=dev` and `--flavor dev` forms. When a `--flag`
+// is followed by a non-`--` token, that token becomes the value.
+// `--flag --next` keeps `flag` as a boolean `true` (no value consumed).
+const argv = process.argv.slice(2);
+const args = {};
+for (let i = 0; i < argv.length; i++) {
+  const raw = argv[i];
+  if (!raw.startsWith('--')) continue;
+  const eq = raw.indexOf('=');
+  if (eq !== -1) {
+    args[raw.slice(2, eq)] = raw.slice(eq + 1);
+    continue;
   }
-  return acc;
-}, {});
+  const key = raw.slice(2);
+  const peek = argv[i + 1];
+  if (peek !== undefined && !peek.startsWith('--')) {
+    args[key] = peek;
+    i += 1; // consume the value token
+  } else {
+    args[key] = true;
+  }
+}
 
 const flavor = args.flavor || 'dev';
 if (!['dev', 'prod'].includes(flavor)) {
@@ -118,41 +133,64 @@ async function writeCollection(name, docs) {
 }
 
 /**
- * Write the `sections` subcollection under each course.
+ * Write the `sections` subcollection under each course AND the
+ * `lectures` sub-subcollection under each section.
  *
- * `sectionsByCourse` shape:
- *   { courseId: [ { id, title, order, lectures: [...] }, ... ] }
+ * Wire format on Firestore:
+ *   courses/{cid}                              (top-level doc)
+ *     sections/{sid}                           (id, title, order)
+ *       lectures/{lid}                         (id, title, type, durationSeconds, mediaUrl, …)
+ *
+ * The consumer reader (`CoursesRemoteDataSource.fetchSections`) hydrates
+ * each `CourseSectionModel.lectures` field by reading the lectures
+ * subcollection in parallel. The admin portal writes lectures the same
+ * way (`AdminCoursesDataSource.createLecture` →
+ * `courses/{cid}/sections/{sid}/lectures.doc()`), so the seed has to
+ * match — embedding lectures on the section doc renders nothing on
+ * mobile.
+ *
+ * `sectionsByCourse` source-of-truth shape (preserved for editor
+ * ergonomics — easy to scan diffs):
+ *   { courseId: [ { id, title, order, lectures: [{id, title, …}, …] } ] }
  */
 async function writeSections(sectionsByCourse) {
   const courseIds = Object.keys(sectionsByCourse);
-  let totalSections = 0;
-  let totalLectures = 0;
 
-  // Flatten into a list of (courseId, section) pairs, then batch.
-  const pairs = [];
+  // Flatten section + lecture writes into two parallel lists so we can
+  // batch each across the 500-op Firestore limit independently.
+  const sectionPairs = [];
+  const lecturePairs = [];
   for (const courseId of courseIds) {
     for (const section of sectionsByCourse[courseId]) {
-      pairs.push({ courseId, section });
-      totalSections += 1;
-      totalLectures += (section.lectures || []).length;
+      const lectures = section.lectures || [];
+      // Strip the embedded array — lectures now live as their own docs.
+      // Spread copy so we don't mutate the in-memory source data
+      // (matters if the caller re-uses sectionsByCourse later).
+      const { lectures: _stripped, ...sectionDoc } = section;
+      sectionPairs.push({ courseId, section: sectionDoc });
+      for (const lecture of lectures) {
+        lecturePairs.push({ courseId, sectionId: section.id, lecture });
+      }
     }
   }
+
   console.log(
-    `→ Writing ${totalSections} sections (${totalLectures} embedded lectures) ` +
-    `across ${courseIds.length} courses…`,
+    `→ Writing ${sectionPairs.length} sections + ` +
+    `${lecturePairs.length} lecture docs across ${courseIds.length} courses…`,
   );
 
   const CHUNK = 400;
-  for (let i = 0; i < pairs.length; i += CHUNK) {
+
+  // ── Sections ───────────────────────────────────────────────────────
+  for (let i = 0; i < sectionPairs.length; i += CHUNK) {
     const batch = db.batch();
-    const slice = pairs.slice(i, i + CHUNK);
+    const slice = sectionPairs.slice(i, i + CHUNK);
     for (const { courseId, section } of slice) {
       const ref = db
         .collection('courses')
         .doc(courseId)
         .collection('sections')
         .doc(section.id);
-      // Hydrate any timestamp fields on the section doc itself.
       batch.set(ref, hydrate(section));
     }
     if (isDry) {
@@ -162,28 +200,75 @@ async function writeSections(sectionsByCourse) {
       console.log(`  ✓ committed sections batch ${i / CHUNK + 1} (${slice.length} docs)`);
     }
   }
+
+  // ── Lectures (sub-subcollection per section) ───────────────────────
+  for (let i = 0; i < lecturePairs.length; i += CHUNK) {
+    const batch = db.batch();
+    const slice = lecturePairs.slice(i, i + CHUNK);
+    for (const { courseId, sectionId, lecture } of slice) {
+      const ref = db
+        .collection('courses')
+        .doc(courseId)
+        .collection('sections')
+        .doc(sectionId)
+        .collection('lectures')
+        .doc(lecture.id);
+      batch.set(ref, hydrate(lecture));
+    }
+    if (isDry) {
+      console.log(`  [dry] would commit lectures batch ${i / CHUNK + 1} (${slice.length} docs)`);
+    } else {
+      await batch.commit();
+      console.log(`  ✓ committed lectures batch ${i / CHUNK + 1} (${slice.length} docs)`);
+    }
+  }
 }
 
 /**
- * Recursively delete a `sections` subcollection for every course. Slow but
- * thorough — only used when --wipe is set.
+ * Recursively delete the curriculum subtree for every course:
+ *   courses/{cid}/sections/{sid}/lectures/{lid}   ← deleted first (deep)
+ *   courses/{cid}/sections/{sid}                  ← then the section docs
+ *
+ * Firestore requires deleting subcollection docs before the parent so
+ * the parent doc fully disappears (otherwise the parent stays as a
+ * tombstone holding the subcollection). Slow but thorough — only
+ * runs when --wipe is set.
  */
 async function wipeAllSections() {
   const coursesSnap = await db.collection('courses').get();
-  let total = 0;
+  let totalSections = 0;
+  let totalLectures = 0;
   for (const courseDoc of coursesSnap.docs) {
-    const sub = courseDoc.ref.collection('sections');
+    const sectionsRef = courseDoc.ref.collection('sections');
+    const sectionsSnap = await sectionsRef.get();
+
+    // 1. Lectures first.
+    for (const sectionDoc of sectionsSnap.docs) {
+      const lecturesRef = sectionDoc.ref.collection('lectures');
+      while (true) {
+        const snap = await lecturesRef.limit(400).get();
+        if (snap.empty) break;
+        const batch = db.batch();
+        for (const d of snap.docs) batch.delete(d.ref);
+        await batch.commit();
+        totalLectures += snap.size;
+        if (snap.size < 400) break;
+      }
+    }
+
+    // 2. Then sections.
     while (true) {
-      const snap = await sub.limit(400).get();
+      const snap = await sectionsRef.limit(400).get();
       if (snap.empty) break;
       const batch = db.batch();
       for (const d of snap.docs) batch.delete(d.ref);
       await batch.commit();
-      total += snap.size;
+      totalSections += snap.size;
       if (snap.size < 400) break;
     }
   }
-  return total;
+  console.log(`  (wiped ${totalLectures} lectures + ${totalSections} sections)`);
+  return totalSections + totalLectures;
 }
 
 // ── Main ─────────────────────────────────────────────────────────────

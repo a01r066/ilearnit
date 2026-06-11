@@ -4,18 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title>iLearnIt — Classical music lessons from world-class instructors</title>
-  <meta name="description" content="Online classical music lessons & courses for guitar, piano, and violin — taught by concert artists. Stream on iOS and Android.">
+  <!-- Baseline meta. cms.js overwrites the text + href content client-side
+       from `meta.*` in site_content/landing. Static crawlers that don't
+       run JS still see these values, so they're kept current as fallbacks. -->
+  <title data-cms-meta="pageTitle">iLearnIt — Classical music lessons from world-class instructors</title>
+  <meta name="description" data-cms-meta-attr="description" content="Online classical music lessons & courses for guitar, piano, and violin — taught by concert artists. Stream on iOS and Android." />
 
-  <link rel="canonical" href="https://ilearnit.info/" />
+  <link rel="canonical" data-cms-meta-attr="canonicalUrl" href="https://ilearnit.info/" />
   <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://ilearnit.info/" />
-  <meta property="og:title" content="iLearnIt — Classical music lessons & courses" />
-  <meta property="og:description" content="Online classical lessons for guitar, piano, and violin. Stream the full curriculum on iOS and Android." />
-  <meta property="og:image" content="https://ilearnit.info/assets/img/og-cover.png" />
+  <meta property="og:url" data-cms-meta-attr="canonicalUrl" content="https://ilearnit.info/" />
+  <meta property="og:title" data-cms-meta-attr="ogTitle" content="iLearnIt — Classical music lessons & courses" />
+  <meta property="og:description" data-cms-meta-attr="ogDescription" content="Online classical lessons for guitar, piano, and violin. Stream the full curriculum on iOS and Android." />
+  <meta property="og:image" data-cms-meta-attr="ogImageUrl" content="https://ilearnit.info/assets/img/og-cover.png" />
   <meta name="twitter:card" content="summary_large_image" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -37,14 +40,29 @@
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
       </button>
 
-      <ul class="nav-links" id="primary-nav">
+      <ul class="nav-links" id="primary-nav"
+          data-cms-list="nav.links"
+          data-cms-template="nav-link">
+        <!-- Static fallback links (overwritten when nav.links is set). -->
         <li><a href="#instruments">Instruments</a></li>
         <li><a href="#features">Features</a></li>
         <li><a href="#pricing">Pricing</a></li>
         <li><a href="#faq">FAQ</a></li>
         <li><a href="/about.html">About</a></li>
-        <li><a class="nav-cta" href="#download">Get the app</a></li>
+        <!-- The CTA is preserved across list-replacement via data-cms-keep so
+             the dynamic nav.links populate the left side and this stays the
+             right-most entry. -->
+        <li data-cms-keep>
+          <a class="nav-cta"
+             href="#download"
+             data-cms="nav.ctaLabel"
+             data-cms-href="nav.ctaHref">Get the app</a>
+        </li>
       </ul>
+
+      <template id="cms-tpl-nav-link">
+        <li><a href="{{href}}">{{label}}</a></li>
+      </template>
     </nav>
   </header>
 
@@ -74,13 +92,19 @@
           </div>
 
           <div class="store-badges" id="download">
-            <a class="store-badge" href="#" aria-label="Download on the App Store">
+            <a class="store-badge"
+               href="#"
+               data-cms-href="storeBadges.appStoreHref"
+               aria-label="Download on the App Store">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M16.365 1.43c0 1.14-.47 2.23-1.24 3.04-.83.88-2.18 1.56-3.27 1.47-.13-1.12.4-2.27 1.16-3.04.85-.87 2.27-1.53 3.35-1.47zM20.5 17.04c-.43 1-.95 1.99-1.66 2.84-.97 1.17-2.34 2.62-4.04 2.64-1.62.03-2.06-.98-4.27-.98-2.2 0-2.69.96-4.21.99-1.66.04-2.92-1.26-3.9-2.43-2-2.4-3.54-6.79-1.47-9.75 1.02-1.47 2.84-2.4 4.78-2.43 1.59-.03 3.09 1.07 4.07 1.07.97 0 2.81-1.32 4.72-1.13.8.03 3.05.32 4.5 2.44-3.86 2.17-3.24 7.51 1.48 6.74z"/>
               </svg>
               <span><small>Download on the</small>App Store</span>
             </a>
-            <a class="store-badge" href="#" aria-label="Get it on Google Play">
+            <a class="store-badge"
+               href="#"
+               data-cms-href="storeBadges.playStoreHref"
+               aria-label="Get it on Google Play">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M3.5 2.25v19.5c0 .55.44 1 1 1 .26 0 .51-.1.7-.29l11.83-11.4-13.53-9.06v.25zM18.4 11.06l-2.34 2.27 2.81 2.13c.83.63.83 1.49 0 2.12l-2.31 1.66L3.86 22.83l13.65-9.07.89-.85zM17.95 10.7L4.26 1.62l13.05 6.94 2.81 2.13z"/>
               </svg>
@@ -103,7 +127,18 @@
           <p class="sub">Hundreds of structured lessons across guitar, piano, and violin — beginner to advanced repertoire.</p>
         </div>
 
-        <div class="instruments">
+        <!-- Instrument template; cms.js clones it once per item in `instruments`. -->
+        <template id="cms-tpl-instrument">
+          <div class="instrument-card {{slug}}">
+            <h3>{{title}}</h3>
+            <p>{{description}}</p>
+          </div>
+        </template>
+
+        <div class="instruments"
+             data-cms-list="instruments"
+             data-cms-template="instrument">
+          <!-- Static fallback (overwritten if Firestore has instruments). -->
           <div class="instrument-card guitar">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="white" stroke-width="1.5" fill="none"/><circle cx="12" cy="12" r="2" fill="white"/></svg>
             <h3>Guitar</h3>
@@ -290,17 +325,58 @@
       </div>
     </section>
 
+    <!-- ── Featured courses (LIVE from Firestore) ──────────────────── -->
+    <!-- Auto-populated by cms.js: queries `courses where isFeatured == true`
+         limit 6 and clones the template. Whole section self-hides when no
+         featured courses exist or Firestore fails. -->
+    <section id="featured-courses" data-cms-hide-when-empty>
+      <div class="container">
+        <div class="section-head">
+          <h2>Featured courses</h2>
+          <p class="sub">Hand-picked highlights from the catalogue, refreshed automatically.</p>
+        </div>
+
+        <template id="cms-tpl-featured-course">
+          <a class="featured-course" href="{{href}}">
+            <div class="featured-course-cover" style="background-image:url('{{thumbnailUrl}}')"></div>
+            <div class="featured-course-body">
+              <span class="featured-course-eyebrow">{{categoryUpper}} · {{level}}</span>
+              <h3>{{title}}</h3>
+              <p class="muted">{{instructorName}}</p>
+            </div>
+          </a>
+        </template>
+
+        <div class="featured-courses-grid"
+             id="cms-featured-courses-grid">
+          <!-- empty until cms.js fills it; the parent <section> self-hides
+               otherwise so we don't render a dead heading -->
+        </div>
+      </div>
+    </section>
+
     <!-- ── About ─────────────────────────────────────────────────── -->
     <section id="about">
       <div class="container about">
         <div>
-          <span class="eyebrow">About iLearnIt</span>
-          <h2>Music education without the conservatory price tag.</h2>
-          <p>We started iLearnIt because we believed great classical instruction shouldn't depend on living in a major city. We bring concert-stage instructors — Bach specialists, Russian-school violinists, flamenco-classical guitarists — directly into your practice room.</p>
-          <p>Every course is filmed in studio, structured into clear sections, and paired with downloadable scores and exercises. <a href="/about.html">Read our full story →</a></p>
+          <span class="eyebrow" data-cms="about.eyebrow">About iLearnIt</span>
+          <h2 data-cms="about.title">Music education without the conservatory price tag.</h2>
+          <p data-cms="about.paragraph1">We started iLearnIt because we believed great classical instruction shouldn't depend on living in a major city. We bring concert-stage instructors — Bach specialists, Russian-school violinists, flamenco-classical guitarists — directly into your practice room.</p>
+          <p>
+            <span data-cms="about.paragraph2">Every course is filmed in studio, structured into clear sections, and paired with downloadable scores and exercises.</span>
+            <a data-cms="about.paragraph2LinkLabel"
+               data-cms-href="about.paragraph2LinkHref"
+               href="/about.html">Read our full story →</a>
+          </p>
         </div>
 
-        <div class="about-stats">
+        <template id="cms-tpl-about-stat">
+          <div class="stat"><div class="num">{{value}}</div><div class="label">{{label}}</div></div>
+        </template>
+
+        <div class="about-stats"
+             data-cms-list="aboutStats"
+             data-cms-template="about-stat">
           <div class="stat"><div class="num">10+</div><div class="label">Concert instructors</div></div>
           <div class="stat"><div class="num">100+</div><div class="label">Structured courses</div></div>
           <div class="stat"><div class="num">2,200+</div><div class="label">Video & audio lessons</div></div>
@@ -339,11 +415,26 @@
   <!-- ── Footer ──────────────────────────────────────────────────── -->
   <footer class="site-footer">
     <div class="container">
-      <div class="footer-grid">
+      <!-- Footer column template; cms.js clones once per item in footer.columns. -->
+      <template id="cms-tpl-footer-column">
         <div class="footer-col">
-          <a class="brand" href="/"><span class="brand-mark">iL</span> iLearnIt</a>
-          <p style="color:var(--c-text-2);max-width:300px;margin-top:8px;">Online classical music lessons — guitar, piano, violin. Concert-level instructors, lifetime access.</p>
+          <h4>{{heading}}</h4>
+          <ul>
+            {{#links}}<li><a href="{{href}}">{{label}}</a></li>{{/links}}
+          </ul>
         </div>
+      </template>
+
+      <div class="footer-grid"
+           data-cms-list="footer.columns"
+           data-cms-template="footer-column">
+        <!-- Brand column is kept; CMS only manages the link columns to its right. -->
+        <div class="footer-col" data-cms-keep>
+          <a class="brand" href="/"><span class="brand-mark">iL</span> iLearnIt</a>
+          <p data-cms="footer.tagline"
+             style="color:var(--c-text-2);max-width:300px;margin-top:8px;">Online classical music lessons — guitar, piano, violin. Concert-level instructors, lifetime access.</p>
+        </div>
+        <!-- Static fallback link columns (overwritten when footer.columns is set). -->
         <div class="footer-col">
           <h4>Product</h4>
           <ul>
@@ -369,8 +460,8 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <span>© <span data-year></span> iLearnIt. All rights reserved.</span>
-        <span>Built for musicians, with musicians.</span>
+        <span>© <span data-year></span> <span data-cms="footer.copyrightSuffix">iLearnIt. All rights reserved.</span></span>
+        <span data-cms="footer.credit">Built for musicians, with musicians.</span>
       </div>
     </div>
   </footer>

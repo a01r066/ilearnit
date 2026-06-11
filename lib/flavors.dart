@@ -46,6 +46,21 @@ class F {
     }
   }
 
+  /// Public marketing landing site URL — used by the admin portal's
+  /// "Preview live site" button to open the page hydrated from the
+  /// `site_content/landing` doc in this flavor's Firestore.
+  ///
+  /// Dev points at Firebase Hosting's auto domain for the dev project;
+  /// prod points at the custom domain.
+  static String get landingSiteUrl {
+    switch (appFlavor) {
+      case Flavor.dev:
+        return 'https://ilearnit-dev.web.app/';
+      case Flavor.prod:
+        return 'https://ilearnit.info/';
+    }
+  }
+
   /// Color used for the dev-mode flavor banner.
   static Color get bannerColor => isDev
       ? const Color(0xFFE8B931) // gold

@@ -159,6 +159,109 @@ const payload = {
         'training and concert experience.',
     },
   ],
+  instruments: [
+    {
+      slug: 'guitar',
+      title: 'Guitar',
+      description:
+        'Classical, Spanish, fingerstyle and Renaissance lute repertoire ' +
+        'from Sor to Villa-Lobos.',
+    },
+    {
+      slug: 'piano',
+      title: 'Piano',
+      description:
+        'Bach, Chopin, Beethoven, Liszt — deep interpretive analysis from ' +
+        'concert-stage pianists.',
+    },
+    {
+      slug: 'violin',
+      title: 'Violin',
+      description:
+        'Bach Partitas to Paganini Caprices — Russian school, baroque, ' +
+        'and contemporary repertoire.',
+    },
+  ],
+  about: {
+    eyebrow: 'About iLearnIt',
+    title: 'Music education without the conservatory price tag.',
+    paragraph1:
+      'We started iLearnIt because we believed great classical instruction ' +
+      "shouldn't depend on living in a major city. We bring concert-stage " +
+      'instructors — Bach specialists, Russian-school violinists, ' +
+      'flamenco-classical guitarists — directly into your practice room.',
+    paragraph2:
+      'Every course is filmed in studio, structured into clear sections, ' +
+      'and paired with downloadable scores and exercises.',
+    paragraph2LinkLabel: 'Read our full story →',
+    paragraph2LinkHref: '/about.html',
+  },
+  aboutStats: [
+    { value: '10+', label: 'Concert instructors' },
+    { value: '100+', label: 'Structured courses' },
+    { value: '2,200+', label: 'Video & audio lessons' },
+    { value: '3', label: 'Instruments' },
+  ],
+  nav: {
+    links: [
+      { label: 'Instruments', href: '#instruments' },
+      { label: 'Features', href: '#features' },
+      { label: 'Pricing', href: '#pricing' },
+      { label: 'FAQ', href: '#faq' },
+      { label: 'About', href: '/about.html' },
+    ],
+    ctaLabel: 'Get the app',
+    ctaHref: '#download',
+  },
+  footer: {
+    tagline:
+      'Online classical music lessons — guitar, piano, violin. ' +
+      'Concert-level instructors, lifetime access.',
+    columns: [
+      {
+        heading: 'Product',
+        links: [
+          { label: 'Instruments', href: '#instruments' },
+          { label: 'Pricing', href: '#pricing' },
+          { label: 'Download', href: '#download' },
+        ],
+      },
+      {
+        heading: 'Company',
+        links: [
+          { label: 'About', href: '/about.html' },
+          { label: 'Contact', href: '/contact.html' },
+          { label: 'Help center', href: '/help.html' },
+        ],
+      },
+      {
+        heading: 'Legal',
+        links: [
+          { label: 'Privacy policy', href: '/privacy.html' },
+          { label: 'Terms of service', href: '/terms.html' },
+        ],
+      },
+    ],
+    copyrightSuffix: 'iLearnIt. All rights reserved.',
+    credit: 'Built for musicians, with musicians.',
+  },
+  storeBadges: {
+    appStoreHref: '#',
+    playStoreHref: '#',
+  },
+  meta: {
+    pageTitle:
+      'iLearnIt — Classical music lessons from world-class instructors',
+    description:
+      'Online classical music lessons & courses for guitar, piano, and ' +
+      'violin — taught by concert artists. Stream on iOS and Android.',
+    ogTitle: 'iLearnIt — Classical music lessons & courses',
+    ogDescription:
+      'Online classical lessons for guitar, piano, and violin. Stream the ' +
+      'full curriculum on iOS and Android.',
+    ogImageUrl: 'https://ilearnit.info/assets/img/og-cover.png',
+    canonicalUrl: 'https://ilearnit.info/',
+  },
   contact: {
     email: 'hello@ilearnit.info',
     phone: '+84 24 0000 0000',
