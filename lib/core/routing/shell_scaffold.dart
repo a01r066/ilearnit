@@ -26,11 +26,10 @@ class ShellScaffold extends StatelessWidget {
       activeIcon: Icons.person_rounded,
       label: 'Instructors',
     ),
-    _NavItem(
-      icon: Icons.menu_book_outlined,
-      activeIcon: Icons.menu_book_rounded,
-      label: 'Songbooks',
-    ),
+    // Songbooks tab removed from the consumer bottom nav per product
+    // request — admin can still author songbooks at /admin/songbooks
+    // and the routes /songbooks + /songbooks/:id remain reachable by
+    // deep link / search result, just not from the bottom nav.
     _NavItem(
       icon: Icons.account_circle_outlined,
       activeIcon: Icons.account_circle_rounded,

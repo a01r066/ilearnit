@@ -40,7 +40,6 @@ final _rootKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final _homeKey = GlobalKey<NavigatorState>(debugLabel: 'home');
 final _coursesKey = GlobalKey<NavigatorState>(debugLabel: 'courses');
 final _instructorsKey = GlobalKey<NavigatorState>(debugLabel: 'instructors');
-final _songbooksKey = GlobalKey<NavigatorState>(debugLabel: 'songbooks');
 final _profileKey = GlobalKey<NavigatorState>(debugLabel: 'profile');
 
 /// Provides a [GoRouter] that redirects based on auth state.
@@ -191,6 +190,27 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           return LegalDocumentPage(document: doc);
         },
       ),
+      // ----- Songbooks (no longer a bottom-nav tab) ---------------------
+      // Kept reachable by direct URL + search deep-links. Pushed above
+      // the shell so the bottom nav doesn't render — feels consistent
+      // with /learning-paths/:id and /notifications which behave the
+      // same way.
+      GoRoute(
+        path: RoutePaths.songbooks,
+        name: RouteNames.songbooks,
+        parentNavigatorKey: _rootKey,
+        builder: (_, __) => const SongbooksPage(),
+        routes: [
+          GoRoute(
+            path: RoutePaths.songbookDetail,
+            name: RouteNames.songbookDetail,
+            parentNavigatorKey: _rootKey,
+            builder: (_, s) => SongbookDetailPage(
+              id: s.pathParameters['id']!,
+            ),
+          ),
+        ],
+      ),
       StatefulShellRoute.indexedStack(
         builder: (_, __, shell) => ShellScaffold(navigationShell: shell),
         branches: [
@@ -277,26 +297,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // Songbooks
-          StatefulShellBranch(
-            navigatorKey: _songbooksKey,
-            routes: [
-              GoRoute(
-                path: RoutePaths.songbooks,
-                name: RouteNames.songbooks,
-                builder: (_, __) => const SongbooksPage(),
-                routes: [
-                  GoRoute(
-                    path: RoutePaths.songbookDetail,
-                    name: RouteNames.songbookDetail,
-                    builder: (_, s) => SongbookDetailPage(
-                      id: s.pathParameters['id']!,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+          // Songbooks tab removed from the bottom nav (see
+          // shell_scaffold.dart for context). The /songbooks +
+          // /songbooks/:id routes are re-registered ABOVE the shell
+          // below so direct URL access + search-result deep-links
+          // still work — they just open without the bottom nav, like
+          // /learning-paths/:id and /notifications already do.
           // Profile
           StatefulShellBranch(
             navigatorKey: _profileKey,

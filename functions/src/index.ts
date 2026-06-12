@@ -673,12 +673,19 @@ interface StreamPlaybackResult {
 export const resolveStreamPlayback = onCall(
   {secrets: [CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID]},
   async (request): Promise<StreamPlaybackResult> => {
-    if (!request.auth) {
-      throw new HttpsError(
-        'unauthenticated',
-        'Sign in to play this lecture.',
-      );
-    }
+    // No auth gate — the consumer app now ships in guest-browse mode
+    // (Splash → Onboarding → Login(skippable) → Home) and free-preview
+    // lectures must be playable without an account.
+    //
+    // The returned HLS URLs are PUBLIC Cloudflare Stream URLs in v1
+    // (no signed-URL TTL); a guest hitting this callable gains nothing
+    // they couldn't get from the Cloudflare URL directly. Paywall
+    // enforcement for non-preview lectures is handled client-side on
+    // the lecture player + via the BuyCourseButton CTA.
+    //
+    // When signed-URLs land (see docs/cloudflare_stream.md "Signed
+    // URLs" section), this function should re-introduce an auth check
+    // AND a per-lecture entitlement lookup before minting the JWT.
 
     const videoId = (request.data?.videoId as string | undefined)?.trim();
     if (!videoId) {
@@ -779,6 +786,128 @@ export const resolveStreamPlayback = onCall(
       thumbnailUrl: payload.result.thumbnail ?? null,
       durationSec: Math.round(payload.result.duration ?? 0),
       readyToStream: payload.result.readyToStream === true,
+    };
+  },
+);
+
+// =============================================================================
+// Cloudflare Stream — direct creator upload
+// =============================================================================
+
+/**
+ * Admin/instructor-only: create a one-time Cloudflare Stream upload
+ * URL. The browser POSTs the file bytes directly to that URL — the
+ * API token never leaves the server.
+ *
+ * Response shape:
+ *   { uploadURL: string, uid: string, expiresAt: string }
+ *
+ * The `uid` is the same value the admin would otherwise paste into
+ * the lecture editor's "Cloudflare Stream video UID" field. After
+ * upload completes Cloudflare keeps the uid and starts transcoding;
+ * resolveStreamPlayback can then return the HLS URL for it.
+ *
+ * Why the 6h max duration default: the typical lecture is under an
+ * hour. Cap protects against accidentally uploading entire recorded
+ * sessions or large source files; tweak per-call via the
+ * `maxDurationSeconds` arg.
+ */
+export const createCloudflareUpload = onCall(
+  {secrets: [CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID]},
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Sign in required.');
+    }
+    const role = await getRole(request.auth.uid);
+    if (role !== 'instructor' && role !== 'admin') {
+      throw new HttpsError(
+        'permission-denied',
+        'Instructor or admin role required.',
+      );
+    }
+
+    const maxDurationSeconds =
+      (request.data?.maxDurationSeconds as number | undefined) ?? 21600;
+    if (!Number.isFinite(maxDurationSeconds) || maxDurationSeconds <= 0) {
+      throw new HttpsError(
+        'invalid-argument',
+        'maxDurationSeconds must be a positive number.',
+      );
+    }
+
+    const accountId = CLOUDFLARE_ACCOUNT_ID.value().trim();
+    const token = CLOUDFLARE_API_TOKEN.value().trim();
+    if (!/^[a-f0-9]{32}$/i.test(accountId) || !token) {
+      throw new HttpsError(
+        'failed-precondition',
+        'Cloudflare account id or token misconfigured.',
+      );
+    }
+
+    const url =
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}` +
+      `/stream/direct_upload`;
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          maxDurationSeconds,
+          // Tag the upload so we can attribute it later in Cloudflare
+          // dashboards / analytics. `meta` is arbitrary.
+          meta: {
+            uploadedByUid: request.auth.uid,
+            uploadedByRole: role,
+          },
+        }),
+      });
+    } catch (e) {
+      logger.error(`Cloudflare direct_upload fetch failed: ${e}`);
+      throw new HttpsError(
+        'unavailable',
+        'Could not reach Cloudflare Stream.',
+      );
+    }
+
+    if (!response.ok) {
+      let bodyText = '';
+      try {
+        bodyText = (await response.text()).slice(0, 500);
+      } catch (_) {/* ignore */}
+      logger.warn(
+        `Cloudflare direct_upload returned ${response.status}. ` +
+          `Body: ${bodyText}`,
+      );
+      throw new HttpsError(
+        'internal',
+        `Cloudflare Stream returned ${response.status}: ${bodyText}`,
+      );
+    }
+
+    interface CFResponse {
+      success: boolean;
+      result?: {uploadURL?: string; uid?: string; scheduledDeletion?: string};
+    }
+    const payload = (await response.json()) as CFResponse;
+    if (!payload.success || !payload.result?.uploadURL || !payload.result?.uid) {
+      throw new HttpsError(
+        'internal',
+        'Cloudflare response was missing uploadURL or uid.',
+      );
+    }
+
+    return {
+      uploadURL: payload.result.uploadURL,
+      uid: payload.result.uid,
+      // Direct creator uploads expire ~30 min after creation. Surface
+      // for the client so a stalled UI can show a "request a new URL"
+      // option if it takes too long.
+      expiresAt: payload.result.scheduledDeletion ?? null,
     };
   },
 );

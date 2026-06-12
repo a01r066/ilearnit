@@ -6,6 +6,7 @@ import '../../../features/auth/presentation/providers/auth_providers.dart';
 import '../../../shared/providers/firebase_providers.dart';
 import '../../courses/data/admin_courses_datasource.dart';
 import '../../courses/data/admin_storage_service.dart';
+import '../../courses/data/cloudflare_upload_service.dart';
 import '../../instructors/data/admin_instructor_profiles_datasource.dart';
 import '../../instructors/data/instructor_application_datasource.dart';
 import '../../learning_paths/data/admin_learning_paths_datasource.dart';
@@ -20,6 +21,15 @@ final adminCoursesDataSourceProvider = Provider<AdminCoursesDataSource>(
 
 final adminStorageServiceProvider = Provider<AdminStorageService>(
   (ref) => AdminStorageService(storage: ref.watch(firebaseStorageProvider)),
+);
+
+/// Cloudflare Stream direct-creator upload service. Picks a video
+/// file from local disk and POSTs it straight to Cloudflare via a
+/// one-time URL minted by the `createCloudflareUpload` Cloud Function.
+/// The lecture editor consumes the result UID and writes it to
+/// `cloudflareVideoId`.
+final cloudflareUploadServiceProvider = Provider<CloudflareUploadService>(
+  (_) => CloudflareUploadService.create(),
 );
 
 final instructorApplicationDataSourceProvider =

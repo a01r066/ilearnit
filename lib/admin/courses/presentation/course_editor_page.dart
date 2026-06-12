@@ -10,6 +10,7 @@ import '../../../features/courses/domain/entities/lecture_type.dart';
 import '../../../features/purchases/domain/entities/price_tier.dart';
 import '../../shared/providers/admin_providers.dart';
 import '../data/admin_storage_service.dart';
+import '../data/cloudflare_upload_service.dart';
 
 /// Course editor — flat, single-page layout.
 ///
@@ -764,6 +765,7 @@ class _LectureEditorDialogState extends ConsumerState<_LectureEditorDialog> {
   late final TextEditingController _title;
   late final TextEditingController _description;
   UploadProgress? _progress;
+  CloudflareUploadProgress? _cfProgress;
 
   @override
   void initState() {
@@ -835,6 +837,37 @@ class _LectureEditorDialogState extends ConsumerState<_LectureEditorDialog> {
         if (p.phase == UploadPhase.completed && p.downloadUrl != null) {
           _draft.mediaUrl = p.downloadUrl;
           _draft.fileSizeBytes = p.totalBytes;
+        }
+      });
+    });
+  }
+
+  /// True while a Cloudflare upload is in flight (URL request or
+  /// bytes upload). Drives the button's disabled state + label.
+  bool get _cfBusy {
+    final p = _cfProgress;
+    if (p == null) return false;
+    return p.phase == CloudflareUploadPhase.requestingUrl ||
+        p.phase == CloudflareUploadPhase.uploading;
+  }
+
+  /// Pick a video file from local disk and upload it straight to
+  /// Cloudflare Stream via the direct-creator-upload flow. The
+  /// `cloudflareVideoId` field on the draft is populated automatically
+  /// when the upload completes — no manual UID paste needed.
+  ///
+  /// Safe to call without saving the lecture first (unlike
+  /// `_pickMedia`, which writes to Firebase Storage under the lecture
+  /// id) — Cloudflare assigns the UID independently.
+  void _uploadCloudflare() {
+    final stream = ref.read(cloudflareUploadServiceProvider).pickAndUpload();
+    stream.listen((p) {
+      if (!mounted) return;
+      setState(() {
+        _cfProgress = p;
+        if (p.phase == CloudflareUploadPhase.completed && p.videoUid != null) {
+          _draft.cloudflareVideoId = p.videoUid;
+          _cloudflareId.text = p.videoUid!;
         }
       });
     });
@@ -935,6 +968,32 @@ class _LectureEditorDialogState extends ConsumerState<_LectureEditorDialog> {
               Text('Cloudflare Stream video',
                   style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 8),
+
+              // ── One-click upload to Cloudflare Stream ──────────
+              // Picks a local video file and POSTs it directly to a
+              // one-time URL minted by the createCloudflareUpload
+              // Cloud Function. The UID is filled in automatically on
+              // success — no Cloudflare dashboard round-trip needed.
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.cloud_upload_outlined),
+                  label: Text(
+                    _cfBusy
+                        ? 'Uploading…'
+                        : _draft.cloudflareVideoId == null
+                            ? 'Upload video file'
+                            : 'Replace video file',
+                  ),
+                  onPressed: _cfBusy ? null : _uploadCloudflare,
+                ),
+              ),
+              if (_cfProgress != null) ...[
+                const SizedBox(height: 8),
+                _CloudflareProgressIndicator(progress: _cfProgress!),
+              ],
+              const SizedBox(height: 12),
+
               TextField(
                 controller: _cloudflareId,
                 decoration: const InputDecoration(
@@ -949,8 +1008,9 @@ class _LectureEditorDialogState extends ConsumerState<_LectureEditorDialog> {
               Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: Text(
-                  'Find the UID in Cloudflare Stream → your video → URL '
-                  '(e.g. cloudflarestream.com/<uid>/manifest/video.m3u8).',
+                  'Auto-filled after Upload. Or paste manually: find the '
+                  'UID in Cloudflare Stream → your video → URL (e.g. '
+                  'cloudflarestream.com/<uid>/manifest/video.m3u8).',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
@@ -1016,5 +1076,62 @@ class _LectureEditorDialogState extends ConsumerState<_LectureEditorDialog> {
         ),
       ],
     );
+  }
+}
+
+/// Tiny status block shown under the "Upload video file" button while
+/// a Cloudflare Stream upload is in flight (or after it completes /
+/// fails). Renders a determinate progress bar during upload and a
+/// success / error line afterwards.
+class _CloudflareProgressIndicator extends StatelessWidget {
+  const _CloudflareProgressIndicator({required this.progress});
+  final CloudflareUploadProgress progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    switch (progress.phase) {
+      case CloudflareUploadPhase.requestingUrl:
+        return Row(
+          children: [
+            const SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 8),
+            Text('Requesting upload URL…',
+                style: theme.textTheme.bodySmall),
+          ],
+        );
+      case CloudflareUploadPhase.uploading:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            LinearProgressIndicator(value: progress.fraction),
+            const SizedBox(height: 4),
+            Text(
+              'Uploading to Cloudflare Stream… '
+              '${(progress.fraction * 100).round()}%',
+              style: theme.textTheme.bodySmall,
+            ),
+          ],
+        );
+      case CloudflareUploadPhase.completed:
+        return Text(
+          'Upload complete · UID ${progress.videoUid}',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: Colors.green,
+            fontWeight: FontWeight.w600,
+          ),
+        );
+      case CloudflareUploadPhase.failed:
+        return Text(
+          'Upload failed: ${progress.error}',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: Colors.red,
+          ),
+        );
+    }
   }
 }
