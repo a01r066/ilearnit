@@ -8,11 +8,17 @@ permission before triggering the OS prompt.
 
 ## 1. User journey
 
+Onboarding now runs **before** sign-in. A brand-new install sees the
+picker steps without an auth prompt, then lands on a login page that
+allows skipping into guest mode.
+
 ```
-Sign in
+Launch app
    ↓
-Splash redirect:
-   isAuthenticated && !prefs.onboardingDone → /onboarding
+Splash (auth resolving)
+   ↓
+Router redirect:
+   !prefs.onboardingDone → /onboarding   (regardless of auth state)
    ↓
 [Step 1]  Instrument picker (guitar / piano / violin)
    ↓ Continue (disabled until selection)
@@ -23,14 +29,25 @@ Splash redirect:
 [OS permission prompt]
    ↓ "Done"
 finish():
-   • PUT users/{uid}.primaryInstrument + skillLevel
+   • If signed in (re-onboarding case):
+       PUT users/{uid}.primaryInstrument + skillLevel
+   • If guest (common case):
+       prefs.pendingPrimaryInstrument = instrument.id
+       prefs.pendingSkillLevel = level.id
    • prefs.onboardingDone = true
    ↓
-go(/home) — onboarding is one-shot
+go(/login)                              ← was /home in the old flow
+   ↓
+LoginPage offers three actions:
+   • Sign in / Sign up   → after auth: /home + bootstrap syncs
+                            pending* prefs into users/{uid} + clears them.
+   • Continue as guest   → /home with guest browse rules active.
+   ↓
+/home
 ```
 
-The user can `Skip` at any time. Skipping still flips the prefs flag so
-we don't re-prompt forever — the writes are simply omitted.
+`Skip` at any onboarding step flips the prefs flag without writing
+anything — same end state, just empty picker values.
 
 ---
 

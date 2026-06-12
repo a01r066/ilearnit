@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -69,8 +71,14 @@ class BookmarkButton extends ConsumerWidget {
       ),
     );
 
+    // Guest tap: snackbar + route to /login. The previous behaviour
+    // only showed the snackbar and ignored the gesture, which felt
+    // like a dead-end heart icon.
     final onTap = isGuest
-        ? () => context.showSnack(t.wishlistSignInPrompt)
+        ? () {
+            context.showSnack(t.wishlistSignInPrompt);
+            context.goNamed(RouteNames.login);
+          }
         : () => ref
             .read(wishlistToggleNotifierProvider.notifier)
             .toggle(course: course, wasOnWishlist: saved);

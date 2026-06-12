@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -165,15 +167,31 @@ class _QuestionThreadPageState extends ConsumerState<QuestionThreadPage> {
               ],
             ),
           ),
-          _Composer(
-            controller: _bodyCtrl,
-            state: replyState,
-            isInstructor: isInstructorOfCourse,
-            onChanged: replyNotifier.setBody,
-            onSubmit: replyNotifier.submit,
-            hint: t.qaReplyHint,
-            sendLabel: t.qaSend,
-          ),
+          // Guest viewers see a sign-in CTA instead of the composer.
+          // Routing to /login here mirrors the Ask-a-question gate in
+          // LectureQASection so the two entry points feel consistent.
+          if (user == null)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: FilledButton.icon(
+                icon: const Icon(Icons.login),
+                label: const Text('Sign in to reply'),
+                onPressed: () {
+                  context.showSnack('Sign in to join the conversation.');
+                  context.goNamed(RouteNames.login);
+                },
+              ),
+            )
+          else
+            _Composer(
+              controller: _bodyCtrl,
+              state: replyState,
+              isInstructor: isInstructorOfCourse,
+              onChanged: replyNotifier.setBody,
+              onSubmit: replyNotifier.submit,
+              hint: t.qaReplyHint,
+              sendLabel: t.qaSend,
+            ),
         ],
       ),
     );

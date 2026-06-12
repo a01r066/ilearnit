@@ -30,6 +30,7 @@ class ProfilePage extends ConsumerWidget {
 
   ListView _buildBody(UserEntity? user, BuildContext context, bool isLoading, WidgetRef ref) {
     final hasSubscription = ref.watch(hasActiveSubscriptionProvider);
+    final isGuest = user == null;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -68,37 +69,60 @@ class ProfilePage extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 32),
-        ListTile(
-          leading: const Icon(Icons.workspace_premium_outlined),
-          title: const Text('Subscription'),
-          subtitle: hasSubscription
-              ? const Text('Personal Plan · active')
-              : const Text('Unlock all courses with Personal Plan'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => context.goNamed(RouteNames.subscription),
-        ),
-        ListTile(
-          leading: const Icon(Icons.bookmark_outline),
-          title: Text(AppLocalizations.of(context).wishlistTitle),
-          subtitle: Consumer(
-            builder: (context, ref, _) {
-              final t = AppLocalizations.of(context);
-              final count =
-                  ref.watch(wishlistCountProvider).value ?? 0;
-              if (count == 0) return Text(t.wishlistSubtitleEmpty);
-              return Text(t.wishlistSubtitleCount(count));
-            },
+
+        // Guest sign-in prompt — shown when no auth user. Hides every
+        // user-scoped tile below so we don't tempt a tap that just
+        // bounces back through /login.
+        if (isGuest) ...[
+          const SizedBox(height: 24),
+          _GuestSignInCard(),
+          const SizedBox(height: 16),
+        ] else
+          const SizedBox(height: 32),
+
+        // ── User-scoped tiles (hidden for guests) ─────────────────
+        if (!isGuest) ...[
+          ListTile(
+            leading: const Icon(Icons.workspace_premium_outlined),
+            title: const Text('Subscription'),
+            subtitle: hasSubscription
+                ? const Text('Personal Plan · active')
+                : const Text('Unlock all courses with Personal Plan'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.goNamed(RouteNames.subscription),
           ),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => context.pushNamed(RouteNames.wishlist),
-        ),
-        ListTile(
-          leading: const Icon(Icons.history),
-          title: const Text('Watch history'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () {},
-        ),
+          ListTile(
+            leading: const Icon(Icons.bookmark_outline),
+            title: Text(AppLocalizations.of(context).wishlistTitle),
+            subtitle: Consumer(
+              builder: (context, ref, _) {
+                final t = AppLocalizations.of(context);
+                final count =
+                    ref.watch(wishlistCountProvider).value ?? 0;
+                if (count == 0) return Text(t.wishlistSubtitleEmpty);
+                return Text(t.wishlistSubtitleCount(count));
+              },
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.pushNamed(RouteNames.wishlist),
+          ),
+          ListTile(
+            leading: const Icon(Icons.history),
+            title: const Text('Watch history'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {},
+          ),
+          ListTile(
+            leading: const Icon(Icons.sticky_note_2_outlined),
+            title: Text(AppLocalizations.of(context).notesPageTitle),
+            subtitle:
+                Text(AppLocalizations.of(context).notesProfileSubtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.pushNamed(RouteNames.notes),
+          ),
+        ],
+
+        // ── Public tiles (visible to both guests + signed-in users) ─
         ListTile(
           leading: const Icon(Icons.cloud_download_outlined),
           title: Text(AppLocalizations.of(context).downloadsTitle),
@@ -114,14 +138,6 @@ class ProfilePage extends ConsumerWidget {
           onTap: () => context.pushNamed(RouteNames.practice),
         ),
         ListTile(
-          leading: const Icon(Icons.sticky_note_2_outlined),
-          title: Text(AppLocalizations.of(context).notesPageTitle),
-          subtitle:
-              Text(AppLocalizations.of(context).notesProfileSubtitle),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => context.pushNamed(RouteNames.notes),
-        ),
-        ListTile(
           leading: const Icon(Icons.settings_outlined),
           title: const Text('Settings'),
           trailing: const Icon(Icons.chevron_right),
@@ -129,19 +145,86 @@ class ProfilePage extends ConsumerWidget {
             context.goNamed(RouteNames.setting);
           },
         ),
-        const RestorePurchasesTile(),
-        const Divider(height: 32),
-        ListTile(
-          leading: const Icon(Icons.logout, color: AppColors.error),
-          title: const Text(
-            'Sign out',
-            style: TextStyle(color: AppColors.error),
+        if (!isGuest) const RestorePurchasesTile(),
+
+        // ── Sign in / Sign out ────────────────────────────────────
+        if (!isGuest) ...[
+          const Divider(height: 32),
+          ListTile(
+            leading: const Icon(Icons.logout, color: AppColors.error),
+            title: const Text(
+              'Sign out',
+              style: TextStyle(color: AppColors.error),
+            ),
+            onTap: isLoading
+                ? null
+                : () =>
+                    ref.read(authNotifierProvider.notifier).logout(),
           ),
-          onTap: isLoading
-              ? null
-              : () => ref.read(authNotifierProvider.notifier).logout(),
-        ),
+        ],
       ],
+    );
+  }
+}
+
+/// Header card shown on the Profile tab when the user is not signed
+/// in. Drives them to /login or /signup. Once they're authenticated
+/// the auth-state stream triggers a rebuild and this card disappears
+/// in favour of the per-user tiles.
+class _GuestSignInCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: scheme.primaryContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Save your progress',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: scheme.onPrimaryContainer,
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Sign in to unlock courses, save bookmarks, take notes, '
+            'and pick up where you left off across devices.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: scheme.onPrimaryContainer.withValues(alpha: 0.85),
+                ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => context.goNamed(RouteNames.login),
+                  child: const Text('Sign in'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => context.goNamed(RouteNames.signup),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: scheme.onPrimaryContainer,
+                    side: BorderSide(
+                      color: scheme.onPrimaryContainer.withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: const Text('Create account'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

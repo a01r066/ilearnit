@@ -18,6 +18,40 @@ class PrefsService {
   Future<void> setOnboardingDone(bool value) =>
       _prefs.setBool(AppConstants.kOnboardingDone, value);
 
+  // Pending onboarding answers — used when the user completes the
+  // 3-step onboarding flow BEFORE signing in (new Splash → Onboarding
+  // → Login flow). The auth bootstrap reads these on the first
+  // successful sign-in and writes them to users/{uid}, then clears
+  // the local copies via clearPendingOnboarding().
+  String? get pendingPrimaryInstrument =>
+      _prefs.getString(_kPendingPrimaryInstrument);
+  Future<void> setPendingPrimaryInstrument(String? v) async {
+    if (v == null) {
+      await _prefs.remove(_kPendingPrimaryInstrument);
+    } else {
+      await _prefs.setString(_kPendingPrimaryInstrument, v);
+    }
+  }
+
+  String? get pendingSkillLevel =>
+      _prefs.getString(_kPendingSkillLevel);
+  Future<void> setPendingSkillLevel(String? v) async {
+    if (v == null) {
+      await _prefs.remove(_kPendingSkillLevel);
+    } else {
+      await _prefs.setString(_kPendingSkillLevel, v);
+    }
+  }
+
+  Future<void> clearPendingOnboarding() async {
+    await _prefs.remove(_kPendingPrimaryInstrument);
+    await _prefs.remove(_kPendingSkillLevel);
+  }
+
+  static const _kPendingPrimaryInstrument =
+      'pending_primary_instrument';
+  static const _kPendingSkillLevel = 'pending_skill_level';
+
   // Theme mode
   String? get themeMode => _prefs.getString(AppConstants.kThemeMode);
   Future<void> setThemeMode(String value) =>

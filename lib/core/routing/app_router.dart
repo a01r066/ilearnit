@@ -77,20 +77,31 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isOnLoginOrSignup =
           loc == RoutePaths.login || loc == RoutePaths.signup;
       final isOnOnboarding = loc == RoutePaths.onboarding;
+      // Legal pages are reachable anywhere in the flow — they're the
+      // privacy / terms screens linked from the sign-in footer.
+      final isOnLegal = loc.startsWith('/legal/');
 
-      // 1. Auth not yet resolved — keep showing splash, but do not
-      //    push splash on every redirect (avoids loops).
+      // 1. Auth still resolving — show splash. Don't re-push splash if
+      //    we're already on it (loop protection).
       if (auth.isResolving) {
         return isOnSplash ? null : RoutePaths.splash;
       }
 
-      // 2. Signed in.
+      // 2. First-run onboarding precedes everything else — runs for
+      //    BOTH guests and signed-in users when prefs.onboardingDone
+      //    is false. The flow is:
+      //       Splash → Onboarding → Login (skippable) → Home
+      //    so a brand-new install sees the picker steps before any
+      //    auth prompt. Allow legal pages through so the footer links
+      //    on the onboarding screens still work.
+      if (!prefs.onboardingDone) {
+        if (isOnOnboarding || isOnLegal) return null;
+        return RoutePaths.onboarding;
+      }
+
+      // 3. Signed in — kick out of pre-shell screens (splash / login /
+      //    signup / onboarding) and land on Home.
       if (auth.isAuthenticated) {
-        // Gate the entire shell behind onboarding for first-time installs.
-        if (!prefs.onboardingDone) {
-          return isOnOnboarding ? null : RoutePaths.onboarding;
-        }
-        // Onboarding is one-shot — once done, kick out of /onboarding.
         if (isOnOnboarding ||
             isOnSplash ||
             isOnLoginOrSignup) {
@@ -99,10 +110,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // 3. Signed out — login, signup, and legal pages are reachable.
-      final isOnLegal = loc.startsWith('/legal/');
-      if (isOnLoginOrSignup || isOnLegal) return null;
-      return RoutePaths.login;
+      // 4. Guest (signed out, onboarding done).
+      //
+      // After completing onboarding the next stop is /login. The
+      // Login page exposes a "Continue as guest" CTA that pushes to
+      // /home — once on /home, the per-user-route allow-list below
+      // gates only routes that need a uid (subscription, wishlist,
+      // notes, …). Everything else stays guest-reachable.
+      //
+      // Splash never sticks for a returning guest — it bounces to
+      // /login so they get the "Sign in or skip" entry point.
+      if (isOnSplash) return RoutePaths.login;
+      if (_requiresAuth(loc)) return RoutePaths.login;
+      return null;
     },
     routes: [
       GoRoute(
@@ -346,3 +366,38 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     ),
   );
 });
+
+/// Routes that require a signed-in user even in guest-browse mode.
+///
+/// Everything not listed here is reachable by guests. The criterion
+/// is "does this page write to or read from `users/{uid}`?":
+///   • Subscription + checkout — writes `users/{uid}.subscription`.
+///   • Wishlist — reads/writes `users/{uid}/wishlist/{courseId}`.
+///   • Notes — reads/writes `users/{uid}/notes/{noteId}`.
+///   • Notification preferences — reads/writes
+///     `users/{uid}.subscribedTopics` + FCM token bindings.
+///   • Delete account — destroys the user record.
+///
+/// The Downloads page is intentionally NOT here — downloads live in
+/// per-device storage with no Firestore footprint, so a guest can
+/// browse the (empty) downloads page without an account.
+///
+/// Action-level gates (buttons inside browse pages — BuyCourseButton,
+/// BookmarkButton, "Ask a question", "Write a review", "Add note")
+/// still need to detect `currentUser == null` and bounce the user to
+/// `/login` on tap. The router gate only catches direct URL access.
+bool _requiresAuth(String loc) {
+  // Anything under /profile/* except /profile itself.
+  const protected = <String>{
+    '/profile/subscription',
+    '/profile/subscription/checkout',
+    '/profile/wishlist',
+    '/profile/notes',
+    '/profile/delete-account',
+    '/profile/settings/notifications',
+  };
+  if (protected.contains(loc)) return true;
+  // Notifications inbox is per-user.
+  if (loc == '/notifications') return true;
+  return false;
+}

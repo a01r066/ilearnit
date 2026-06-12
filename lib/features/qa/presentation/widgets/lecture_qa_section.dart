@@ -56,26 +56,34 @@ class LectureQASection extends ConsumerWidget {
                 ),
               ),
             ),
-            if (user != null)
-              TextButton.icon(
-                icon: const Icon(Icons.add_comment_outlined, size: 18),
-                label: Text(t.qaAsk),
-                onPressed: () async {
-                  final id =
-                      await WriteQuestionSheet.show(context, qaKey: key);
-                  if (id != null && context.mounted) {
-                    context.pushNamed(
-                      RouteNames.questionThread,
-                      pathParameters: {
-                        'id': courseId,
-                        'lectureId': lectureId,
-                        'questionId': id,
-                      },
-                      queryParameters: {'sectionId': sectionId},
-                    );
-                  }
-                },
-              ),
+            // Always render the Ask button — guests get redirected to
+            // /login on tap (instead of silently hiding the
+            // affordance, which makes the section look empty + dead
+            // for unauthenticated users).
+            TextButton.icon(
+              icon: const Icon(Icons.add_comment_outlined, size: 18),
+              label: Text(t.qaAsk),
+              onPressed: () async {
+                if (user == null) {
+                  context.showSnack('Sign in to ask a question.');
+                  context.goNamed(RouteNames.login);
+                  return;
+                }
+                final id =
+                    await WriteQuestionSheet.show(context, qaKey: key);
+                if (id != null && context.mounted) {
+                  context.pushNamed(
+                    RouteNames.questionThread,
+                    pathParameters: {
+                      'id': courseId,
+                      'lectureId': lectureId,
+                      'questionId': id,
+                    },
+                    queryParameters: {'sectionId': sectionId},
+                  );
+                }
+              },
+            ),
           ],
         ),
         const SizedBox(height: 8),

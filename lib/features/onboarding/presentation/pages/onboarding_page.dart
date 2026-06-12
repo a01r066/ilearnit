@@ -76,8 +76,10 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     ref.listen<OnboardingState>(onboardingNotifierProvider, (_, next) {
       _syncPage(next.step);
       if (next.step == OnboardingStep.completed) {
-        // Drop the PageView, route to the real app.
-        context.go(RoutePaths.home);
+        // New flow: Splash → Onboarding → Login (skippable) → Home.
+        // The login page exposes a "Continue as guest" CTA so users
+        // who don't want an account can still reach /home from here.
+        context.go(RoutePaths.login);
       }
       if (next.lastFailure != null) {
         context.showSnack(next.lastFailure!.displayMessage);

@@ -88,26 +88,45 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
     }
   }
 
-  /// Final commit:
-  ///   1. Update users/{uid}.primaryInstrument + skillLevel.
-  ///   2. Persist `onboardingDone = true` so the router stops redirecting.
-  ///   3. Move to the `completed` step — the page widget listens and pops
-  ///      to /home.
+  /// Final commit. The flow now runs PRE-AUTH (Splash → Onboarding →
+  /// Login/Signup → Home), so onboarding can complete with no Firebase
+  /// user yet.
   ///
-  /// If the user skipped the picker steps the writes are no-ops; we still
-  /// flip the prefs flag so we don't re-prompt forever.
+  ///   1. If a Firebase user is already signed in, persist
+  ///      `primaryInstrument` + `skillLevel` to `users/{uid}` via the
+  ///      auth repo (same behaviour as before).
+  ///   2. If NOT signed in (the common case in the new flow), stash
+  ///      both values in PrefsService so the auth bootstrap can sync
+  ///      them on first sign-in.
+  ///   3. Persist `onboardingDone = true` so the router stops
+  ///      redirecting to /onboarding.
+  ///   4. Move to the `completed` step — the page widget listens and
+  ///      routes to /login (not /home).
+  ///
+  /// If the user skipped the picker steps both branches above no-op;
+  /// we still flip the prefs flag so we don't re-prompt.
   Future<void> finish({bool skip = false}) async {
     state = state.copyWith(isBusy: true, lastFailure: null);
 
     if (!skip) {
-      final result = await _authRepo.updateProfile(
-        primaryInstrument: state.instrument?.id,
-        skillLevel: state.level?.id,
-      );
-      final failure = result.fold<Failure?>((f) => f, (_) => null);
-      if (failure != null) {
-        state = state.copyWith(isBusy: false, lastFailure: failure);
-        return;
+      final signedIn = await _authRepo.currentUser();
+      if (signedIn != null) {
+        // Authenticated path: write straight to users/{uid}.
+        final result = await _authRepo.updateProfile(
+          primaryInstrument: state.instrument?.id,
+          skillLevel: state.level?.id,
+        );
+        final failure = result.fold<Failure?>((f) => f, (_) => null);
+        if (failure != null) {
+          state =
+              state.copyWith(isBusy: false, lastFailure: failure);
+          return;
+        }
+      } else {
+        // Guest path: stash locally — auth bootstrap will sync to
+        // Firestore on the next successful sign-in.
+        await _prefs.setPendingPrimaryInstrument(state.instrument?.id);
+        await _prefs.setPendingSkillLevel(state.level?.id);
       }
     }
 

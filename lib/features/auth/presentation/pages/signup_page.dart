@@ -67,7 +67,21 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     final showAppleButton = !kIsWeb && Platform.isIOS;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Create account')),
+      // Close icon dismisses sign-up and drops the user into /home as
+      // a guest — matches the LoginPage skip behaviour so the two
+      // entry points feel symmetric.
+      appBar: AppBar(
+        title: const Text('Create account'),
+        actions: [
+          IconButton(
+            tooltip: 'Skip — continue as guest',
+            icon: const Icon(Icons.close),
+            onPressed:
+                isLoading ? null : () => context.go(RoutePaths.home),
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
       body: SafeArea(
         child: AutofillGroup(
           child: Padding(

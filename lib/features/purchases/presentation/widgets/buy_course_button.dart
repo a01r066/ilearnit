@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/extensions.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../courses/domain/entities/course_entity.dart';
 import '../../../subscriptions/presentation/providers/subscription_providers.dart';
 import '../providers/purchases_providers.dart';
@@ -29,6 +32,7 @@ class BuyCourseButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
     final isOwned = ref.watch(isCoursePurchasedProvider(course.id));
     final hasSubscription = ref.watch(hasActiveSubscriptionProvider);
     final purchases = ref.watch(purchasesNotifierProvider);
@@ -81,10 +85,22 @@ class BuyCourseButton extends ConsumerWidget {
     return FilledButton(
       onPressed: inFlight
           ? null
-          : () => notifier.buyCourse(
+          : () {
+              // Guest gate. Pre-auth users get bounced to /login
+              // instead of hitting the IAP flow (which requires a
+              // signed-in Firebase user to write the enrollment doc
+              // on success). Snackbar context explains why so the
+              // tap doesn't feel like a dead end.
+              if (user == null) {
+                context.showSnack('Sign in to unlock this course.');
+                context.goNamed(RouteNames.login);
+                return;
+              }
+              notifier.buyCourse(
                 courseId: course.id,
                 productId: course.productId,
-              ),
+              );
+            },
       child: inFlight
           ? const SizedBox(
               height: 20,
@@ -96,7 +112,11 @@ class BuyCourseButton extends ConsumerWidget {
               children: [
                 const Icon(Icons.lock_open_rounded, size: 18),
                 const SizedBox(width: 8),
-                Text('Unlock for $priceLabel'),
+                Text(
+                  user == null
+                      ? 'Sign in to unlock'
+                      : 'Unlock for $priceLabel',
+                ),
               ],
             ),
     );

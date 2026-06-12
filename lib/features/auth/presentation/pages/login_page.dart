@@ -63,6 +63,25 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final showAppleButton = !kIsWeb && Platform.isIOS;
 
     return Scaffold(
+      // Transparent AppBar carries the dismiss-to-guest close icon.
+      // No title — the page's own heading already announces it; an
+      // empty AppBar with just the close button keeps the layout
+      // anchored at the top without visual weight.
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            tooltip: 'Skip — continue as guest',
+            icon: const Icon(Icons.close),
+            onPressed:
+                isLoading ? null : () => context.go(RoutePaths.home),
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
       body: SafeArea(
         child: AutofillGroup(
           child: Padding(
@@ -71,7 +90,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               key: _formKey,
               child: ListView(
                 children: [
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 8),
                   Text('Welcome back', style: context.textTheme.displayLarge),
                   const SizedBox(height: 8),
                   Text(
@@ -155,6 +174,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         child: Text(t.authSignUp),
                       ),
                     ],
+                  ),
+                  // "Continue as guest" — drops the user into /home
+                  // without an account. Guest browse mode then applies
+                  // (the per-user-route allow-list in app_router.dart's
+                  // _requiresAuth helper gates only routes that need a
+                  // uid: subscription, wishlist, notes, etc.).
+                  Center(
+                    child: TextButton(
+                      onPressed: isLoading
+                          ? null
+                          : () => context.go(RoutePaths.home),
+                      child: const Text('Continue as guest'),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   const LegalAgreementFooter(),

@@ -1,11 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/skeleton.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../purchases/presentation/providers/purchases_providers.dart';
 import '../../data/models/course_review_model.dart';
 import '../providers/reviews_providers.dart';
@@ -155,15 +158,27 @@ class _WriteReviewCta extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
         icon: Icon(hasOwn ? Icons.edit_outlined : Icons.rate_review_outlined),
-        label: Text(hasOwn ? 'Edit your review' : 'Write a review'),
+        label: Text(
+          user == null
+              ? 'Sign in to write a review'
+              : (hasOwn ? 'Edit your review' : 'Write a review'),
+        ),
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(48),
         ),
-        onPressed: () => WriteReviewSheet.show(context, courseId: courseId),
+        onPressed: () {
+          if (user == null) {
+            context.showSnack('Sign in to leave a review.');
+            context.goNamed(RouteNames.login);
+            return;
+          }
+          WriteReviewSheet.show(context, courseId: courseId);
+        },
       ),
     );
   }

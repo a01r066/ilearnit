@@ -521,7 +521,27 @@ Nested per-branch routes:
   /delete-account
 ```
 
-Redirect logic uses `AuthState.isResolving / isAuthenticated / isUnauthenticated` to bounce between `/splash`, `/login`, and `/home`. Onboarding redirect: `isAuthenticated && !prefs.onboardingDone → /onboarding`. `/legal/*` is reachable while unauthenticated.
+Redirect logic uses `AuthState.isResolving / isAuthenticated / isUnauthenticated` and runs in **four** branches:
+
+```
+Launch ─► Splash ─► Onboarding (first run only) ─► Login (skippable) ─► Home
+                                                       │
+                                                       └─ "Continue as guest" → Home
+```
+
+1. **Resolving** — splash sticks; everything else redirects to splash.
+2. **Onboarding not done** — runs FIRST, before the auth check. Both guests and authenticated users get the 3-screen onboarding (instrument → skill level → notifications soft-ask) on a fresh install. Legal pages stay reachable so the footer links on the onboarding screens still work.
+3. **Authenticated** — kick out of pre-shell screens (splash / login / signup / onboarding) to `/home`; everything else is open.
+4. **Guest (signed out, onboarding done)** — *guest browse mode*. Splash bounces to `/login`. From `/login` the user can sign in OR tap "Continue as guest" to drop into `/home`. The full shell (Home / Courses / Instructors / Songbooks / Profile), `/courses/:id`, `/courses/:id/lectures/:lectureId` (free-preview lectures only — paid ones still hit the BuyCourseButton gate), `/instructors/:id`, `/songbooks/:id`, `/search`, `/learning-paths/:id`, and `/legal/*` are all guest-reachable. The `_requiresAuth(loc)` helper at the bottom of `app_router.dart` enumerates the per-user routes that DO still bounce to `/login`: `/profile/subscription[/checkout]`, `/profile/wishlist`, `/profile/notes`, `/profile/delete-account`, `/profile/settings/notifications`, and `/notifications`.
+
+### Pre-auth onboarding answers
+
+The picker steps (instrument + skill level) used to write directly to `users/{uid}` via `AuthRepository.updateProfile`. In the new flow, onboarding runs **before** sign-in — there's no `uid` yet. `OnboardingNotifier.finish()` branches:
+
+- **If a Firebase user is already signed in** (the re-onboarding case), it writes straight to `users/{uid}` like before.
+- **If the user is a guest** (the common case), it stashes the answers in `PrefsService.pendingPrimaryInstrument` + `.pendingSkillLevel`. The auth bootstrap reads these on the next successful sign-in, writes them to `users/{uid}`, and calls `clearPendingOnboarding()`.
+
+Action-level gates (BuyCourseButton, BookmarkButton, "Write a review", "Ask a question", "Add note") still need to detect `currentUser == null` on tap and route to `/login` — the router gate only catches direct URL access.
 
 A `FirebaseAnalyticsObserver` is attached to the router for automatic `screen_view` events (see [§21](#21-observability-crashlytics--performance--analytics)).
 

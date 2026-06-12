@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -68,21 +70,29 @@ class LectureNotesSection extends ConsumerWidget {
                 ),
               ),
             ),
-            if (user != null)
-              TextButton.icon(
-                icon: const Icon(Icons.add, size: 18),
-                label: Text(t.notesAddCta),
-                onPressed: () async {
-                  final ts = ref
-                      .read(playbackPositionRegistryProvider)
-                      .get(lectureId);
-                  await WriteNoteSheet.show(
-                    context,
-                    formKey: formKey,
-                    initialTimestampSec: ts,
-                  );
-                },
-              ),
+            // Always render the Add note button — guests get routed
+            // to /login on tap (instead of silently hiding the CTA,
+            // which made the section look feature-less to unauth
+            // users).
+            TextButton.icon(
+              icon: const Icon(Icons.add, size: 18),
+              label: Text(t.notesAddCta),
+              onPressed: () async {
+                if (user == null) {
+                  context.showSnack('Sign in to save notes.');
+                  context.goNamed(RouteNames.login);
+                  return;
+                }
+                final ts = ref
+                    .read(playbackPositionRegistryProvider)
+                    .get(lectureId);
+                await WriteNoteSheet.show(
+                  context,
+                  formKey: formKey,
+                  initialTimestampSec: ts,
+                );
+              },
+            ),
           ],
         ),
         const SizedBox(height: 8),
