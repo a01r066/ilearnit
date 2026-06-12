@@ -183,15 +183,18 @@ service firebase.storage {
 
 ```bash
 # Local dev (Chrome)
-flutter run -d chrome -t lib/main_admin.dart --flavor dev
+flutter run -d chrome -t lib/main_admin.dart --dart-define=FLAVOR=dev
 
 # Production build
-flutter build web -t lib/main_admin.dart --flavor prod \
-  --dart-define=FLAVOR=prod --release
+flutter build web -t lib/main_admin.dart --dart-define=FLAVOR=prod --release
 # → output: build/web/
 ```
 
-> Note: Flutter web doesn't propagate `--flavor` through to `appFlavor` like mobile does, so we pick it up via `--dart-define=FLAVOR=...` in `main_admin.dart`.
+> **Important — no `--flavor` on web.** Flutter web actively rejects the
+> `--flavor` flag (`Could not find an option named "--flavor"`). It's a
+> mobile-only argument. The admin web entry reads `FLAVOR` from the
+> compile-time env via `String.fromEnvironment` in `main_admin.dart`,
+> so `--dart-define=FLAVOR=prod` does the same job.
 
 ## Deploy to Firebase Hosting
 
@@ -214,7 +217,7 @@ The repo already has Firebase Hosting wired up for the landing page (see `docs/s
    }
    ```
 
-3. `flutter build web -t lib/main_admin.dart --flavor prod --release`
+3. `flutter build web -t lib/main_admin.dart --dart-define=FLAVOR=prod --release`
 4. `firebase deploy --only hosting:admin`
 
 For a custom domain (e.g. `admin.ilearnit.app`):

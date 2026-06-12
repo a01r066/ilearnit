@@ -153,7 +153,7 @@ For Apple-on-web you need a **Services ID** in Apple Developer Console (the iOS 
 ### 6.4 Smoke test the web portal
 
 ```bash
-flutter run -d chrome -t lib/main_admin.dart --flavor dev
+flutter run -d chrome -t lib/main_admin.dart --dart-define=FLAVOR=dev
 ```
 
 - Tap **Continue with Google** → standard Google account chooser opens → pick an account → portal lands on `/apply` (for a brand-new student) or `/` (for an existing instructor/admin).

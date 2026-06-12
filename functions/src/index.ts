@@ -782,3 +782,221 @@ export const resolveStreamPlayback = onCall(
     };
   },
 );
+
+// =============================================================================
+// Instructor revenue & student management — three callables
+// =============================================================================
+
+/**
+ * Look up a user's role from `users/{uid}`. Returns 'student' if the
+ * doc doesn't exist (matches the default in the admin router).
+ */
+async function getRole(uid: string): Promise<string> {
+  const snap = await db.collection('users').doc(uid).get();
+  return (snap.data()?.role as string) || 'student';
+}
+
+/**
+ * Admin-only: flip a transaction's status to 'refunded', cancel the
+ * matching enrollment, and notify the student.
+ *
+ * In v1 NO money is moved — this is bookkeeping only. A future
+ * version will also call the App Store / Play Store refund API
+ * inside this function so the audit trail covers both sides.
+ */
+export const processRefund = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  if ((await getRole(request.auth.uid)) !== 'admin') {
+    throw new HttpsError('permission-denied', 'Admin role required.');
+  }
+
+  const txnId = (request.data?.transactionId as string | undefined)?.trim();
+  const reason = (request.data?.reason as string | undefined)?.trim() || null;
+  if (!txnId) {
+    throw new HttpsError('invalid-argument', 'transactionId is required.');
+  }
+
+  const txnRef = db.collection('transactions').doc(txnId);
+  const txnSnap = await txnRef.get();
+  if (!txnSnap.exists) {
+    throw new HttpsError('not-found', `Transaction ${txnId} not found.`);
+  }
+  const txn = txnSnap.data() || {};
+  if (txn.status === 'refunded') {
+    throw new HttpsError(
+      'failed-precondition',
+      'Transaction is already refunded.',
+    );
+  }
+
+  const courseId = txn.courseId as string;
+  const studentUid = txn.studentUid as string;
+
+  // Batched write: refund the txn + cancel any matching enrollment
+  // for this student/course in one go.
+  const batch = db.batch();
+  batch.update(txnRef, {
+    status: 'refunded',
+    refundedAt: FieldValue.serverTimestamp(),
+    refundedByUid: request.auth.uid,
+    refundReason: reason,
+  });
+
+  const enrSnap = await db
+    .collection('enrollments')
+    .where('userId', '==', studentUid)
+    .where('courseId', '==', courseId)
+    .limit(5)
+    .get();
+  for (const doc of enrSnap.docs) {
+    batch.update(doc.ref, {
+      status: 'cancelled',
+      cancelledAt: FieldValue.serverTimestamp(),
+      cancelledReason: 'refund',
+    });
+  }
+
+  await batch.commit();
+
+  // Best-effort notify — failure must not roll back the refund.
+  try {
+    await notifyUser(
+      studentUid,
+      {
+        title: 'Refund processed',
+        body: `Your purchase of ${
+          txn.courseTitle || 'a course'
+        } has been refunded.`,
+      },
+      dataOnly({
+        type: 'refund_processed',
+        route: '/profile/purchases',
+        courseId: courseId,
+        transactionId: txnId,
+      }),
+    );
+  } catch (e) {
+    logger.warn(`Refund notify failed for ${studentUid}: ${e}`);
+  }
+
+  return {ok: true};
+});
+
+/**
+ * Admin-only: flip a payout's status to 'paid'. The actual money
+ * transfer happens out-of-band; this just records the bookkeeping.
+ */
+export const markPayoutPaid = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  if ((await getRole(request.auth.uid)) !== 'admin') {
+    throw new HttpsError('permission-denied', 'Admin role required.');
+  }
+
+  const payoutId = (request.data?.payoutId as string | undefined)?.trim();
+  const method = (request.data?.method as string | undefined)?.trim() || null;
+  if (!payoutId) {
+    throw new HttpsError('invalid-argument', 'payoutId is required.');
+  }
+
+  const ref = db.collection('payouts').doc(payoutId);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new HttpsError('not-found', `Payout ${payoutId} not found.`);
+  }
+  if ((snap.data()?.status as string) === 'paid') {
+    throw new HttpsError('failed-precondition', 'Payout is already paid.');
+  }
+
+  await ref.update({
+    status: 'paid',
+    paidAt: FieldValue.serverTimestamp(),
+    paidByUid: request.auth.uid,
+    payoutMethod: method,
+  });
+  return {ok: true};
+});
+
+/**
+ * Instructor-only: broadcast a message to every student enrolled in
+ * one of the instructor's courses. Re-uses the existing notifyUser
+ * helper (FCM push + inbox row) for each recipient.
+ *
+ * Privacy: the instructor never sees student email addresses or
+ * device tokens — they only specify the courseId. The fan-out runs
+ * under Admin SDK and resolves recipients server-side.
+ */
+export const instructorBroadcast = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const role = await getRole(request.auth.uid);
+  if (role !== 'instructor' && role !== 'admin') {
+    throw new HttpsError(
+      'permission-denied',
+      'Instructor or admin role required.',
+    );
+  }
+
+  const courseId = (request.data?.courseId as string | undefined)?.trim();
+  const title = (request.data?.title as string | undefined)?.trim();
+  const body = (request.data?.body as string | undefined)?.trim();
+  if (!courseId || !title || !body) {
+    throw new HttpsError(
+      'invalid-argument',
+      'courseId, title, and body are required.',
+    );
+  }
+  if (title.length > 80 || body.length > 800) {
+    throw new HttpsError(
+      'invalid-argument',
+      'Title max 80 chars; body max 800 chars.',
+    );
+  }
+
+  // Verify the caller is the course's instructor (admin bypass).
+  const courseSnap = await db.collection('courses').doc(courseId).get();
+  if (!courseSnap.exists) {
+    throw new HttpsError('not-found', `Course ${courseId} not found.`);
+  }
+  const courseInstructorId = courseSnap.data()?.instructorId as
+    | string
+    | undefined;
+  if (role !== 'admin' && courseInstructorId !== request.auth.uid) {
+    throw new HttpsError(
+      'permission-denied',
+      'You do not own this course.',
+    );
+  }
+
+  // Collect recipients from enrollments — distinct userIds.
+  const enrSnap = await db
+    .collection('enrollments')
+    .where('courseId', '==', courseId)
+    .get();
+  const recipients = new Set<string>();
+  for (const doc of enrSnap.docs) {
+    const uid = doc.data()?.userId as string | undefined;
+    if (uid) recipients.add(uid);
+  }
+
+  // Fan out in chunks of 20 to keep within rate limits.
+  const data = dataOnly({
+    type: 'instructor_broadcast',
+    route: `/courses/${courseId}`,
+    courseId,
+    instructorUid: request.auth.uid,
+  });
+  const uids = Array.from(recipients);
+  for (let i = 0; i < uids.length; i += 20) {
+    const chunk = uids.slice(i, i + 20);
+    await Promise.all(
+      chunk.map((uid) => notifyUser(uid, {title, body}, data)),
+    );
+  }
+
+  return {ok: true, recipientCount: uids.length};
+});

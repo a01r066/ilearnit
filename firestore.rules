@@ -275,10 +275,60 @@ service cloud.firestore {
     // enrollments/{enrollmentId}
     // ============================================================
     match /enrollments/{enrollmentId} {
-      allow read: if isSignedIn()
-        && (resource.data.userId == uid() || isAdmin());
+      // Instructors get to see enrollments on THEIR OWN courses (so the
+      // /my-students page works) via a course-doc cross-reference. The
+      // get() costs one extra read per matching enrollment, which is
+      // fine for an admin-only page. Single-doc reads are cheap;
+      // collection queries with the same filter pay get() per result.
+      allow read: if isSignedIn() && (
+        resource.data.userId == uid()
+        || isAdmin()
+        || (isInstructor()
+            && get(/databases/$(database)/documents/courses/$(resource.data.courseId))
+                 .data.instructorId == uid())
+      );
       allow create: if isSignedIn()
         && request.resource.data.userId == uid();
+      // Admin can update enrollment.status (e.g. → 'cancelled' as part
+      // of a refund) and delete outright.
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // transactions/{transactionId}
+    // ============================================================
+    // Purchase records. Created server-side by the (future) IAP
+    // receipt-verifier Cloud Function and mutated only by admin via
+    // the processRefund callable. The Admin SDK bypasses these rules
+    // for the Cloud Function path; what's enforced here is what
+    // clients can see.
+    match /transactions/{transactionId} {
+      // The student who paid can see their own transaction.
+      // The instructor who taught the course can see it.
+      // Admin sees everything. Anyone else: denied.
+      allow read: if isSignedIn() && (
+        resource.data.studentUid == uid()
+        || resource.data.instructorId == uid()
+        || isAdmin()
+      );
+      // Clients NEVER write transactions directly. Even admins are
+      // gated through the processRefund Cloud Function (audit trail).
+      allow create, update, delete: if false;
+    }
+
+    // ============================================================
+    // payouts/{payoutId}
+    // ============================================================
+    // Periodic per-instructor payout record. Bookkeeping only in v1.
+    match /payouts/{payoutId} {
+      allow read: if isSignedIn() && (
+        resource.data.instructorUid == uid()
+        || isAdmin()
+      );
+      // Create / update gated to admin; the markPayoutPaid callable
+      // also runs as admin so it's covered by isAdmin() here.
+      allow create, update: if isAdmin();
       allow delete: if isAdmin();
     }
 

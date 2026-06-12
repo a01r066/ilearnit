@@ -21,6 +21,10 @@ import '../learning_paths/presentation/learning_path_editor_page.dart';
 import '../songbooks/presentation/admin_songbooks_page.dart';
 import '../songbooks/presentation/songbook_editor_page.dart';
 import '../analytics/presentation/pages/admin_analytics_page.dart';
+import '../revenue/presentation/pages/admin_payouts_page.dart';
+import '../revenue/presentation/pages/admin_transactions_page.dart';
+import '../revenue/presentation/pages/instructor_revenue_page.dart';
+import '../revenue/presentation/pages/instructor_students_page.dart';
 import '../instructors/presentation/admin_instructor_profiles_page.dart';
 import '../instructors/presentation/instructor_profile_editor_page.dart';
 import '../site_content/presentation/pages/admin_landing_content_page.dart';
@@ -169,6 +173,28 @@ final adminGoRouterProvider = Provider<GoRouter>((ref) {
               instructorId: s.pathParameters['id']!,
             ),
           ),
+          // Instructor-side revenue + students (own data only).
+          GoRoute(
+            path: AdminRoutes.myRevenuePath,
+            name: AdminRoutes.myRevenue,
+            builder: (_, __) => const InstructorRevenuePage(),
+          ),
+          GoRoute(
+            path: AdminRoutes.myStudentsPath,
+            name: AdminRoutes.myStudents,
+            builder: (_, __) => const InstructorStudentsPage(),
+          ),
+          // Admin-side transactions + payouts.
+          GoRoute(
+            path: AdminRoutes.transactionsPath,
+            name: AdminRoutes.transactions,
+            builder: (_, __) => const AdminTransactionsPage(),
+          ),
+          GoRoute(
+            path: AdminRoutes.payoutsPath,
+            name: AdminRoutes.payouts,
+            builder: (_, __) => const AdminPayoutsPage(),
+          ),
         ],
       ),
     ],
@@ -239,7 +265,12 @@ bool _isAdminOnly(String location) =>
     location == AdminRoutes.notificationsPath ||
     location.startsWith(AdminRoutes.songbooksPath) ||
     location.startsWith(AdminRoutes.learningPathsPath) ||
-    location == AdminRoutes.subscriptionsPath;
+    location == AdminRoutes.subscriptionsPath ||
+    location == AdminRoutes.transactionsPath ||
+    location == AdminRoutes.payoutsPath ||
+    location == AdminRoutes.analyticsPath ||
+    location == AdminRoutes.landingPagePath ||
+    location.startsWith(AdminRoutes.instructorProfilesPath);
 
 String _landingFor(UserRole role) {
   switch (role) {

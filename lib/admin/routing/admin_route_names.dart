@@ -14,6 +14,8 @@ class AdminRoutes {
   // Instructor surfaces
   static const String myCourses = 'admin-my-courses';
   static const String courseEditor = 'admin-course-editor';
+  static const String myRevenue = 'admin-my-revenue';
+  static const String myStudents = 'admin-my-students';
 
   // Admin-only surfaces
   static const String allCourses = 'admin-all-courses';
@@ -29,6 +31,8 @@ class AdminRoutes {
   static const String learningPathEditor = 'admin-learning-path-editor';
   static const String analytics = 'admin-analytics';
   static const String landingPage = 'admin-landing-page';
+  static const String transactions = 'admin-transactions';
+  static const String payouts = 'admin-payouts';
 
   // Path templates
   static const String loginPath = '/login';
@@ -38,6 +42,8 @@ class AdminRoutes {
   static const String dashboardPath = '/';
   static const String myCoursesPath = '/my-courses';
   static const String courseEditorPath = '/my-courses/:id';
+  static const String myRevenuePath = '/my-revenue';
+  static const String myStudentsPath = '/my-students';
   static const String allCoursesPath = '/admin/courses';
   static const String applicationsPath = '/admin/applications';
   static const String instructorsPath = '/admin/instructors';
@@ -51,4 +57,6 @@ class AdminRoutes {
   static const String learningPathEditorPath = '/admin/learning-paths/:id';
   static const String analyticsPath = '/admin/analytics';
   static const String landingPagePath = '/admin/landing-page';
+  static const String transactionsPath = '/admin/transactions';
+  static const String payoutsPath = '/admin/payouts';
 }

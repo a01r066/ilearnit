@@ -104,6 +104,19 @@ class AdminScaffold extends ConsumerWidget {
         icon: Icons.school_outlined,
         path: AdminRoutes.myCoursesPath,
       ),
+      // Instructor-side revenue + students (own data only). Available
+      // to both instructors AND admins — admins see their own data if
+      // they happen to also teach, otherwise both pages show empty.
+      const _NavItem(
+        label: 'My revenue',
+        icon: Icons.payments_outlined,
+        path: AdminRoutes.myRevenuePath,
+      ),
+      const _NavItem(
+        label: 'My students',
+        icon: Icons.groups_outlined,
+        path: AdminRoutes.myStudentsPath,
+      ),
       if (role.isAdmin) ...const [
         _NavItem(
           label: 'All Courses',
@@ -149,6 +162,16 @@ class AdminScaffold extends ConsumerWidget {
           label: 'Analytics',
           icon: Icons.insights_outlined,
           path: AdminRoutes.analyticsPath,
+        ),
+        _NavItem(
+          label: 'Transactions',
+          icon: Icons.receipt_long_outlined,
+          path: AdminRoutes.transactionsPath,
+        ),
+        _NavItem(
+          label: 'Payouts',
+          icon: Icons.account_balance_outlined,
+          path: AdminRoutes.payoutsPath,
         ),
         _NavItem(
           label: 'Landing page',
