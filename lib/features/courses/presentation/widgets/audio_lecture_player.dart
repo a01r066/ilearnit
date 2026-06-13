@@ -1,46 +1,61 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../mini_player/data/services/mini_player_service.dart';
+import '../../../mini_player/presentation/providers/mini_player_providers.dart';
 import 'video_lecture_player.dart' show LecturePlaybackTick;
 
 /// Custom audio player UI built on top of `just_audio`.
 ///
-/// Shows a play/pause toggle, scrub bar, and elapsed/total times. Designed
-/// to live above the lecture body inside [LecturePlayerPage].
+/// Shows a play/pause toggle, scrub bar, and elapsed/total times.
+/// Designed to live above the lecture body inside [LecturePlayerPage].
 ///
-/// Supply [initialPositionSec] + [onTick] + [onPause] to enable progress
-/// persistence — same contract as `VideoLecturePlayer`.
-class AudioLecturePlayer extends StatefulWidget {
+/// Supply [initialPositionSec] + [onTick] + [onPause] to enable
+/// progress persistence — same contract as `VideoLecturePlayer`.
+///
+/// **Player ownership.** This widget does NOT own its own
+/// `AudioPlayer` anymore. It reads from the singleton
+/// [MiniPlayerService] so navigating away from the lecture page
+/// doesn't kill audio — the mini-player above the bottom nav stays
+/// alive on the same player instance, and a tap on the mini-player
+/// pushes back here at the same position.
+class AudioLecturePlayer extends ConsumerStatefulWidget {
   const AudioLecturePlayer({
     super.key,
-    required this.url,
-    required this.title,
+    required this.track,
     this.initialPositionSec = 0,
     this.onTick,
     this.onPause,
   });
 
-  final String url;
-  final String title;
+  /// Identifies the lecture being played. Threaded through to the
+  /// mini-player bar so its "tap to expand" knows how to deep-link
+  /// back into this page.
+  final MiniPlayerTrack track;
   final int initialPositionSec;
   final LecturePlaybackTick? onTick;
   final VoidCallback? onPause;
 
   @override
-  State<AudioLecturePlayer> createState() => _AudioLecturePlayerState();
+  ConsumerState<AudioLecturePlayer> createState() =>
+      _AudioLecturePlayerState();
 }
 
-class _AudioLecturePlayerState extends State<AudioLecturePlayer> {
-  final _player = AudioPlayer();
+class _AudioLecturePlayerState extends ConsumerState<AudioLecturePlayer> {
   Object? _error;
 
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<PlayerState>? _stateSub;
   int _lastEmittedSec = -1;
   bool _wasPlaying = false;
+
+  late final MiniPlayerService _service =
+      ref.read(miniPlayerServiceProvider);
+  AudioPlayer get _player => _service.player;
 
   @override
   void initState() {
@@ -50,10 +65,10 @@ class _AudioLecturePlayerState extends State<AudioLecturePlayer> {
 
   Future<void> _load() async {
     try {
-      await _player.setUrl(widget.url);
-      if (widget.initialPositionSec > 0) {
-        await _player.seek(Duration(seconds: widget.initialPositionSec));
-      }
+      await _service.startTrack(
+        widget.track,
+        initialPositionSec: widget.initialPositionSec,
+      );
 
       // Tick on whole-second boundaries only.
       _positionSub = _player.positionStream.listen((pos) {
@@ -78,9 +93,11 @@ class _AudioLecturePlayerState extends State<AudioLecturePlayer> {
 
   @override
   void dispose() {
+    // Only cancel OUR subscriptions — the player itself is owned by
+    // [MiniPlayerService] and continues running so the mini-player
+    // bar can take over.
     unawaited(_positionSub?.cancel());
     unawaited(_stateSub?.cancel());
-    unawaited(_player.dispose());
     super.dispose();
   }
 

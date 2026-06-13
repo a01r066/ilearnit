@@ -1,18 +1,29 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../mini_player/data/services/mini_player_service.dart';
+import '../../../mini_player/presentation/providers/mini_player_providers.dart';
+
 /// Signature for the per-second tick the player emits while playing.
-/// Driven by a periodic listener on the [VideoPlayerController].
+/// Driven by a listener on the shared [VideoPlayerController] owned by
+/// [MiniPlayerService].
 typedef LecturePlaybackTick = void Function(
   int positionSec,
   int durationSec,
 );
 
-/// Wraps `video_player` + `chewie` so the lecture player just gives a URL.
+/// In-page video player UI. Wraps the singleton
+/// [MiniPlayerService.videoController] in a Chewie chrome (play/pause,
+/// scrubber, fullscreen toggle) and forwards per-second ticks for
+/// progress persistence.
 ///
-/// Disposes both controllers on widget removal — leaks here would keep the
-/// audio decoder alive between routes.
+/// **Controller ownership.** This widget does NOT own a
+/// `VideoPlayerController`. The service owns it so the user can
+/// navigate away from the lecture page and continue watching in the
+/// mini-bar above the bottom nav. We construct a `ChewieController`
+/// here (it's just UI chrome) and dispose only that on widget removal.
 ///
 /// To enable progress persistence, supply:
 ///   • [initialPositionSec] — seeks before the user hits play, so the
@@ -20,60 +31,61 @@ typedef LecturePlaybackTick = void Function(
 ///   • [onTick]              — fired every second while playback advances.
 ///   • [onPause]             — fired when the user hits pause, lets the
 ///     progress notifier flush immediately.
-class VideoLecturePlayer extends StatefulWidget {
+class VideoLecturePlayer extends ConsumerStatefulWidget {
   const VideoLecturePlayer({
     super.key,
-    required this.url,
+    required this.track,
     this.initialPositionSec = 0,
     this.onTick,
     this.onPause,
   });
 
-  final String url;
+  /// Identifies the lecture being played (URL + course/section/lecture
+  /// ids + denormalized title for the mini-bar caption). Handed to the
+  /// singleton service which owns the actual [VideoPlayerController].
+  final MiniPlayerTrack track;
   final int initialPositionSec;
   final LecturePlaybackTick? onTick;
   final VoidCallback? onPause;
 
   @override
-  State<VideoLecturePlayer> createState() => _VideoLecturePlayerState();
+  ConsumerState<VideoLecturePlayer> createState() =>
+      _VideoLecturePlayerState();
 }
 
-class _VideoLecturePlayerState extends State<VideoLecturePlayer> {
-  VideoPlayerController? _video;
+class _VideoLecturePlayerState extends ConsumerState<VideoLecturePlayer> {
   ChewieController? _chewie;
+  VideoPlayerController? _video;
   Object? _error;
 
-  // Track the last emitted second so we only fire `onTick` on whole-second
-  // boundaries. Without this the player would call the callback on every
-  // VideoPlayerValue change (≈30 fps for some codecs).
   int _lastEmittedSec = -1;
-
-  // Track whether the last frame was playing so we can fire `onPause`
-  // only on the playing → paused edge.
   bool _wasPlaying = false;
+
+  late final MiniPlayerService _service =
+      ref.read(miniPlayerServiceProvider);
 
   @override
   void initState() {
     super.initState();
-    _init();
+    _load();
   }
 
-  Future<void> _init() async {
+  Future<void> _load() async {
     try {
-      final video = VideoPlayerController.networkUrl(Uri.parse(widget.url));
-      await video.initialize();
-      if (!mounted) {
-        await video.dispose();
-        return;
-      }
-      if (widget.initialPositionSec > 0) {
-        await video.seekTo(Duration(seconds: widget.initialPositionSec));
-      }
-      video.addListener(_onVideoEvent);
+      // Hands the URL to the singleton — service decides whether to
+      // reuse an already-initialized controller (user tapped the mini
+      // bar to expand) or spin up a new one.
+      await _service.startTrack(
+        widget.track,
+        initialPositionSec: widget.initialPositionSec,
+      );
+
+      final video = _service.videoController;
+      if (video == null || !mounted) return;
 
       final chewie = ChewieController(
         videoPlayerController: video,
-        autoPlay: false,
+        autoPlay: false, // service has already called play()
         looping: false,
         allowFullScreen: true,
         allowMuting: true,
@@ -83,6 +95,9 @@ class _VideoLecturePlayerState extends State<VideoLecturePlayer> {
           handleColor: Theme.of(context).colorScheme.primary,
         ),
       );
+
+      video.addListener(_onVideoEvent);
+
       setState(() {
         _video = video;
         _chewie = chewie;
@@ -104,7 +119,6 @@ class _VideoLecturePlayerState extends State<VideoLecturePlayer> {
     }
     _wasPlaying = isPlaying;
 
-    // Only emit ticks while playback is advancing.
     if (!isPlaying) return;
     final positionSec = value.position.inSeconds;
     if (positionSec == _lastEmittedSec) return;
@@ -115,9 +129,11 @@ class _VideoLecturePlayerState extends State<VideoLecturePlayer> {
 
   @override
   void dispose() {
+    // Only tear down OUR Chewie UI chrome. The [VideoPlayerController]
+    // itself is owned by [MiniPlayerService] and continues running so
+    // the mini-player bar above the bottom nav can take over.
     _video?.removeListener(_onVideoEvent);
     _chewie?.dispose();
-    _video?.dispose();
     super.dispose();
   }
 

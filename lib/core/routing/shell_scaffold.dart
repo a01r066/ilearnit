@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/mini_player/presentation/widgets/mini_player_bar.dart';
+
 /// The bottom-nav scaffold that wraps the four primary tabs.
 ///
 /// Used by [StatefulShellRoute.indexedStack] so each tab keeps its own
@@ -21,15 +23,17 @@ class ShellScaffold extends StatelessWidget {
       activeIcon: Icons.library_music_rounded,
       label: 'Courses',
     ),
+    // Instructors tab moved out of the bottom nav per product request —
+    // /instructors + /instructors/:id remain reachable by deep link
+    // (course detail → instructor name → push), just not from the
+    // bottom nav. Same pattern Songbooks already uses.
+    //
+    // My learning replaces it as the primary mid-nav destination.
     _NavItem(
-      icon: Icons.person_outline_rounded,
-      activeIcon: Icons.person_rounded,
-      label: 'Instructors',
+      icon: Icons.play_circle_outline,
+      activeIcon: Icons.play_circle_rounded,
+      label: 'My learning',
     ),
-    // Songbooks tab removed from the consumer bottom nav per product
-    // request — admin can still author songbooks at /admin/songbooks
-    // and the routes /songbooks + /songbooks/:id remain reachable by
-    // deep link / search result, just not from the bottom nav.
     _NavItem(
       icon: Icons.account_circle_outlined,
       activeIcon: Icons.account_circle_rounded,
@@ -49,18 +53,26 @@ class ShellScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: _onTap,
-        destinations: _items
-            .map(
-              (item) => NavigationDestination(
-                icon: Icon(item.icon),
-                selectedIcon: Icon(item.activeIcon),
-                label: item.label,
-              ),
-            )
-            .toList(),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Persistent mini-player above the bottom nav. Self-hides
+          // when nothing is loaded. See lib/features/mini_player.
+          const MiniPlayerBar(),
+          NavigationBar(
+            selectedIndex: navigationShell.currentIndex,
+            onDestinationSelected: _onTap,
+            destinations: _items
+                .map(
+                  (item) => NavigationDestination(
+                    icon: Icon(item.icon),
+                    selectedIcon: Icon(item.activeIcon),
+                    label: item.label,
+                  ),
+                )
+                .toList(),
+          ),
+        ],
       ),
     );
   }

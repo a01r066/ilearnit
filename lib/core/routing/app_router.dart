@@ -41,6 +41,7 @@ final _rootKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final _homeKey = GlobalKey<NavigatorState>(debugLabel: 'home');
 final _coursesKey = GlobalKey<NavigatorState>(debugLabel: 'courses');
 final _instructorsKey = GlobalKey<NavigatorState>(debugLabel: 'instructors');
+final _myLearningKey = GlobalKey<NavigatorState>(debugLabel: 'myLearning');
 final _profileKey = GlobalKey<NavigatorState>(debugLabel: 'profile');
 
 /// Provides a [GoRouter] that redirects based on auth state.
@@ -212,6 +213,26 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
+      // ----- Instructors (no longer a bottom-nav tab) -------------------
+      // Same pattern as Songbooks. Course detail and search both still
+      // deep-link into instructor profiles; the bottom-nav slot was
+      // claimed by My learning.
+      GoRoute(
+        path: RoutePaths.instructors,
+        name: RouteNames.instructors,
+        parentNavigatorKey: _rootKey,
+        builder: (_, __) => const InstructorsPage(),
+        routes: [
+          GoRoute(
+            path: RoutePaths.instructorDetail,
+            name: RouteNames.instructorDetail,
+            parentNavigatorKey: _rootKey,
+            builder: (_, s) => InstructorDetailPage(
+              instructorId: s.pathParameters['id']!,
+            ),
+          ),
+        ],
+      ),
       StatefulShellRoute.indexedStack(
         builder: (_, __, shell) => ShellScaffold(navigationShell: shell),
         branches: [
@@ -278,23 +299,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // Instructors
+          // My learning — replaces the Instructors branch in the
+          // bottom nav. Per the screenshot reference + product
+          // request. /instructors + /instructors/:id are re-registered
+          // ABOVE the shell so they stay reachable as deep-links
+          // (course detail → instructor name still pushes), same
+          // pattern Songbooks already uses.
           StatefulShellBranch(
-            navigatorKey: _instructorsKey,
+            navigatorKey: _myLearningKey,
             routes: [
               GoRoute(
-                path: RoutePaths.instructors,
-                name: RouteNames.instructors,
-                builder: (_, __) => const InstructorsPage(),
-                routes: [
-                  GoRoute(
-                    path: RoutePaths.instructorDetail,
-                    name: RouteNames.instructorDetail,
-                    builder: (_, s) => InstructorDetailPage(
-                      instructorId: s.pathParameters['id']!,
-                    ),
-                  ),
-                ],
+                path: '/my-learning',
+                name: RouteNames.myLearning,
+                builder: (_, __) => const MyLearningPage(),
               ),
             ],
           ),
@@ -349,11 +366,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                     name: RouteNames.notes,
                     builder: (_, __) => const NotesPage(),
                   ),
-                  GoRoute(
-                    path: RoutePaths.myLearning,
-                    name: RouteNames.myLearning,
-                    builder: (_, __) => const MyLearningPage(),
-                  ),
+                  // My learning moved to a bottom-nav branch at
+                  // `/my-learning`. The route name + page are unchanged;
+                  // only the path moved. Profile no longer hosts it.
                   GoRoute(
                     path: RoutePaths.subscription,
                     name: RouteNames.subscription,
@@ -405,9 +420,12 @@ bool _requiresAuth(String loc) {
     '/profile/subscription/checkout',
     '/profile/wishlist',
     '/profile/notes',
-    '/profile/my-learning',
     '/profile/delete-account',
     '/profile/settings/notifications',
+    // My learning is a top-level bottom-nav tab now. It's user-bound
+    // (reads users/{uid}/courseProgress) so guests hitting the tab
+    // get bounced to /login.
+    '/my-learning',
   };
   if (protected.contains(loc)) return true;
   // Notifications inbox is per-user.

@@ -130,6 +130,7 @@ class RoutePaths {
   // Notes (nested under profile)
   static const String notes = 'notes';
 
-  // My learning (nested under profile)
-  static const String myLearning = 'my-learning';
+  // My learning — top-level bottom-nav tab (was nested under profile
+  // until the Instructors tab was retired).
+  static const String myLearning = '/my-learning';
 }

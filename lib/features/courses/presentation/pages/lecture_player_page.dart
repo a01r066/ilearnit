@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
+
+import '../../../mini_player/data/services/mini_player_service.dart';
+import '../../../mini_player/presentation/providers/mini_player_providers.dart';
 import 'package:ilearnit/features/courses/presentation/providers/course_detail_state.dart';
 import 'package:ilearnit/features/courses/presentation/providers/curriculum_state.dart';
 
@@ -142,7 +146,7 @@ class LecturePlayerPage extends ConsumerWidget {
   }
 }
 
-class _LecturePlayerScaffold extends ConsumerWidget {
+class _LecturePlayerScaffold extends ConsumerStatefulWidget {
   const _LecturePlayerScaffold({
     required this.courseId,
     required this.sectionId,
@@ -160,38 +164,100 @@ class _LecturePlayerScaffold extends ConsumerWidget {
   final int? initialPositionSec;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_LecturePlayerScaffold> createState() =>
+      _LecturePlayerScaffoldState();
+}
+
+class _LecturePlayerScaffoldState
+    extends ConsumerState<_LecturePlayerScaffold> {
+  // Cached notifier reference, captured in the post-frame callback
+  // while `ref` is still safe to read. Riverpod's `ref` is unsafe in
+  // `dispose()` because it transitively walks BuildContext, which the
+  // framework has already deactivated by the time unmount runs — the
+  // documented escape hatch is "save the provider state in a field of
+  // your State class," which is what we do here.
+  StateController<int>? _hiddenDepth;
+  bool _bumped = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Bump the hidden-depth counter so the persistent mini-player bar
+    // self-hides while this page is on top. Counter (not bool) handles
+    // nested routes — e.g. opening a question-thread above the lecture
+    // page keeps the bar hidden until both pop. Scheduled post-frame
+    // to avoid mutating a provider during the build the page was
+    // mounted in.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final ctrl = ref.read(miniPlayerHiddenDepthProvider.notifier);
+      ctrl.update((v) => v + 1);
+      _hiddenDepth = ctrl;
+      _bumped = true;
+    });
+  }
+
+  @override
+  void dispose() {
+    if (_bumped) {
+      // Riverpod considers `dispose` part of the widget-tree
+      // finalization phase, so directly calling `.update` here throws
+      // "Tried to modify a provider while the widget tree was
+      // building." The documented workaround: defer the mutation to a
+      // microtask via `Future(...)`, which runs after finalization
+      // finishes. The captured `_hiddenDepth` keeps working — the
+      // provider is global and outlives this widget.
+      final ctrl = _hiddenDepth;
+      if (ctrl != null) {
+        Future(() => ctrl.update((v) => (v - 1).clamp(0, 1 << 30)));
+      }
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(lecture.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        // Replace the default back arrow with an arrow-down so the
+        // gesture reads as "minimize" instead of "leave". On tap pop
+        // the route — the mini-player above the bottom nav takes over
+        // via the singleton MiniPlayerService.
+        leading: IconButton(
+          tooltip: 'Minimize',
+          icon: const Icon(Icons.keyboard_arrow_down),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+        title: Text(widget.lecture.title,
+            maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
       body: _buildBody(context, ref),
     );
   }
 
   Widget _buildBody(BuildContext context, WidgetRef ref) {
-    switch (lecture.type) {
+    switch (widget.lecture.type) {
       case LectureType.video:
         return _VideoBody(
-          courseId: courseId,
-          sectionId: sectionId,
-          lecture: lecture,
-          courseTitle: courseTitle,
-          courseThumbnailUrl: courseThumbnailUrl,
-          initialPositionOverrideSec: initialPositionSec,
+          courseId: widget.courseId,
+          sectionId: widget.sectionId,
+          lecture: widget.lecture,
+          courseTitle: widget.courseTitle,
+          courseThumbnailUrl: widget.courseThumbnailUrl,
+          initialPositionOverrideSec: widget.initialPositionSec,
         );
       case LectureType.audio:
         return _AudioBody(
-          courseId: courseId,
-          sectionId: sectionId,
-          lecture: lecture,
-          courseTitle: courseTitle,
-          courseThumbnailUrl: courseThumbnailUrl,
-          initialPositionOverrideSec: initialPositionSec,
+          courseId: widget.courseId,
+          sectionId: widget.sectionId,
+          lecture: widget.lecture,
+          courseTitle: widget.courseTitle,
+          courseThumbnailUrl: widget.courseThumbnailUrl,
+          initialPositionOverrideSec: widget.initialPositionSec,
         );
       case LectureType.pdf:
       case LectureType.doc:
-        return DocumentLectureView(lecture: lecture);
+        return DocumentLectureView(lecture: widget.lecture);
     }
   }
 }
@@ -236,10 +302,28 @@ class _VideoBody extends ConsumerWidget {
     final positions = ref.read(playbackPositionRegistryProvider);
     final cfId = lecture.cloudflareVideoId;
 
+    // Build a MiniPlayerTrack so the singleton service knows what's
+    // loaded. The track carries the URL + denormalized caption fields
+    // (course title + lecture number) so the mini-bar can render the
+    // screenshot-style layout when the user pops back without
+    // re-fetching Firestore. lecture.order is 0-based; display 1-based
+    // to match the user's mental model.
+    MiniPlayerTrack buildTrack(String url) => MiniPlayerTrack(
+          courseId: courseId,
+          sectionId: sectionId,
+          lectureId: lecture.id,
+          title: lecture.title,
+          url: url,
+          kind: MiniPlayerKind.video,
+          thumbnailUrl: courseThumbnailUrl,
+          courseTitle: courseTitle,
+          lectureNumber: lecture.order + 1,
+        );
+
     Widget buildPlayer(String url) => AspectRatio(
           aspectRatio: 16 / 9,
           child: VideoLecturePlayer(
-            url: url,
+            track: buildTrack(url),
             initialPositionSec:
                 initialPositionOverrideSec ?? saved?.positionSec ?? 0,
             onTick: (pos, dur) {
@@ -355,11 +439,29 @@ class _AudioBody extends ConsumerWidget {
 
     final positions = ref.read(playbackPositionRegistryProvider);
 
+    // Build a MiniPlayerTrack so the singleton mini-player service
+    // knows what's loaded. The mini-player bar uses these fields to
+    // render the screenshot-style layout (thumbnail + lecture number
+    // + title + course title) and to "expand back" via a pushNamed
+    // to /courses/:id/lectures/:lectureId.
+    //
+    // `lecture.order` is 0-based; the screenshot shows "50" — display
+    // as 1-based to match the user's mental model.
+    final track = MiniPlayerTrack(
+      courseId: courseId,
+      sectionId: sectionId,
+      lectureId: lecture.id,
+      title: lecture.title,
+      url: url,
+      thumbnailUrl: courseThumbnailUrl,
+      courseTitle: courseTitle,
+      lectureNumber: lecture.order + 1,
+    );
+
     return Column(
       children: [
         AudioLecturePlayer(
-          url: url,
-          title: lecture.title,
+          track: track,
           initialPositionSec:
               initialPositionOverrideSec ?? saved?.positionSec ?? 0,
           onTick: (pos, dur) {
