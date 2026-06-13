@@ -62,6 +62,9 @@ class RouteNames {
 
   // Notes (within profile)
   static const String notes = 'notes';
+
+  // My learning (within profile)
+  static const String myLearning = 'my-learning';
 }
 
 class RoutePaths {
@@ -126,4 +129,7 @@ class RoutePaths {
 
   // Notes (nested under profile)
   static const String notes = 'notes';
+
+  // My learning (nested under profile)
+  static const String myLearning = 'my-learning';
 }

@@ -2,7 +2,7 @@
 
 A single, authoritative reference for the iLearnIt platform. Read this end-to-end on your first day; come back to individual sections as needed. Per-feature deep-dives live in sibling docs (see [§35 References](#35-references)).
 
-> **Last verified:** 2026-06-10 against `lib/`, `firebase.json`, `functions/src/index.ts`, `firestore.rules`, and every doc in `docs/`. When in doubt, this file is older than the code — `git log -- docs/technical_specification.md` shows the last touch and `git log --since="<that date>" -- lib/` shows what's drifted.
+> **Last verified:** 2026-06-13 against `lib/`, `firebase.json`, `functions/src/index.ts` (11 functions), `firestore.rules`, the bottom-nav `shell_scaffold.dart` (Songbooks tab removed), and every doc in `docs/`. When in doubt, this file is older than the code — `git log -- docs/technical_specification.md` shows the last touch and `git log --since="<that date>" -- lib/` shows what's drifted.
 
 ---
 
@@ -271,7 +271,7 @@ This avoids hanging on captive-portal Wi-Fi and gives the UI a deterministic off
 | Home | `/home` | — | `courses` (featured + popular), `learning_paths`, `users/{uid}/courseProgress` | — |
 | Courses | `/courses`, `/courses/:id`, `/courses/:id/lectures/:lectureId` | `/admin/courses`, `/my-courses`, `/my-courses/:id` | `courses`, `courses/{id}/sections`, `…/lectures`, `…/reviews`, `…/questions`, `…/questions/{qid}/replies` | `courses/{id}/…` + Cloudflare Stream |
 | Instructors | `/instructors`, `/instructors/:id` | `/admin/instructors`, `/admin/instructor-profiles`, `/admin/instructor-profiles/:id` | `instructors`, `users` (where role=instructor) | — |
-| Songbooks | `/songbooks`, `/songbooks/:id` | `/admin/songbooks`, `/admin/songbooks/:id` | `songbooks`, `songbooks/{id}/reviews` | `songbooks/{id}/…` |
+| Songbooks (deep-link only — **not in bottom nav**) | `/songbooks`, `/songbooks/:id` (pushed above the shell) | `/admin/songbooks`, `/admin/songbooks/:id` | `songbooks`, `songbooks/{id}/reviews` | `songbooks/{id}/…` |
 | Learning paths | `/learning-paths/:id` | `/admin/learning-paths`, `/admin/learning-paths/:id` | `learning_paths/{id}` | `learning_paths/{id}/cover/…` |
 | Lecture player | `/courses/:id/lectures/:lectureId?at=N` | — | `courses/{id}/sections/{sid}/lectures/{lid}`, `users/{uid}/courseProgress`, `users/{uid}/notes`, `…/questions` | Cloudflare HLS, local downloads |
 | Notes | `/profile/notes` | — | `users/{uid}/notes/{noteId}` | — |
@@ -286,8 +286,11 @@ This avoids hanging on captive-portal Wi-Fi and gives the UI a deterministic off
 | Profile + Settings | `/profile`, `/profile/settings`, `/profile/settings/notifications`, `/profile/delete-account` | — | `users/{uid}` | — |
 | Reviews | (mounted in course detail) | — | `courses/{id}/reviews/{userId}` | — |
 | Legal | `/legal/:slug` | — | — | Bundled MD assets |
+| My learning | `/profile/my-learning` | — | `users/{uid}/courseProgress` (rollup reuse) | — |
 | Analytics | — | `/admin/analytics` | `users`, `enrollments`, `courses` (admin-scoped reads) | — |
 | Landing-page CMS | — | `/admin/landing-page` | `site_content/landing` | — |
+| Instructor revenue | — | `/my-revenue`, `/my-students` | `transactions` (own), `enrollments` (own course), `users/{uid}/courseProgress` | — |
+| Admin revenue | — | `/admin/transactions`, `/admin/payouts` | `transactions`, `payouts` | — |
 | Cloud Functions | — | — | reads/writes across the above | FCM, Cloudflare API |
 
 ---
@@ -1023,6 +1026,8 @@ A second `MaterialApp.router` mounted from `lib/main_admin.dart` → `lib/bootst
 |---|---|---|
 | Dashboard | Instructor + Admin | `/` |
 | My Courses | Instructor + Admin | `/my-courses`, `/my-courses/:id` (editor) |
+| My Revenue | Instructor + Admin | `/my-revenue` — own-instructor KPIs + recent transactions + Export CSV |
+| My Students | Instructor + Admin | `/my-students` — own enrollments grouped by course + Message students (broadcast) + Export CSV |
 | All Courses | Admin only | `/admin/courses` |
 | Applications | Admin only | `/admin/applications` |
 | Instructors (active) | Admin only | `/admin/instructors` |
@@ -1032,7 +1037,32 @@ A second `MaterialApp.router` mounted from `lib/main_admin.dart` → `lib/bootst
 | Subscriptions | Admin only | `/admin/subscriptions` |
 | Notifications | Admin only | `/admin/notifications` |
 | Analytics | Admin only | `/admin/analytics` |
+| Transactions | Admin only | `/admin/transactions` — table + status filter + per-row Refund |
+| Payouts | Admin only | `/admin/payouts` — list + Mark paid (bookkeeping only) |
 | Landing-page CMS | Admin only | `/admin/landing-page` |
+
+### Instructor revenue & student management
+
+Udemy-style revenue + students surface on the admin web portal. Full
+spec in `docs/instructor_revenue.md`. Highlights:
+
+- **Two new Firestore collections** — `transactions` (paid / refunded
+  purchase records, masked `last4` only — never full card data) and
+  `payouts` (periodic per-instructor bookkeeping; `pending` → `paid`).
+- **Privacy enforced server-side.** Firestore rules restrict
+  `transactions` reads to `studentUid == uid || instructorId == uid
+  || isAdmin()`. Instructors literally cannot read another
+  instructor's purchases.
+- **Refund flow.** Admin clicks Refund on `/admin/transactions` →
+  `processRefund` Cloud Function flips status, cancels the
+  enrollment, notifies the student via inbox + push. v1 is
+  bookkeeping-only — process the storefront refund out-of-band.
+- **Instructor → students broadcast.** "Message students" on
+  `/my-students` calls `instructorBroadcast` which server-side
+  resolves the enrolled-student list (instructor never sees emails or
+  FCM tokens) and fans out via the existing `notifyUser` helper.
+- **In-browser CSV download** on every page — pure Dart `buildCsv`
+  helper + `dart:html` Blob URL trigger (`csv_export.dart`).
 
 ### Course editor — hit-test history
 
@@ -1124,7 +1154,11 @@ Located at `functions/`. TypeScript, Node 20, deployed via `firebase deploy --on
 | `onCoursePriceDrop` | Firestore | `onDocumentUpdated('courses/{id}')` | Notify wishlisters when `priceTier` rank drops |
 | `onCourseQuestionCreated` | Firestore | `onDocumentCreated('courses/{cid}/sections/{sid}/lectures/{lid}/questions/{qid}')` | DM the course instructor |
 | `deleteAccount` | Callable | `onCall` | Cascade-delete user's data + Auth record (see [§33](#33-account-deletion--legal-docs)) |
-| `resolveStreamPlayback` | Callable | `onCall({secrets: [CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID]})` | Resolve a Cloudflare Stream video UID to HLS + DASH URLs |
+| `resolveStreamPlayback` | Callable | `onCall({secrets: [CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID]})` | Resolve a Cloudflare Stream video UID to HLS + DASH URLs. **No auth required** in v1 (guest-browse mode for preview lectures); paywall enforcement is client-side via `BuyCourseButton` + `isAccessible` on the lecture tile |
+| `createCloudflareUpload` | Callable | `onCall({secrets: [CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID]})` | Instructor/admin only. Mints a one-time Cloudflare Stream Direct-Creator-Upload URL + UID. The admin course editor uses it to upload video files straight to Cloudflare — the API token never leaves the server. See [§25](#25-video-pipeline-cloudflare-stream) |
+| `processRefund` | Callable | `onCall` (admin role required) | Flip `transactions/{id}.status = 'refunded'`, cancel the matching enrollment, notify the student via inbox + push. v1 is bookkeeping-only — no storefront refund integration. See `docs/instructor_revenue.md` |
+| `markPayoutPaid` | Callable | `onCall` (admin role required) | Flip `payouts/{id}.status = 'paid'`, stamp `paidAt` + `paidByUid` + `payoutMethod`. v1 bookkeeping-only — process the actual transfer out-of-band |
+| `instructorBroadcast` | Callable | `onCall` (instructor or admin) | Fan out a push + inbox row to every student enrolled in the caller's course. Server-side cross-check that the caller owns the course; admin bypasses ownership. Powers the "Message students" button on `/my-students` |
 
 ### Shared helpers
 
@@ -1281,7 +1315,10 @@ Read access:
 
 - **Public**: `courses`, `courses/*/sections`, `…/lectures`, `…/reviews`, `…/questions`, `…/questions/{qid}/replies`, `instructors`, `songbooks`, `songbooks/*/reviews`, `learning_paths`, `site_content/{slug}`.
 - **Owner only**: `users/{userId}/{notifications,wishlist,notes,courseProgress,…}`.
-- **Owner or admin**: `users/{userId}`, `instructor_applications/{userId}`, `enrollments/{id}`.
+- **Owner, owning-instructor, or admin**: `enrollments/{id}` (instructor branch uses a `get(courses/{courseId})` cross-reference).
+- **Owner or admin**: `users/{userId}`, `instructor_applications/{userId}`.
+- **Owning student, owning instructor, or admin**: `transactions/{txnId}` — reads gated by `studentUid == uid || instructorId == uid || isAdmin()`. Writes are server-only (all mutations funnel through `processRefund` callable for audit trail).
+- **Owning instructor or admin**: `payouts/{payoutId}` — reads gated by `instructorUid == uid || isAdmin()`. Writes admin-only.
 - **Admin only**: `notification_broadcasts`.
 
 Write access:
@@ -1402,9 +1439,14 @@ Track changes in `docs/go_live_roadmap.md`. Snapshot:
 | P2-5 | Learning paths | `learning_paths.md` |
 | P2-6 | Practice tools (metronome + tuner) | `practice_tools.md` |
 | P2-9 | Revenue + cohort dashboard | `analytics.md` |
-| Extra | Dynamic landing-page CMS | `site_content_cms.md` |
+| Extra | Dynamic landing-page CMS (now 12 sections incl. Become-an-instructor + Featured courses live query) | `site_content_cms.md` |
 | Extra | Admin instructor profile CRUD | — |
-| Push | 3 → 5 Cloud Functions; inbox mirror; price-drop; Q&A | `push_notifications.md` |
+| Extra | Instructor revenue & student management (Udemy-style) — read-only revenue, refund-via-bookkeeping, payouts table, broadcast | `instructor_revenue.md` |
+| Extra | Cloudflare Stream direct-creator-upload (browse video file in admin → auto-fill UID) | `cloudflare_stream.md` |
+| Extra | Guest-browse mode — Splash → Onboarding → Login (skippable, with close-X) → Home. Per-user routes gated via `_requiresAuth`. Action-level guest gates on BuyCourse, Bookmark, Reviews, Q&A, Notes. Preview lectures playable for guests | — |
+| Extra | "My learning" page — list every course with progress | — |
+| Extra | Songbooks moved out of bottom nav (still deep-linkable) | — |
+| Push | 3 → 5 → **11** Cloud Functions; inbox mirror; price-drop; Q&A; refund; broadcast; mark-paid; Cloudflare upload | `push_notifications.md` |
 
 ### Not yet shipped (key gaps)
 
@@ -1436,7 +1478,8 @@ Per-feature deep-dives:
 |---|---|
 | [`admin_portal.md`](admin_portal.md) | Admin portal architecture, Firestore + Storage rules, build/deploy, first-admin bootstrap |
 | [`analytics.md`](analytics.md) | Revenue + cohort dashboard data flow, valuation, scaling escape hatch |
-| [`cloudflare_stream.md`](cloudflare_stream.md) | Cloudflare Stream integration, token hygiene, signed URLs |
+| [`cloudflare_stream.md`](cloudflare_stream.md) | Cloudflare Stream integration, token hygiene, signed URLs, direct-creator-upload via `createCloudflareUpload` |
+| [`instructor_revenue.md`](instructor_revenue.md) | Udemy-style instructor revenue + student management — `transactions`, `payouts`, `processRefund`, `instructorBroadcast`, `markPayoutPaid` |
 | [`account_deletion_and_legal.md`](account_deletion_and_legal.md) | P0-2 + P0-3 — deletion cascade, legal renderer |
 | [`app_rating_prompt.md`](app_rating_prompt.md) | P1-12 rating-sheet gating |
 | [`iap_setup.md`](iap_setup.md) | Per-course IAP store setup |
@@ -1540,4 +1583,4 @@ final fooNotifierProvider =
 
 ---
 
-**Last verified:** 2026-06-10. This spec was rebuilt from every doc under `docs/` and cross-checked against `pubspec.yaml`, `firebase.json`, `functions/src/index.ts`, `firestore.rules`, and the route name registries. When in doubt, the code is newer than the spec — run `git log -- docs/technical_specification.md` to see when this was last touched, and `git log --since="<that date>" -- lib/ functions/` to see what's drifted.
+**Last verified:** 2026-06-13. This spec was refreshed against `pubspec.yaml`, `firebase.json` (two-target hosting: landing + admin), `functions/src/index.ts` (11 functions), `firestore.rules` (incl. transactions + payouts), `shell_scaffold.dart` (4-item bottom nav), `app_router.dart` (four-branch redirect with guest-browse mode + `_requiresAuth` allow-list), and every doc under `docs/`. When in doubt, the code is newer than the spec — run `git log -- docs/technical_specification.md` to see when this was last touched, and `git log --since="<that date>" -- lib/ functions/` to see what's drifted.

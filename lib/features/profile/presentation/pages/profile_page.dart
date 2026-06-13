@@ -82,6 +82,17 @@ class ProfilePage extends ConsumerWidget {
 
         // ── User-scoped tiles (hidden for guests) ─────────────────
         if (!isGuest) ...[
+          // "My learning" is the most-tapped tile on Udemy-style apps —
+          // give it pole position, above Subscription.
+          ListTile(
+            leading: const Icon(Icons.play_circle_outline),
+            title: const Text('My learning'),
+            subtitle: const Text(
+              'Resume any course you have progress on',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.pushNamed(RouteNames.myLearning),
+          ),
           ListTile(
             leading: const Icon(Icons.workspace_premium_outlined),
             title: const Text('Subscription'),

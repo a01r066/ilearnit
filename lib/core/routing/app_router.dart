@@ -16,6 +16,7 @@ import '../../features/courses/presentation/pages/lecture_player_page.dart';
 import '../../features/downloads/presentation/pages/downloads_page.dart';
 import '../../features/learning_paths/presentation/pages/learning_path_detail_page.dart';
 import '../../features/notes/presentation/pages/notes_page.dart';
+import '../../features/progress/presentation/pages/my_learning_page.dart';
 import '../../features/practice/presentation/pages/practice_page.dart';
 import '../../features/qa/presentation/pages/question_thread_page.dart';
 import '../../features/wishlist/presentation/pages/wishlist_page.dart';
@@ -349,6 +350,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                     builder: (_, __) => const NotesPage(),
                   ),
                   GoRoute(
+                    path: RoutePaths.myLearning,
+                    name: RouteNames.myLearning,
+                    builder: (_, __) => const MyLearningPage(),
+                  ),
+                  GoRoute(
                     path: RoutePaths.subscription,
                     name: RouteNames.subscription,
                     builder: (_, __) => const SubscriptionPage(),
@@ -399,6 +405,7 @@ bool _requiresAuth(String loc) {
     '/profile/subscription/checkout',
     '/profile/wishlist',
     '/profile/notes',
+    '/profile/my-learning',
     '/profile/delete-account',
     '/profile/settings/notifications',
   };
