@@ -9,6 +9,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../moderation/domain/entities/report_content_type.dart';
+import '../../../moderation/presentation/providers/moderation_providers.dart';
+import '../../../moderation/presentation/widgets/ugc_overflow_menu.dart';
 import '../../data/models/course_question_model.dart';
 import '../providers/qa_keys.dart';
 import '../providers/qa_providers.dart';
@@ -100,7 +103,13 @@ class LectureQASection extends ConsumerWidget {
             ),
           ),
           data: (items) {
-            if (items.isEmpty) {
+            // Hide questions from blocked authors.
+            final blocked = ref.watch(blockedUserIdsProvider).value ??
+                const <String>{};
+            final visible = blocked.isEmpty
+                ? items
+                : items.where((q) => !blocked.contains(q.userId)).toList();
+            if (visible.isEmpty) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Text(
@@ -113,12 +122,15 @@ class LectureQASection extends ConsumerWidget {
                 ),
               );
             }
-            final preview = items.take(maxPreview).toList();
+            final preview = visible.take(maxPreview).toList();
             return Column(
               children: [
                 for (var i = 0; i < preview.length; i++) ...[
                   _QuestionRow(
                     question: preview[i],
+                    courseId: courseId,
+                    sectionId: sectionId,
+                    lectureId: lectureId,
                     onTap: () => context.pushNamed(
                       RouteNames.questionThread,
                       pathParameters: {
@@ -132,11 +144,11 @@ class LectureQASection extends ConsumerWidget {
                   if (i != preview.length - 1)
                     const Divider(height: 16),
                 ],
-                if (items.length > maxPreview) ...[
+                if (visible.length > maxPreview) ...[
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed: () {/* future: full list page */},
-                    child: Text(t.qaSeeAll(items.length)),
+                    child: Text(t.qaSeeAll(visible.length)),
                   ),
                 ],
               ],
@@ -151,10 +163,19 @@ class LectureQASection extends ConsumerWidget {
 /// One question row in the compact section. Routes to the thread page
 /// on tap.
 class _QuestionRow extends StatelessWidget {
-  const _QuestionRow({required this.question, required this.onTap});
+  const _QuestionRow({
+    required this.question,
+    required this.onTap,
+    required this.courseId,
+    required this.sectionId,
+    required this.lectureId,
+  });
 
   final CourseQuestionModel question;
   final VoidCallback onTap;
+  final String courseId;
+  final String sectionId;
+  final String lectureId;
 
   @override
   Widget build(BuildContext context) {
@@ -194,6 +215,17 @@ class _QuestionRow extends StatelessWidget {
                             color: context.colors.onSurfaceVariant,
                           ),
                         ),
+                      UgcOverflowMenu(
+                        contentType: ReportContentType.question,
+                        contentId: question.id,
+                        contentPath:
+                            'courses/$courseId/sections/$sectionId/lectures/$lectureId/questions/${question.id}',
+                        contentSnapshot: question.body,
+                        authorId: question.userId,
+                        authorName: question.userName,
+                        courseId: courseId,
+                        lectureId: lectureId,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),

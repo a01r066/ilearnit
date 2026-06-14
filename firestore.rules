@@ -26,6 +26,13 @@ service cloud.firestore {
         && (role() == 'instructor' || role() == 'admin')
         && !isSuspended();
     }
+    function isModerator() {
+      // Distinct trust level used by the UGC moderation surfaces.
+      // Admins are implicitly moderators.
+      return isSignedIn()
+        && (role() == 'moderator' || role() == 'admin')
+        && !isSuspended();
+    }
 
     // ============================================================
     // users/{userId}
@@ -91,6 +98,41 @@ service cloud.firestore {
       match /notes/{noteId} {
         allow read, write: if isSignedIn() && uid() == userId;
       }
+
+      // --- Per-user block list -----------------------------------------
+      // users/{uid}/blocks/{blockedUid} — private to the owner. Used by
+      // the mobile client to filter UGC lists. No admin access (block
+      // lists are private; no business reason for staff to inspect).
+      match /blocks/{blockedUid} {
+        allow read, write: if isSignedIn() && uid() == userId;
+      }
+    }
+
+    // ============================================================
+    // reports/{reportId} — UGC moderation queue
+    // ============================================================
+    //
+    // Visibility: moderator + admin only. Any signed-in user may
+    // submit a report against any other user's content.
+    //
+    // Mutations after creation are moderator-only (resolve / dismiss).
+    // The aggregate counter doc `reports/_aggregates` is maintained by
+    // the `onReportCreated` / `onReportResolved` Cloud Functions
+    // (Admin SDK bypasses rules).
+    match /reports/{reportId} {
+      allow read: if isModerator();
+
+      // Submitter must be the signed-in user and the report must enter
+      // the queue in `open` state.
+      allow create: if isSignedIn()
+        && request.resource.data.reporterId == uid()
+        && request.resource.data.status == 'open';
+
+      // Only moderators can resolve / dismiss / re-open.
+      allow update: if isModerator();
+
+      // Deletes are admin-only (full audit-trail by default).
+      allow delete: if isAdmin();
     }
 
     // ============================================================

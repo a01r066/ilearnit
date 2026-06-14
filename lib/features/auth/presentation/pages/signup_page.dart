@@ -29,6 +29,11 @@ class _SignupPageState extends ConsumerState<SignupPage> {
   final _password = TextEditingController();
   final _confirm = TextEditingController();
   bool _obscure = true;
+  // Apple App Review 1.2 + Google Play UGC require explicit
+  // affirmative consent before account creation. Submit is disabled
+  // until the user checks the box; the agreed version is stamped on
+  // the user doc during signup via `kCurrentEulaVersion`.
+  bool _agreed = false;
 
   @override
   void dispose() {
@@ -41,6 +46,19 @@ class _SignupPageState extends ConsumerState<SignupPage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!_agreed) {
+      // Defensive — button is also disabled when _agreed is false. This
+      // branch fires when an autofill-driven enter-key press skips the
+      // gate.
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Please accept the Terms and Community Guidelines to continue.',
+          ),
+        ),
+      );
+      return;
+    }
     await ref.read(authNotifierProvider.notifier).signup(
           email: _email.text,
           password: _password.text,
@@ -152,9 +170,66 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       label: 'Confirmation',
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+                  // EULA / Community Guidelines acceptance — required
+                  // for App Store review (UGC apps must collect
+                  // affirmative consent before account creation).
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Checkbox(
+                        value: _agreed,
+                        onChanged: isLoading
+                            ? null
+                            : (v) => setState(() => _agreed = v ?? false),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              const Text('I agree to the '),
+                              GestureDetector(
+                                onTap: () => context.pushNamed(
+                                  RouteNames.legal,
+                                  pathParameters: {'slug': 'terms'},
+                                ),
+                                child: Text(
+                                  'Terms',
+                                  style: TextStyle(
+                                    color: context.colors.primary,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                              const Text(' and '),
+                              GestureDetector(
+                                onTap: () => context.pushNamed(
+                                  RouteNames.legal,
+                                  pathParameters: {'slug': 'community'},
+                                ),
+                                child: Text(
+                                  'Community Guidelines',
+                                  style: TextStyle(
+                                    color: context.colors.primary,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                              const Text(
+                                '. I will not post abusive, illegal, '
+                                'or objectionable content.',
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   FilledButton(
-                    onPressed: isLoading ? null : _submit,
+                    onPressed: (isLoading || !_agreed) ? null : _submit,
                     child: isLoading
                         ? const SizedBox(
                             height: 20,

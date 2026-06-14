@@ -123,6 +123,21 @@ class ProfilePage extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.pushNamed(RouteNames.notes),
           ),
+          // Moderator triage queue. Only rendered if the signed-in
+          // user's role is moderator or admin — gated by the deep-link
+          // check inside ModeratorReportsPage as well, but hiding the
+          // tile for non-moderators keeps the profile uncluttered.
+          // `user!` is safe here — this block is inside `if (!isGuest)`
+          // which sets `isGuest = user == null`. The local-variable
+          // null-check doesn't flow-promote `user`, so we bang it.
+          if (user!.role.isModerator)
+            ListTile(
+              leading: const Icon(Icons.flag_outlined),
+              title: const Text('Moderation queue'),
+              subtitle: const Text('Triage UGC reports'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(RouteNames.moderator),
+            ),
         ],
 
         // ── Public tiles (visible to both guests + signed-in users) ─

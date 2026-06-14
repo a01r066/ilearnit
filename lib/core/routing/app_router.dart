@@ -24,6 +24,7 @@ import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/instructors/presentation/pages/instructor_detail_page.dart';
 import '../../features/instructors/presentation/pages/instructors_page.dart';
 import '../../features/legal/presentation/pages/legal_document_page.dart';
+import '../../features/moderation/presentation/pages/moderator_reports_page.dart';
 import '../../features/onboarding/presentation/pages/onboarding_page.dart';
 import '../../features/profile/presentation/pages/delete_account_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
@@ -191,6 +192,17 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               LegalDocument.privacyPolicy;
           return LegalDocumentPage(document: doc);
         },
+      ),
+      // ----- Moderator queue --------------------------------------------
+      // Top-level above the shell so it feels modal (profile entry pushes
+      // a full-screen page, not a tab swap). Gated by `_requiresAuth`
+      // below; the page itself adds an `isModerator` check so a regular
+      // student can't reach the queue even via deep link.
+      GoRoute(
+        path: RoutePaths.moderator,
+        name: RouteNames.moderator,
+        parentNavigatorKey: _rootKey,
+        builder: (_, __) => const ModeratorReportsPage(),
       ),
       // ----- Songbooks (no longer a bottom-nav tab) ---------------------
       // Kept reachable by direct URL + search deep-links. Pushed above
@@ -426,6 +438,10 @@ bool _requiresAuth(String loc) {
     // (reads users/{uid}/courseProgress) so guests hitting the tab
     // get bounced to /login.
     '/my-learning',
+    // Moderator queue is gated by role; deep-linking guests must
+    // sign in first so we know who they are before the per-page
+    // role check runs.
+    '/moderator',
   };
   if (protected.contains(loc)) return true;
   // Notifications inbox is per-user.

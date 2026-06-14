@@ -26,6 +26,10 @@ abstract class UserModel with _$UserModel {
     String? skillLevel,
     @Default('student') String role,
     @Default(false) bool isSuspended,
+    /// Latest EULA / Terms-of-Service version this user has accepted.
+    /// 0 = never accepted (legacy users — re-prompt). Compared against
+    /// `kCurrentEulaVersion` to drive the re-prompt flow.
+    @Default(0) int eulaAcceptedVersion,
     @TimestampConverter() DateTime? createdAt,
   }) = _UserModel;
 
@@ -56,6 +60,7 @@ abstract class UserModel with _$UserModel {
         skillLevel: skillLevel,
         role: UserRole.fromId(role),
         isSuspended: isSuspended,
+        eulaAcceptedVersion: eulaAcceptedVersion,
         createdAt: createdAt,
       );
 }

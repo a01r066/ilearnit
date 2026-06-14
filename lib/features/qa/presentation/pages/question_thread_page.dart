@@ -10,6 +10,9 @@ import '../../../../core/utils/extensions.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../courses/presentation/providers/courses_providers.dart';
+import '../../../moderation/domain/entities/report_content_type.dart';
+import '../../../moderation/presentation/providers/moderation_providers.dart';
+import '../../../moderation/presentation/widgets/ugc_overflow_menu.dart';
 import '../../data/models/course_question_model.dart';
 import '../../data/models/course_question_reply_model.dart';
 import '../providers/qa_form_state.dart';
@@ -122,7 +125,12 @@ class _QuestionThreadPageState extends ConsumerState<QuestionThreadPage> {
                         child: Text(t.qaThreadMissing),
                       );
                     }
-                    return _QuestionCard(question: q);
+                    return _QuestionCard(
+                      question: q,
+                      courseId: widget.courseId,
+                      sectionId: widget.sectionId,
+                      lectureId: widget.lectureId,
+                    );
                   },
                 ),
                 const SizedBox(height: 24),
@@ -143,7 +151,18 @@ class _QuestionThreadPageState extends ConsumerState<QuestionThreadPage> {
                     style: TextStyle(color: context.colors.error),
                   ),
                   data: (replies) {
-                    if (replies.isEmpty) {
+                    // Hide replies from blocked authors. We watch in
+                    // build() rather than the per-tile widget so the
+                    // empty-state copy is accurate.
+                    final blocked =
+                        ref.watch(blockedUserIdsProvider).value ??
+                            const <String>{};
+                    final visible = blocked.isEmpty
+                        ? replies
+                        : replies
+                            .where((r) => !blocked.contains(r.userId))
+                            .toList();
+                    if (visible.isEmpty) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         child: Text(
@@ -156,8 +175,14 @@ class _QuestionThreadPageState extends ConsumerState<QuestionThreadPage> {
                     }
                     return Column(
                       children: [
-                        for (final r in replies) ...[
-                          _ReplyTile(reply: r),
+                        for (final r in visible) ...[
+                          _ReplyTile(
+                            reply: r,
+                            courseId: widget.courseId,
+                            sectionId: widget.sectionId,
+                            lectureId: widget.lectureId,
+                            questionId: widget.questionId,
+                          ),
                           const SizedBox(height: 12),
                         ],
                       ],
@@ -201,8 +226,16 @@ class _QuestionThreadPageState extends ConsumerState<QuestionThreadPage> {
 // ---------- Question card -------------------------------------------------
 
 class _QuestionCard extends StatelessWidget {
-  const _QuestionCard({required this.question});
+  const _QuestionCard({
+    required this.question,
+    required this.courseId,
+    required this.sectionId,
+    required this.lectureId,
+  });
   final CourseQuestionModel question;
+  final String courseId;
+  final String sectionId;
+  final String lectureId;
 
   @override
   Widget build(BuildContext context) {
@@ -241,6 +274,17 @@ class _QuestionCard extends StatelessWidget {
                     color: context.colors.onSurfaceVariant,
                   ),
                 ),
+              UgcOverflowMenu(
+                contentType: ReportContentType.question,
+                contentId: question.id,
+                contentPath:
+                    'courses/$courseId/sections/$sectionId/lectures/$lectureId/questions/${question.id}',
+                contentSnapshot: question.body,
+                authorId: question.userId,
+                authorName: question.userName,
+                courseId: courseId,
+                lectureId: lectureId,
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -257,8 +301,18 @@ class _QuestionCard extends StatelessWidget {
 // ---------- Reply tile ----------------------------------------------------
 
 class _ReplyTile extends StatelessWidget {
-  const _ReplyTile({required this.reply});
+  const _ReplyTile({
+    required this.reply,
+    required this.courseId,
+    required this.sectionId,
+    required this.lectureId,
+    required this.questionId,
+  });
   final CourseQuestionReplyModel reply;
+  final String courseId;
+  final String sectionId;
+  final String lectureId;
+  final String questionId;
 
   @override
   Widget build(BuildContext context) {
@@ -296,6 +350,17 @@ class _ReplyTile extends StatelessWidget {
                         color: context.colors.onSurfaceVariant,
                       ),
                     ),
+                  UgcOverflowMenu(
+                    contentType: ReportContentType.answer,
+                    contentId: reply.id,
+                    contentPath:
+                        'courses/$courseId/sections/$sectionId/lectures/$lectureId/questions/$questionId/replies/${reply.id}',
+                    contentSnapshot: reply.body,
+                    authorId: reply.userId,
+                    authorName: reply.userName,
+                    courseId: courseId,
+                    lectureId: lectureId,
+                  ),
                 ],
               ),
               const SizedBox(height: 6),

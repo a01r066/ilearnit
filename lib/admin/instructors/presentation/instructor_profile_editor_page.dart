@@ -28,6 +28,10 @@ class _InstructorProfileEditorPageState
   final _years = TextEditingController();
   final _photoUrl = TextEditingController();
   final _specialties = TextEditingController();
+  // Email — used by the moderator queue scoping and analytics. Drifts
+  // independently from `users/{uid}.email` if the instructor wants a
+  // different public-facing address.
+  final _email = TextEditingController();
   final _website = TextEditingController();
   final _facebook = TextEditingController();
   final _twitter = TextEditingController();
@@ -54,6 +58,7 @@ class _InstructorProfileEditorPageState
     _years.dispose();
     _photoUrl.dispose();
     _specialties.dispose();
+    _email.dispose();
     _website.dispose();
     _facebook.dispose();
     _twitter.dispose();
@@ -70,6 +75,7 @@ class _InstructorProfileEditorPageState
     _years.text = m.yearsExperience?.toString() ?? '';
     _photoUrl.text = m.photoUrl;
     _specialties.text = m.specialties.join(', ');
+    _email.text = m.email ?? '';
     _website.text = m.websiteUrl ?? '';
     _facebook.text = m.facebookUrl ?? '';
     _twitter.text = m.twitterUrl ?? '';
@@ -91,6 +97,7 @@ class _InstructorProfileEditorPageState
         photoUrl: _photoUrl.text.trim(),
         primaryInstrument: _primaryInstrument,
         specialties: _splitCsv(_specialties.text),
+        email: _emptyToNull(_email.text),
         websiteUrl: _emptyToNull(_website.text),
         facebookUrl: _emptyToNull(_facebook.text),
         twitterUrl: _emptyToNull(_twitter.text),
@@ -163,6 +170,14 @@ class _InstructorProfileEditorPageState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      // Read-only Auth UID badge. The doc id IS the
+                      // Firebase Auth UID under the post-2026-06
+                      // schema invariant — see InstructorModel
+                      // dartdoc. Displayed so the admin can confirm
+                      // (and copy / paste) without exposing it as an
+                      // editable field.
+                      _UidBadge(uid: m.id),
+                      const SizedBox(height: 12),
                       _photoPreview(context),
                       const SizedBox(height: 12),
                       _Field(
@@ -171,6 +186,15 @@ class _InstructorProfileEditorPageState
                           hint:
                               'https://i.pravatar.cc/320?u=… or Firebase Storage URL'),
                       _Field(label: 'Name', controller: _name),
+                      _Field(
+                        label: 'Email',
+                        controller: _email,
+                        hint:
+                            'Public-facing contact email. Mirrors '
+                            'users/{uid}.email on creation; you can let it '
+                            'drift if the instructor wants a different '
+                            'address shown publicly.',
+                      ),
                       _Field(
                           label: 'Tagline',
                           controller: _tagline,
@@ -395,6 +419,53 @@ class _Field extends StatelessWidget {
           border: const OutlineInputBorder(),
           isDense: true,
         ),
+      ),
+    );
+  }
+}
+
+/// Read-only display of the doc id (= Firebase Auth UID) with a tap
+/// hint so the admin can copy it. Not editable — under the
+/// `instructors/{uid}` schema invariant, changing this would mean
+/// "this profile now belongs to a different user," which is best
+/// modeled as Delete + Create.
+class _UidBadge extends StatelessWidget {
+  const _UidBadge({required this.uid});
+  final String uid;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest
+            .withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: theme.dividerColor),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.key_outlined,
+              size: 18, color: theme.colorScheme.onSurfaceVariant),
+          const SizedBox(width: 8),
+          Text(
+            'Auth UID',
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: SelectableText(
+              uid.isEmpty ? '(not set — profile not yet saved)' : uid,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontFamily: 'monospace',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

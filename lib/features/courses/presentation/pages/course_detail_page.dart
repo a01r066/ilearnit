@@ -125,11 +125,46 @@ class _Loaded extends ConsumerWidget {
                   style: Theme.of(context).textTheme.headlineLarge,
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  'Taught by ${course.instructorName}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).hintColor,
+                // "Taught by …" — the instructor name itself is a
+                // tappable link to /instructors/:id. Wrap (not Row) so
+                // long names break to a new line gracefully on narrow
+                // screens instead of overflowing.
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      'Taught by ',
+                      style:
+                          Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Theme.of(context).hintColor,
+                              ),
+                    ),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(4),
+                      onTap: () => context.pushNamed(
+                        RouteNames.instructorDetail,
+                        pathParameters: {'id': course.instructorId},
                       ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 2, vertical: 2),
+                        child: Text(
+                          course.instructorName,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                color:
+                                    Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.underline,
+                                decorationColor:
+                                    Theme.of(context).colorScheme.primary,
+                              ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 _StatsRow(course: course),

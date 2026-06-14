@@ -14,7 +14,11 @@ import '../../../../l10n/generated/app_localizations.dart';
 ///      `LegalDocumentPage(document: ...)`.
 enum LegalDocument {
   privacyPolicy,
-  termsOfService;
+  termsOfService,
+  // Distinct from ToS because the App Store + Play UGC guidelines want
+  // a separate, focused "what counts as objectionable content" doc
+  // surfaced at signup. Asset lives at assets/legal/community.md.
+  communityGuidelines;
 
   String get assetPath {
     switch (this) {
@@ -22,6 +26,8 @@ enum LegalDocument {
         return 'assets/legal/privacy_policy.md';
       case LegalDocument.termsOfService:
         return 'assets/legal/terms_of_service.md';
+      case LegalDocument.communityGuidelines:
+        return 'assets/legal/community.md';
     }
   }
 
@@ -32,6 +38,8 @@ enum LegalDocument {
         return t.legalPrivacyPolicyTitle;
       case LegalDocument.termsOfService:
         return t.legalTermsOfServiceTitle;
+      case LegalDocument.communityGuidelines:
+        return 'Community Guidelines';
     }
   }
 
@@ -42,6 +50,8 @@ enum LegalDocument {
         return 'privacy';
       case LegalDocument.termsOfService:
         return 'terms';
+      case LegalDocument.communityGuidelines:
+        return 'community';
     }
   }
 

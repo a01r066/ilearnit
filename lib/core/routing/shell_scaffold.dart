@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/mini_player/presentation/widgets/mini_player_bar.dart';
+import '../../features/moderation/eula/eula_reacceptance_gate.dart';
 
 /// The bottom-nav scaffold that wraps the four primary tabs.
 ///
@@ -51,9 +52,10 @@ class ShellScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: navigationShell,
-      bottomNavigationBar: Column(
+    return EulaReacceptanceGate(
+      child: Scaffold(
+        body: navigationShell,
+        bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Persistent mini-player above the bottom nav. Self-hides
@@ -74,6 +76,7 @@ class ShellScaffold extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

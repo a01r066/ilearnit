@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../features/auth/domain/entities/user_role.dart';
 import '../../../features/auth/presentation/providers/auth_providers.dart';
+import '../../../features/moderation/presentation/providers/moderation_providers.dart';
 import '../../routing/admin_route_names.dart';
 import '../providers/admin_providers.dart';
 
@@ -174,6 +175,11 @@ class AdminScaffold extends ConsumerWidget {
           path: AdminRoutes.payoutsPath,
         ),
         _NavItem(
+          label: 'Reports',
+          icon: Icons.flag_outlined,
+          path: AdminRoutes.reportsPath,
+        ),
+        _NavItem(
           label: 'Landing page',
           icon: Icons.web_outlined,
           path: AdminRoutes.landingPagePath,
@@ -314,7 +320,7 @@ class _SideNav extends StatelessWidget {
   }
 }
 
-class _NavTile extends StatelessWidget {
+class _NavTile extends ConsumerWidget {
   const _NavTile({
     required this.item,
     required this.selected,
@@ -325,9 +331,19 @@ class _NavTile extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final fg = selected ? theme.colorScheme.primary : theme.colorScheme.onSurface;
+
+    // Reports entry — render a live badge with the open-report count.
+    // Watching the badge provider only for this one path keeps the
+    // other 14 nav tiles cheap (no Firestore listener per tile).
+    Widget? trailing;
+    if (item.path == AdminRoutes.reportsPath) {
+      final count = ref.watch(openReportsCountProvider).value ?? 0;
+      if (count > 0) trailing = _Badge(count: count);
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: Material(
@@ -344,16 +360,44 @@ class _NavTile extends StatelessWidget {
               children: [
                 Icon(item.icon, color: fg, size: 20),
                 const SizedBox(width: 12),
-                Text(
-                  item.label,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: fg,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                Expanded(
+                  child: Text(
+                    item.label,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: fg,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                    ),
                   ),
                 ),
+                if (trailing != null) trailing,
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  const _Badge({required this.count});
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.error,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        count > 99 ? '99+' : '$count',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

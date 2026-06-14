@@ -1581,6 +1581,162 @@ final fooNotifierProvider =
 );
 ```
 
+## 36. UGC Moderation Kit
+
+Added in response to App Store Guideline 1.2 + Google Play UGC policy: every app surfacing user-generated content must collect affirmative consent, expose reporting, allow blocking, and resolve reports within 24 hours.
+
+**Domain — `lib/features/moderation/`**
+
+- `domain/entities/report.dart` — `Report` (freezed). Carries a snapshot of the reported content so moderators can still see what was reported even if the author deletes or edits the original. `domain/entities/report_reason.dart` enumerates the App-Store-aligned reason buckets (spam, harassment, hate speech, sexual content, violence, self-harm, misinformation, IP, other). `report_status.dart` covers `open / actionTaken / dismissed`. `report_content_type.dart` covers `review / question / answer / note` and adds a `.label` for UI strings.
+- `data/models/report_model.dart` — Firestore DTO with `fromDoc` + `toEntity`. Enums are stored as their stable `.id` strings (renaming Dart enum cases is a zero-migration change).
+- `data/datasources/reports_datasource.dart` — `submit(...)` (idempotent: a reporter re-flagging the same content returns the existing open id without writing a duplicate), `resolve(...)`, `watchOpen()`, `watchOpenForCourses(courseIds)`, `watchOpenCount()` (reads the aggregate counter).
+- `data/datasources/blocks_datasource.dart` — `block / unblock / watch` over `users/{uid}/blocks/{blockedUid}`. Doc-per-block (not an array) so the list grows without write-contention.
+- `presentation/providers/moderation_providers.dart` — `blockedUserIdsProvider` (stream of `Set<String>`), `openReportsProvider`, `openReportsCountProvider`, `openReportsForCoursesProvider`.
+- `presentation/widgets/ugc_overflow_menu.dart` — three-dots menu (Report / Block / Unblock). Self-hides on the viewer's own content; redirects guests to `/login`. Used inline on every UGC tile.
+- `presentation/widgets/report_content_sheet.dart` — modal bottom sheet collecting reason + optional notes.
+- `presentation/widgets/block_user_dialog.dart` — confirmation dialog.
+
+**Wired into UGC surfaces**
+
+- `course_reviews_section.dart` — `_ReviewTile` carries `UgcOverflowMenu`. The summary average is computed *after* filtering blocked authors out of the list so a blocked spammer's 5-star review doesn't inflate the rating.
+- `lecture_qa_section.dart` — `_QuestionRow` carries the menu. Empty-state copy switches once blocking has emptied the list.
+- `question_thread_page.dart` — `_QuestionCard` + `_ReplyTile` carry the menu, with content paths to the deep Firestore docs.
+- Notes are owner-only (`users/{uid}/notes/{noteId}`) — no reporting/blocking is needed since the viewer only sees their own.
+
+**Block filter semantics** — Retroactive: past AND future content from blocked authors disappears. Blocking is one-way + private: the blocked user is not notified, and the block list is owner-scoped (no admin read).
+
+**Firestore — `reports/{reportId}` + `users/{uid}/blocks/{blockedUid}`**
+
+`reports/` is a top-level global collection (so moderators can stream open reports with one query). Rules in `firestore.rules`:
+- Read: `isModerator()` (true for `moderator` or `admin`).
+- Create: signed-in user, `reporterId == uid`, `status == 'open'`.
+- Update: `isModerator()` only.
+- Delete: `isAdmin()` only (audit-trail by default).
+
+`users/{uid}/blocks/{blockedUid}` is owner-only — no admin read.
+
+**Composite indexes** (added to `firestore.indexes.json`):
+- `(status ASC, createdAt DESC)` — admin queue.
+- `(status ASC, courseId ASC, createdAt DESC)` — moderator scoped queue.
+- `(reporterId ASC, contentPath ASC, status ASC)` — the idempotency lookup in `submit()`.
+
+**Cloud Functions** — `onReportCreated` + `onReportResolved` in `functions/src/index.ts` keep `reports/_aggregates.openCount` in sync. The admin side-nav badge reads this doc; without the aggregate the badge would force a full collection scan on every page render.
+
+**Roles — extended `UserRole`**
+
+`student / instructor / moderator / admin`. The new `moderator` is a trust level distinct from admin: can triage UGC reports for the courses they own (or all reports if also an instructor of every course) without portal-level powers. `UserRole.isModerator` is `true` for moderator OR admin. `firestore.rules` has a parallel `isModerator()` helper.
+
+**Moderator surfaces**
+
+- Admin portal: `/admin/reports` (route name `AdminRoutes.reports`) — `AdminReportsPage`. Side-nav entry with live red badge driven by `openReportsCountProvider`. Three actions per card: Hide content (writes `hidden: true` on the original via `contentPath`), Ban author (writes `isSuspended: true` on the author's user doc), Dismiss. All three close the report atomically and stamp `reviewedBy / reviewedAt / resolutionNotes`.
+- In-app: `/moderator` (top-level above the shell, gated by `_requiresAuth` AND a per-page `isModerator` check) — `ModeratorReportsPage`. Admins get the unscoped queue; non-admin moderators get reports scoped to their owned courses via `coursesByInstructor` → `openReportsForCoursesProvider(courseIds)`.
+
+**EULA / Community Guidelines**
+
+- `features/moderation/eula/eula_version.dart` — `kCurrentEulaVersion` (int) + `kCurrentEulaPublishedLabel`. Bump the int when the policy materially changes.
+- `features/moderation/eula/eula_acceptance_service.dart` — writes `eulaAcceptedVersion` + `eulaAcceptedAt` to `users/{uid}`.
+- `UserModel` + `UserEntity` carry `eulaAcceptedVersion: int` (default 0 = legacy/unaccepted).
+- `SignupPage` — required checkbox ("I agree to the Terms and Community Guidelines…") gates the Create-account button. On submit, `auth_remote_datasource.signup()` stamps `eulaAcceptedVersion: kCurrentEulaVersion` into the new user doc.
+- `EulaReacceptanceGate` — wraps `ShellScaffold`. When the signed-in user's stored version is older than `kCurrentEulaVersion`, shows a non-dismissible bottom sheet that links to Terms + Community Guidelines and accepts the bump. One prompt per app session per user.
+- Community Guidelines doc — `assets/legal/community.md`, surfaced as `LegalDocument.communityGuidelines` at `/legal/community`.
+
+**Deploy checklist**
+
+1. Run `dart run build_runner build --delete-conflicting-outputs` to generate `report_model.g.dart`, `report.freezed.dart`, and the regenerated `user_model.g.dart` / `user_entity.freezed.dart` for the new EULA field.
+2. `firebase deploy --only firestore:rules,firestore:indexes` — rules add `isModerator()` + `reports/` block + `users/{uid}/blocks/` block; indexes add the three reports indexes.
+3. `firebase deploy --only functions:onReportCreated,functions:onReportResolved` — backed counter for the admin badge.
+4. To promote a user to moderator, set their `users/{uid}.role = 'moderator'` via the admin SDK or Firestore console — no admin UI is exposed today (intentional: the bar for moderator promotion is high enough that ad-hoc Firestore writes are appropriate).
+
 ---
 
-**Last verified:** 2026-06-13. This spec was refreshed against `pubspec.yaml`, `firebase.json` (two-target hosting: landing + admin), `functions/src/index.ts` (11 functions), `firestore.rules` (incl. transactions + payouts), `shell_scaffold.dart` (4-item bottom nav), `app_router.dart` (four-branch redirect with guest-browse mode + `_requiresAuth` allow-list), and every doc under `docs/`. When in doubt, the code is newer than the spec — run `git log -- docs/technical_specification.md` to see when this was last touched, and `git log --since="<that date>" -- lib/ functions/` to see what's drifted.
+## 37. Instructor schema refactor (2026-06)
+
+The instructor data model was simplified to a single schema invariant: **`instructors/{id}.id` equals the Firebase Auth UID**. The `instructors/{uid}` doc is the public-facing complement to `users/{uid}` (private auth + role). The two collections are joined by the shared key — no bridge field, no fallback query.
+
+This replaces the earlier setup that used auto-generated Firestore IDs for `instructors/` and a nullable `userId` field as a soft bridge. That setup caused recurring "Instructor not found" bugs because `course.instructorId` (set during course creation to the auth UID) never matched the auto-generated profile IDs, and the `userId` bridge was easy to forget.
+
+**The shape now.**
+
+```
+users/{uid}            ← auth + role + private fields
+instructors/{uid}      ← public profile (doc id IS the auth UID)
+courses/{cid}.instructorId == uid    ← direct point read against instructors/{uid}
+```
+
+**Promote-a-user flow.**
+
+There are three entry points that all converge on the same destination — `instructors/{uid}` with `.set(payload, {merge: true})`:
+
+1. **Cloud Function `onUserRoleChanged`** (in `functions/src/index.ts`). Fires when `users/{uid}.role` transitions to `'instructor'`. Materializes (or refreshes) `instructors/{uid}` seeded from the user's `displayName` / `email` / `photoUrl`. Idempotent. This is the long-term auto-creation path — admins shouldn't need to remember to click anything.
+
+2. **Per-row "Create profile" button** on the admin Instructors page (`AdminInstructorsPage`). Calls `AdminInstructorProfilesDataSource.createFromUser(uid, …)` then deep-links into the profile editor so the admin can immediately fill bio / tagline / socials. Used when the function trigger is suppressed (e.g. dev seeds, manual Firestore edits, or the Cloud Function hasn't been deployed yet).
+
+3. **Bulk "Sync all profiles" button** on the same page. Walks every user with `role == 'instructor'` and calls `createFromUser` for each. The recovery action for existing data — one click brings every instructor in line with the schema invariant.
+
+**Legacy auto-id migration.**
+
+Pre-refactor instructor docs use auto-generated Firestore IDs. The admin Instructor Profiles page surfaces a **"Migrate legacy profiles"** button that runs `AdminInstructorProfilesDataSource.migrateLegacyProfiles()`. For each doc whose id isn't already a canonical uid:
+
+  1. Use the legacy `userId` field if set.
+  2. Otherwise email-match against the `users` collection (case-insensitive fallback).
+  3. Otherwise strict displayName match.
+
+Resolved docs are copied to `instructors/{uid}` and the original deleted. The result dialog reports `Created` / `Already linked` / `Ambiguous` / `No match` / `Errored` so anything stuck is visible.
+
+**Consumer side — direct lookup.**
+
+`InstructorsDataSource.watchById(id)` is a single point read against `instructors/{id}`. No fallback query, no bridge field traversal. `instructorByIdProvider(id)` watches that stream. Mobile course-detail "Taught by …" pushes `/instructors/<course.instructorId>` which lands on `InstructorDetailPage`, which reads `instructors/{course.instructorId}` directly.
+
+**Admin editor — `userId` field removed.**
+
+The instructor profile editor (`InstructorProfileEditorPage`) no longer shows an "Auth user ID" text input. The doc id is rendered as a read-only `_UidBadge` (key icon + monospace selectable text) so the admin can confirm + copy it without being able to edit (because editing it would mean "this profile now belongs to a different user," which is best modeled as Delete + Create).
+
+**`InstructorModel` shape.**
+
+```
+required String id;       // == Firebase Auth UID
+String? email;            // public-facing contact (mirrors users/{uid}.email on create)
+String name;
+String photoUrl;
+String bio;
+String? tagline;
+String? primaryInstrument;
+List<String> specialties;
+int? yearsExperience;
+String? country;
+double rating;
+int reviewCount;
+int studentCount;
+DateTime? joinedAt;
+List<String> featuredCourseIds;
+String? websiteUrl;
+String? facebookUrl;
+String? twitterUrl;
+String? youtubeUrl;
+String? instagramUrl;
+```
+
+Field `userId` is removed.
+
+**Sample data alignment.**
+
+`sample_data/instructors.json` doc keys (`ins_001` … `ins_010`) double as the synthetic uids. A parallel `sample_data/users.json` was added containing one user doc per instructor (`role: 'instructor'`, displayName + email mirroring `instructors.json`). The seed script (`seed_firestore.js`) reads both and writes them under matching keys — so after a clean seed:
+
+  * Admin portal `/admin/instructors` lists all 10 instructor users.
+  * Admin portal `/admin/instructor-profiles` lists the same 10 profiles.
+  * Mobile `/instructors` shows the 10 public profiles.
+  * Mobile course detail "Taught by Antonio Vela" taps through to `instructors/ins_001` and resolves cleanly.
+
+`courses.json` already uses `instructorId: 'ins_XXX'` matching the keys — no changes needed.
+
+**Deploy checklist.**
+
+1. `dart run build_runner build --delete-conflicting-outputs` — regenerates freezed/json for the dropped `userId` field.
+2. `firebase deploy --only functions:onUserRoleChanged` — picks up the simpler `.set(merge: true)` implementation.
+3. Admin portal: **Instructor profiles → Migrate legacy profiles → Migrate** (only needed once in environments that had pre-refactor data).
+4. Admin portal: **Instructors → Sync all profiles → Sync** (catches any instructor user that the Cloud Function trigger hasn't fired for yet).
+5. Optional dev refresh: `cd sample_data && node seed_firestore.js --flavor dev --wipe` to regenerate the demo dataset against the new schema.
+
+---
+
+**Last verified:** 2026-06-14. This spec was refreshed against `pubspec.yaml`, `firebase.json` (two-target hosting: landing + admin), `functions/src/index.ts` (14 functions incl. onReportCreated + onReportResolved + onUserRoleChanged), `firestore.rules` (incl. transactions + payouts + reports + blocks), `shell_scaffold.dart` (4-item bottom nav, wrapped in EulaReacceptanceGate), `app_router.dart` (four-branch redirect with guest-browse mode + `_requiresAuth` allow-list incl. `/moderator`), the instructor schema invariant (`instructors/{uid}` mirrors `users/{uid}`), and every doc under `docs/`. When in doubt, the code is newer than the spec — run `git log -- docs/technical_specification.md` to see when this was last touched, and `git log --since="<that date>" -- lib/ functions/` to see what's drifted.

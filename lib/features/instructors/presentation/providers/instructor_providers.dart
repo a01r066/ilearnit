@@ -14,7 +14,9 @@ final instructorsListProvider = StreamProvider<List<InstructorModel>>(
   (ref) => ref.watch(instructorsDataSourceProvider).watchAll(),
 );
 
-/// Detail-page binding.
+/// Detail-page binding. The id is the user's Firebase Auth UID — same
+/// value `course.instructorId` stores. See [InstructorModel] for the
+/// schema invariant that makes this a direct doc read with no fallback.
 final instructorByIdProvider =
     StreamProvider.family.autoDispose<InstructorModel?, String>(
   (ref, id) => ref.watch(instructorsDataSourceProvider).watchById(id),

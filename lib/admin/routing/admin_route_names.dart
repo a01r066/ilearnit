@@ -33,6 +33,7 @@ class AdminRoutes {
   static const String landingPage = 'admin-landing-page';
   static const String transactions = 'admin-transactions';
   static const String payouts = 'admin-payouts';
+  static const String reports = 'admin-reports';
 
   // Path templates
   static const String loginPath = '/login';
@@ -59,4 +60,5 @@ class AdminRoutes {
   static const String landingPagePath = '/admin/landing-page';
   static const String transactionsPath = '/admin/transactions';
   static const String payoutsPath = '/admin/payouts';
+  static const String reportsPath = '/admin/reports';
 }

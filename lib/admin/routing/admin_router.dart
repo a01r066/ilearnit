@@ -29,6 +29,7 @@ import '../instructors/presentation/admin_instructor_profiles_page.dart';
 import '../instructors/presentation/instructor_profile_editor_page.dart';
 import '../site_content/presentation/pages/admin_landing_content_page.dart';
 import '../subscriptions/presentation/admin_subscriptions_page.dart';
+import '../moderation/presentation/admin_reports_page.dart';
 import '../shared/providers/admin_providers.dart';
 import '../shared/widgets/admin_scaffold.dart';
 import 'admin_route_names.dart';
@@ -195,6 +196,13 @@ final adminGoRouterProvider = Provider<GoRouter>((ref) {
             name: AdminRoutes.payouts,
             builder: (_, __) => const AdminPayoutsPage(),
           ),
+          // UGC moderation queue. Admin-only — already gated by the
+          // outer redirect (`_requiresAdmin`) below.
+          GoRoute(
+            path: AdminRoutes.reportsPath,
+            name: AdminRoutes.reports,
+            builder: (_, __) => const AdminReportsPage(),
+          ),
         ],
       ),
     ],
@@ -249,7 +257,12 @@ String? _redirect(Ref ref, String location) {
       }
       return null;
     case UserRole.student:
+    case UserRole.moderator:
       // Students belong on /apply or /pending only — never the dashboard.
+      // Moderators have no admin-portal powers either: their surface is
+      // the in-app `/moderator` route on the mobile app. If they
+      // somehow reach the admin host, treat them like a student so the
+      // portal stays focused on instructor + admin workflows.
       if (location == AdminRoutes.applyPath ||
           location == AdminRoutes.pendingPath) {
         return null;
@@ -268,6 +281,7 @@ bool _isAdminOnly(String location) =>
     location == AdminRoutes.subscriptionsPath ||
     location == AdminRoutes.transactionsPath ||
     location == AdminRoutes.payoutsPath ||
+    location == AdminRoutes.reportsPath ||
     location == AdminRoutes.analyticsPath ||
     location == AdminRoutes.landingPagePath ||
     location.startsWith(AdminRoutes.instructorProfilesPath);
@@ -278,6 +292,9 @@ String _landingFor(UserRole role) {
     case UserRole.instructor:
       return AdminRoutes.dashboardPath;
     case UserRole.student:
+    case UserRole.moderator:
+      // Moderators are not portal users — bounce to /apply alongside
+      // students. The mobile `/moderator` page is their actual surface.
       return AdminRoutes.applyPath;
   }
 }

@@ -24,6 +24,13 @@ class InstructorsDataSource {
       .snapshots()
       .map((s) => s.docs.map(InstructorModel.fromDoc).toList());
 
+  /// Live read of a single instructor profile.
+  ///
+  /// `id` is the user's Firebase Auth UID — same value
+  /// `course.instructorId` stores. The doc lookup is a single point
+  /// read with no fallback query because the `instructors/{uid}`
+  /// schema makes the bridge implicit. See [InstructorModel] dartdoc
+  /// for the schema invariant.
   Stream<InstructorModel?> watchById(String id) =>
       _instructors.doc(id).snapshots().map(
             (doc) => doc.exists ? InstructorModel.fromDoc(doc) : null,

@@ -9,6 +9,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../moderation/domain/entities/report_content_type.dart';
+import '../../../moderation/presentation/providers/moderation_providers.dart';
+import '../../../moderation/presentation/widgets/ugc_overflow_menu.dart';
 import '../../../purchases/presentation/providers/purchases_providers.dart';
 import '../../data/models/course_review_model.dart';
 import '../providers/reviews_providers.dart';
@@ -44,11 +47,21 @@ class CourseReviewsSection extends ConsumerWidget {
                 style: TextStyle(color: context.colors.error)),
           ),
           data: (list) {
-            final avg = _average(list);
+            // Drop reviews from blocked authors before computing
+            // averages OR rendering tiles. Keeps the count + stars in
+            // sync with what the viewer sees — otherwise hiding the
+            // 5-star review of a blocked spammer would still leave the
+            // summary inflated.
+            final blocked = ref.watch(blockedUserIdsProvider).value ??
+                const <String>{};
+            final visible = blocked.isEmpty
+                ? list
+                : list.where((r) => !blocked.contains(r.userId)).toList();
+            final avg = _average(visible);
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _Summary(average: avg, count: list.length),
+                _Summary(average: avg, count: visible.length),
                 const SizedBox(height: 16),
                 if (hasAccess)
                   _WriteReviewCta(
@@ -58,7 +71,7 @@ class CourseReviewsSection extends ConsumerWidget {
                 else
                   _AccessGateHint(),
                 const SizedBox(height: 16),
-                if (list.isEmpty)
+                if (visible.isEmpty)
                   Text(
                     'No reviews yet — be the first.',
                     style: context.textTheme.bodyLarge?.copyWith(
@@ -66,9 +79,9 @@ class CourseReviewsSection extends ConsumerWidget {
                     ),
                   )
                 else
-                  for (var i = 0; i < list.length; i++) ...[
-                    _ReviewTile(review: list[i]),
-                    if (i != list.length - 1) const Divider(height: 24),
+                  for (var i = 0; i < visible.length; i++) ...[
+                    _ReviewTile(review: visible[i]),
+                    if (i != visible.length - 1) const Divider(height: 24),
                   ],
               ],
             );
@@ -258,6 +271,18 @@ class _ReviewTile extends StatelessWidget {
                         color: context.colors.onSurfaceVariant,
                       ),
                     ),
+                  // Report / block menu. Self-hides when this is the
+                  // viewer's own review.
+                  UgcOverflowMenu(
+                    contentType: ReportContentType.review,
+                    contentId: review.id,
+                    contentPath:
+                        'courses/${review.courseId}/reviews/${review.id}',
+                    contentSnapshot: review.body,
+                    authorId: review.userId,
+                    authorName: review.userName,
+                    courseId: review.courseId,
+                  ),
                 ],
               ),
               const SizedBox(height: 4),

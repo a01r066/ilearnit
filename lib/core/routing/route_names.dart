@@ -65,6 +65,10 @@ class RouteNames {
 
   // My learning (within profile)
   static const String myLearning = 'my-learning';
+
+  // Moderator surface (top-level, opens above shell). Gated by
+  // UserRole.isModerator (true for moderator OR admin).
+  static const String moderator = 'moderator';
 }
 
 class RoutePaths {
@@ -133,4 +137,8 @@ class RoutePaths {
   // My learning — top-level bottom-nav tab (was nested under profile
   // until the Instructors tab was retired).
   static const String myLearning = '/my-learning';
+
+  // Moderator UGC triage surface — top-level above the shell so the
+  // Profile entry-point feels app-modal (not part of a tab stack).
+  static const String moderator = '/moderator';
 }

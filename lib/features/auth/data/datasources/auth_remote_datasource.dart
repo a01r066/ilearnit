@@ -11,6 +11,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../moderation/eula/eula_version.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../models/user_model.dart';
 
@@ -129,12 +130,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
     await user.updateDisplayName(displayName);
 
+    // Stamp the current EULA version on the new user doc. The
+    // signup page won't allow the form to submit without the
+    // checkbox toggled, so by the time we get here we know the
+    // user accepted the agreement that matches `kCurrentEulaVersion`.
     final model = UserModel(
       id: user.uid,
       email: user.email ?? email,
       displayName: displayName,
       photoUrl: user.photoURL,
       emailVerified: user.emailVerified,
+      eulaAcceptedVersion: kCurrentEulaVersion,
       createdAt: DateTime.now(),
     );
     await _users.doc(user.uid).set(model.toJson());

@@ -1,0 +1,112 @@
+{
+  "ins_001": {
+    "id": "ins_001",
+    "email": "antonio.vela@ilearnit.demo",
+    "displayName": "Antonio Vela",
+    "photoUrl": "https://i.pravatar.cc/320?u=ins_001",
+    "emailVerified": true,
+    "role": "instructor",
+    "isSuspended": false,
+    "eulaAcceptedVersion": 1,
+    "createdAt": "2023-05-10T00:00:00.000Z"
+  },
+  "ins_002": {
+    "id": "ins_002",
+    "email": "helena.rojas@ilearnit.demo",
+    "displayName": "Helena Rojas",
+    "photoUrl": "https://i.pravatar.cc/320?u=ins_002",
+    "emailVerified": true,
+    "role": "instructor",
+    "isSuspended": false,
+    "eulaAcceptedVersion": 1,
+    "createdAt": "2023-11-22T00:00:00.000Z"
+  },
+  "ins_003": {
+    "id": "ins_003",
+    "email": "marcus.reinhardt@ilearnit.demo",
+    "displayName": "Marcus Reinhardt",
+    "photoUrl": "https://i.pravatar.cc/320?u=ins_003",
+    "emailVerified": true,
+    "role": "instructor",
+    "isSuspended": false,
+    "eulaAcceptedVersion": 1,
+    "createdAt": "2023-05-09T00:00:00.000Z"
+  },
+  "ins_004": {
+    "id": "ins_004",
+    "email": "yuki.tanaka@ilearnit.demo",
+    "displayName": "Yuki Tanaka",
+    "photoUrl": "https://i.pravatar.cc/320?u=ins_004",
+    "emailVerified": true,
+    "role": "instructor",
+    "isSuspended": false,
+    "eulaAcceptedVersion": 1,
+    "createdAt": "2023-03-14T00:00:00.000Z"
+  },
+  "ins_005": {
+    "id": "ins_005",
+    "email": "sofia.ackermann@ilearnit.demo",
+    "displayName": "Sofia Ackermann",
+    "photoUrl": "https://i.pravatar.cc/320?u=ins_005",
+    "emailVerified": true,
+    "role": "instructor",
+    "isSuspended": false,
+    "eulaAcceptedVersion": 1,
+    "createdAt": "2023-05-04T00:00:00.000Z"
+  },
+  "ins_006": {
+    "id": "ins_006",
+    "email": "daniel.voss@ilearnit.demo",
+    "displayName": "Daniel Voss",
+    "photoUrl": "https://i.pravatar.cc/320?u=ins_006",
+    "emailVerified": true,
+    "role": "instructor",
+    "isSuspended": false,
+    "eulaAcceptedVersion": 1,
+    "createdAt": "2024-01-30T00:00:00.000Z"
+  },
+  "ins_007": {
+    "id": "ins_007",
+    "email": "isabela.moreau@ilearnit.demo",
+    "displayName": "Isabela Moreau",
+    "photoUrl": "https://i.pravatar.cc/320?u=ins_007",
+    "emailVerified": true,
+    "role": "instructor",
+    "isSuspended": false,
+    "eulaAcceptedVersion": 1,
+    "createdAt": "2024-03-01T00:00:00.000Z"
+  },
+  "ins_008": {
+    "id": "ins_008",
+    "email": "ekaterina.volkova@ilearnit.demo",
+    "displayName": "Ekaterina Volkova",
+    "photoUrl": "https://i.pravatar.cc/320?u=ins_008",
+    "emailVerified": true,
+    "role": "instructor",
+    "isSuspended": false,
+    "eulaAcceptedVersion": 1,
+    "createdAt": "2022-02-04T00:00:00.000Z"
+  },
+  "ins_009": {
+    "id": "ins_009",
+    "email": "lucas.ferreira@ilearnit.demo",
+    "displayName": "Lucas Ferreira",
+    "photoUrl": "https://i.pravatar.cc/320?u=ins_009",
+    "emailVerified": true,
+    "role": "instructor",
+    "isSuspended": false,
+    "eulaAcceptedVersion": 1,
+    "createdAt": "2023-01-06T00:00:00.000Z"
+  },
+  "ins_010": {
+    "id": "ins_010",
+    "email": "aria.kapoor@ilearnit.demo",
+    "displayName": "Aria Kapoor",
+    "photoUrl": "https://i.pravatar.cc/320?u=ins_010",
+    "emailVerified": true,
+    "role": "instructor",
+    "isSuspended": false,
+    "eulaAcceptedVersion": 1,
+    "createdAt": "2023-06-01T00:00:00.000Z"
+  }
+}

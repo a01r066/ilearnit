@@ -2,9 +2,17 @@
 /**
  * Firestore seed script for iLearnIt.
  *
- * Reads `instructors.json` and `courses.json` (which use ISO date strings
- * for any timestamp fields), then writes them to Firestore using the
- * Admin SDK with batched writes (max 500 ops per batch).
+ * Reads `instructors.json`, `users.json` (optional, but required for
+ * the post-2026-06 instructors/{uid} schema), `courses.json`,
+ * `sections.json`, and `songbooks.json` — all of which use ISO date
+ * strings for any timestamp fields — then writes them to Firestore
+ * using the Admin SDK with batched writes (max 500 ops per batch).
+ *
+ * Schema invariant (post-2026-06 refactor): the doc key in
+ * `instructors.json` MUST equal the corresponding key in `users.json`
+ * for any instructor user. The mobile app reads `instructors/{uid}` as
+ * a direct point read keyed by `courses.instructorId` (which is the
+ * same uid). See docs/technical_specification.md §6 for details.
  *
  * Usage:
  *
@@ -24,9 +32,13 @@
  *
  *   # Optional flags:
  *   #   --dry           : log everything but don't write
- *   #   --wipe          : delete the existing `courses` and `instructors`
- *   #                     collections before writing (use with care)
- *   #   --only=courses  : seed only one collection (courses | instructors)
+ *   #   --wipe          : delete the existing `courses` / `instructors` /
+ *   #                     `songbooks` / `sections` collections before
+ *   #                     writing. `users` is NOT wiped by default to
+ *   #                     avoid clobbering real signed-in accounts —
+ *   #                     pair with `--only=users` to wipe it explicitly.
+ *   #   --only=courses  : seed only one collection
+ *   #                     (courses | instructors | users | songbooks | sections)
  */
 'use strict';
 
@@ -281,6 +293,17 @@ async function wipeAllSections() {
     fs.readFileSync(path.join(here, 'courses.json'), 'utf-8'),
   );
 
+  // Parallel users.json — one user doc per instructor, with role
+  // 'instructor'. Required by the post-2026-06 schema invariant
+  // (instructors/{uid} mirrors users/{uid}) so the admin Instructors
+  // page surfaces sample profiles and the mobile detail page resolves
+  // course.instructorId → instructors/{uid} cleanly. Optional file for
+  // backward compat with older seed dumps.
+  const usersPath = path.join(here, 'users.json');
+  const users = fs.existsSync(usersPath)
+    ? JSON.parse(fs.readFileSync(usersPath, 'utf-8'))
+    : null;
+
   const songbooks = JSON.parse(
       fs.readFileSync(path.join(here, 'songbooks.json'), 'utf-8'),
     );
@@ -309,6 +332,12 @@ async function wipeAllSections() {
       const n = await deleteCollection('instructors');
       console.log(`✗ wiped instructors (${n} docs)`);
     }
+    // Users are wiped only when explicitly requested — otherwise a
+    // --wipe run would clobber real signed-in accounts in dev.
+    if (onlyCollection === 'users') {
+      const n = await deleteCollection('users');
+      console.log(`✗ wiped users (${n} docs)`);
+    }
     if (!onlyCollection || onlyCollection === 'songbooks') {
           const n = await deleteCollection('songbooks');
           console.log(`✗ wiped songbooks (${n} docs)`);
@@ -317,6 +346,12 @@ async function wipeAllSections() {
 
   if (!onlyCollection || onlyCollection === 'instructors') {
     await writeCollection('instructors', instructors);
+  }
+  if (users && (!onlyCollection || onlyCollection === 'users')) {
+    // Merge-set into users — instructor sample docs use synthetic
+    // ins_XXX ids that won't collide with real Firebase Auth UIDs,
+    // so this is safe even if real users already exist.
+    await writeCollection('users', users);
   }
   if (!onlyCollection || onlyCollection === 'courses') {
     await writeCollection('courses', courses);

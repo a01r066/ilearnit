@@ -17,6 +17,9 @@ abstract class UserEntity with _$UserEntity {
     String? skillLevel, // 'beginner' | 'intermediate' | 'advanced'
     @Default(UserRole.student) UserRole role,
     @Default(false) bool isSuspended,
+    /// Latest accepted EULA version. 0 = legacy / unaccepted →
+    /// re-prompt before any UGC-creating action.
+    @Default(0) int eulaAcceptedVersion,
     DateTime? createdAt,
   }) = _UserEntity;
 }

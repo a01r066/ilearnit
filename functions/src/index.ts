@@ -1129,3 +1129,140 @@ export const instructorBroadcast = onCall(async (request) => {
 
   return {ok: true, recipientCount: uids.length};
 });
+
+// ---------- onReportCreated / onReportResolved ---------------------------
+//
+// Maintains the aggregate counter at `reports/_aggregates.openCount` so
+// the admin side-nav badge doesn't have to scan the full reports
+// collection on every page load.
+//
+// Counter discipline:
+//   - onCreate: any newly written report with status === 'open' bumps +1.
+//     Reports created with a non-open status (rare; only via admin
+//     scripts) don't bump.
+//   - onUpdate: a transition from open → non-open decrements -1.
+//
+// Uses Firestore increment so concurrent writes don't clobber each other.
+
+export const onReportCreated = onDocumentCreated(
+  'reports/{reportId}',
+  async (event) => {
+    // Skip our own aggregates doc — it lives in the same collection,
+    // so writing to it from inside this handler would otherwise recurse
+    // through onDocumentCreated the first time the doc is created.
+    // Convention: any reportId starting with '_' is reserved system
+    // metadata, not a user-submitted report.
+    if (event.params.reportId.startsWith('_')) return;
+
+    const data = event.data?.data();
+    if (!data) return;
+    if (data.status && data.status !== 'open') return;
+
+    try {
+      await db.doc('reports/_aggregates').set(
+        {openCount: FieldValue.increment(1)},
+        {merge: true},
+      );
+    } catch (e) {
+      logger.error('onReportCreated: failed to bump counter', e);
+    }
+
+    // Future hook: send an email/Slack notification to admins when
+    // a new report arrives. Intentionally left out of v1 so we can
+    // pick the right delivery channel later without rewiring.
+  },
+);
+
+export const onReportResolved = onDocumentUpdated(
+  'reports/{reportId}',
+  async (event) => {
+    if (event.params.reportId.startsWith('_')) return;
+
+    const before = event.data?.before?.data();
+    const after = event.data?.after?.data();
+    if (!before || !after) return;
+
+    // Bump down once when the status transitions from open to
+    // something else. Re-opening (action_taken → open) bumps back up.
+    const wasOpen = before.status === 'open';
+    const isOpen = after.status === 'open';
+    if (wasOpen === isOpen) return;
+
+    try {
+      await db.doc('reports/_aggregates').set(
+        {openCount: FieldValue.increment(isOpen ? 1 : -1)},
+        {merge: true},
+      );
+    } catch (e) {
+      logger.error('onReportResolved: failed to update counter', e);
+    }
+  },
+);
+
+// ---------- onUserRoleChanged -------------------------------------------
+//
+// When a user's role transitions to 'instructor' (typically from
+// 'student' via the application-approval flow), materializes a
+// public-facing `instructors/{uid}` profile seeded from the user's
+// `displayName` / `email` / `photoUrl`.
+//
+// Schema invariant (post-2026-06 refactor): `instructors/{id}.id`
+// equals the Firebase Auth UID. The doc id IS the link to
+// `users/{uid}` — no `userId` field needed, no bridge query needed
+// in the consumer app.
+//
+// Idempotent via `.set(payload, {merge: true})`: refreshes the
+// display-side fields without clobbering admin-curated bio / tagline /
+// social links. No-ops on transitions FROM instructor → other, and on
+// updates that don't touch role.
+
+export const onUserRoleChanged = onDocumentUpdated(
+  'users/{uid}',
+  async (event) => {
+    const before = event.data?.before.data();
+    const after = event.data?.after.data();
+    if (!before || !after) return;
+
+    const beforeRole = (before.role as string | undefined) ?? 'student';
+    const afterRole = (after.role as string | undefined) ?? 'student';
+    if (beforeRole === afterRole) return;
+    if (afterRole !== 'instructor') return;
+
+    const uid = event.params.uid;
+    try {
+      const ref = db.collection('instructors').doc(uid);
+      const snap = await ref.get();
+
+      const displayName = (after.displayName as string | undefined) ?? '';
+      const email = (after.email as string | undefined) ?? '';
+      const photoUrl = (after.photoUrl as string | undefined) ?? '';
+
+      const payload: Record<string, unknown> = {
+        name: displayName.trim() || email,
+        photoUrl,
+      };
+      if (email.trim()) {
+        payload.email = email.trim();
+        payload.emailLower = email.trim().toLowerCase();
+      }
+      // First-write defaults — only stamped if the doc doesn't exist
+      // yet, so we never overwrite admin-curated content.
+      if (!snap.exists) {
+        payload.bio = '';
+        payload.rating = 0;
+        payload.reviewCount = 0;
+        payload.studentCount = 0;
+        payload.specialties = [] as string[];
+        payload.featuredCourseIds = [] as string[];
+        payload.joinedAt = FieldValue.serverTimestamp();
+      }
+
+      await ref.set(payload, {merge: true});
+      logger.info(
+        `onUserRoleChanged: ${snap.exists ? 'refreshed' : 'created'} instructors/${uid}`,
+      );
+    } catch (e) {
+      logger.error('onUserRoleChanged: failed to write profile', e);
+    }
+  },
+);
