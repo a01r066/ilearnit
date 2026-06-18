@@ -7,6 +7,15 @@ abstract interface class AuthRepository {
 
   Future<UserEntity?> currentUser();
 
+  /// Force a fresh read of `users/{uid}` and return the resulting
+  /// entity. Called by [AuthNotifier] after signup / login / social
+  /// flows so the UI never gets stuck with the auth-state stream's
+  /// fallback shape (which races against the Firestore write that
+  /// follows `createUserWithEmailAndPassword`).
+  ///
+  /// Returns `null` if there's no signed-in user.
+  Future<UserEntity?> refreshCurrentUser();
+
   ResultFuture<UserEntity> login({
     required String email,
     required String password,

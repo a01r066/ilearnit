@@ -27,7 +27,20 @@ class AuthRepositoryImpl implements AuthRepository {
   Stream<UserEntity?> authStateChanges() => _remote.authStateChanges().asyncMap(
         (user) async {
           if (user == null) return null;
-          final doc = await _remote.fetchUserDoc(user.uid);
+          // Firebase Auth fires the state change the instant
+          // `createUserWithEmailAndPassword` resolves — earlier than
+          // the Firestore user-doc write that follows in the same
+          // signup flow. A first-attempt null is therefore expected.
+          // Retry once after a short delay so the stream emits the
+          // doc-backed entity instead of the minimal fallback (which
+          // would otherwise show role=student, eulaAcceptedVersion=0,
+          // no instrument — i.e. "guest-shaped" data on My Learning
+          // and Profile until something else triggers a rebuild).
+          var doc = await _remote.fetchUserDoc(user.uid);
+          if (doc == null) {
+            await Future<void>.delayed(const Duration(milliseconds: 400));
+            doc = await _remote.fetchUserDoc(user.uid);
+          }
           return (doc?.toEntity()) ??
               UserEntity(
                 id: user.uid,
@@ -45,6 +58,24 @@ class AuthRepositoryImpl implements AuthRepository {
     if (fb == null) return null;
     final doc = await _remote.fetchUserDoc(fb.uid);
     return doc?.toEntity();
+  }
+
+  @override
+  Future<UserEntity?> refreshCurrentUser() async {
+    final fb = _remote.currentFirebaseUser;
+    if (fb == null) return null;
+    final doc = await _remote.fetchUserDoc(fb.uid);
+    if (doc != null) return doc.toEntity();
+    // Last-ditch fallback — same shape as `authStateChanges`. Lets
+    // the caller still render a "you're signed in" header while the
+    // server-side write catches up.
+    return UserEntity(
+      id: fb.uid,
+      email: fb.email ?? '',
+      displayName: fb.displayName,
+      photoUrl: fb.photoURL,
+      emailVerified: fb.emailVerified,
+    );
   }
 
   @override

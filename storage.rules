@@ -1,0 +1,150 @@
+rules_version = '2';
+
+// iLearnIt — Firebase Storage rules.
+//
+// All actual upload paths are written by the admin portal via
+// `AdminStorageService` (lib/admin/courses/data/admin_storage_service.dart).
+// The consumer mobile app only READS from Storage — it consumes
+// download URLs returned by Firestore docs (course.thumbnailUrl,
+// songbook.coverUrl, etc.). UGC like profile photos doesn't live in
+// Storage today; if/when it does, add a `users/{uid}/profile/` block
+// gated on `request.auth.uid == uid`.
+//
+// Reads are public for the buckets the consumer needs. Storage
+// download URLs are token-bearing once issued, so "public read" is
+// the same thing the existing `getDownloadURL()` calls already
+// produce — making it explicit here just stops the rules engine from
+// denying direct path reads (which some platforms fall back to when
+// the cached token expires).
+//
+// Writes are admin-only. `isAdmin()` reads the caller's user doc,
+// which is a single Firestore read per write — Storage rules can do
+// this via the `firestore.get` extension.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // -------- Helpers --------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return firestore.get(
+        /databases/(default)/documents/users/$(request.auth.uid)
+      ).data;
+    }
+
+    function role() {
+      return userDoc().role;
+    }
+
+    function isSuspended() {
+      return userDoc().get('isSuspended', false) == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && role() == 'admin' && !isSuspended();
+    }
+
+    function isInstructor() {
+      return isSignedIn()
+        && (role() == 'instructor' || role() == 'admin')
+        && !isSuspended();
+    }
+
+    // Mime-type / size limits applied to every upload. Keeps a bad
+    // SDK from uploading a 4 GB binary into the course thumbnail path
+    // and rinsing the bandwidth bill.
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    function isAudioOrVideo() {
+      return request.resource.contentType.matches('(audio|video)/.*');
+    }
+    function isPdfOrDoc() {
+      return request.resource.contentType.matches(
+        'application/(pdf|msword|vnd\\.openxmlformats-officedocument\\..*|epub\\+zip)'
+      );
+    }
+    function underMb(maxMb) {
+      return request.resource.size < maxMb * 1024 * 1024;
+    }
+
+    // -------- Courses --------
+    //
+    // courses/{courseId}/thumbnail/{filename}
+    // courses/{courseId}/sections/{sectionId}/lectures/{lectureId}/media/{filename}
+    // courses/{courseId}/sections/{sectionId}/lectures/{lectureId}/resources/{filename}
+
+    match /courses/{courseId}/thumbnail/{filename} {
+      allow read: if true;
+      allow write: if isInstructor() && isImage() && underMb(8);
+      allow delete: if isInstructor();
+    }
+
+    match /courses/{courseId}/sections/{sectionId}/lectures/{lectureId}/media/{filename} {
+      // Consumer app only fetches via the resolved download URL — but
+      // we leave direct read open in case the player ever falls back
+      // to a raw GCS path (the video_player package occasionally does
+      // when an HLS playlist references an unsigned media URL).
+      allow read: if true;
+      // Cloudflare Stream is the canonical upload path. This Storage
+      // path is the legacy fallback for instructors who upload via
+      // the admin portal's older flow — kept enabled at 2 GB to allow
+      // mid-quality lecture videos.
+      allow write: if isInstructor() && isAudioOrVideo() && underMb(2048);
+      allow delete: if isInstructor();
+    }
+
+    match /courses/{courseId}/sections/{sectionId}/lectures/{lectureId}/resources/{filename} {
+      // Downloadable resources (PDFs, scores, MP3 backing tracks, etc.)
+      // are visible only to enrolled users in the consumer app — but
+      // the Storage layer can't cheaply check enrollment without an
+      // extra Firestore read per file. The download URL itself is
+      // token-bearing, so we keep the rules permissive (read=true)
+      // and rely on the consumer UI to gate visibility. If you ever
+      // need to lock this down, add a `enrollments/{courseId}/{uid}`
+      // existence check here.
+      allow read: if true;
+      allow write: if isInstructor()
+        && (isPdfOrDoc() || isImage() || isAudioOrVideo())
+        && underMb(200);
+      allow delete: if isInstructor();
+    }
+
+    // -------- Songbooks (admin-curated content) --------
+
+    match /songbooks/{songbookId}/cover/{filename} {
+      allow read: if true;
+      allow write: if isAdmin() && isImage() && underMb(8);
+      allow delete: if isAdmin();
+    }
+
+    match /songbooks/{songbookId}/banner/{filename} {
+      allow read: if true;
+      allow write: if isAdmin() && isImage() && underMb(8);
+      allow delete: if isAdmin();
+    }
+
+    // -------- Learning paths (admin-curated content) --------
+
+    match /learning_paths/{pathId}/cover/{filename} {
+      allow read: if true;
+      allow write: if isAdmin() && isImage() && underMb(8);
+      allow delete: if isAdmin();
+    }
+
+    // -------- Default deny --------
+    //
+    // Anything not matched above gets nothing. Storage rules don't
+    // fall through to a default-allow like Firestore; this block is
+    // belt-and-suspenders so a new code path that uploads to an
+    // unrecognised location fails loudly during dev instead of
+    // silently writing to an unrelated bucket prefix.
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

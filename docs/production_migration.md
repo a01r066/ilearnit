@@ -251,8 +251,8 @@ If targets aren't set up for prod yet:
 
 ```bash
 firebase use prod
-firebase target:apply hosting landing ilearnit-landing-prod
-firebase target:apply hosting admin   ilearnit-admin-prod
+firebase target:apply hosting landing ilearnit-31f41
+firebase target:apply hosting admin ilearnit-admin
 # (Use the actual site names you created in the Firebase Hosting console.)
 ```
 

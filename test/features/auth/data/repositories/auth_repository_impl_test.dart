@@ -33,7 +33,6 @@ import 'package:ilearnit/features/auth/data/repositories/auth_repository_impl.da
 import 'package:ilearnit/features/auth/domain/entities/user_entity.dart';
 
 // ---------- Mocks -----------------------------------------------------------
-
 class _MockRemote extends Mock implements AuthRemoteDataSource {}
 
 class _MockNetwork extends Mock implements NetworkInfo {}

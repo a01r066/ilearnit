@@ -18,7 +18,15 @@ abstract class UserModel with _$UserModel {
 
   const factory UserModel({
     required String id,
-    required String email,
+    // Defensive default: real Firestore docs occasionally lack `email`
+    // (legacy docs written before the field existed, social-sign-in
+    // flows where Apple withholds the relay address on re-auth, partial
+    // seed/mock data). Without the default, `fromJson` crashes with
+    // `type 'Null' is not a subtype of type 'String' in type cast`,
+    // which collapses the entire auth-state stream — every page that
+    // watches `currentUserProvider` falls back to its loading state.
+    // Same pattern as `LectureNoteModel` / `ReportModel`.
+    @Default('') String email,
     String? displayName,
     String? photoUrl,
     @Default(false) bool emailVerified,
