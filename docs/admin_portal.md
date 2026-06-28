@@ -200,7 +200,7 @@ flutter build web -t lib/main_admin.dart --dart-define=FLAVOR=prod --release
 
 The repo already has Firebase Hosting wired up for the landing page (see `docs/signing_and_publishing.md`). To host the admin portal at a separate site:
 
-1. `firebase target:apply hosting admin admin-ilearnit` (creates a target alias).
+1. `firebase target:apply hosting admin ilearnit-admin` (creates a target alias).
 2. Add a second `hosting` entry to `firebase.json`:
 
    ```json
