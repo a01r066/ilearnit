@@ -24,6 +24,7 @@ class CoursesRepositoryImpl implements CoursesRepository {
   ResultFuture<CoursesPage> fetchCourses({
     InstrumentCategory? category,
     CourseLevel? level,
+    bool? featured,
     String? cursor,
     int limit = 20,
   }) async {
@@ -34,6 +35,7 @@ class CoursesRepositoryImpl implements CoursesRepository {
       final dto = await _remote.fetchCourses(
         category: category,
         level: level,
+        featured: featured,
         cursor: cursor,
         limit: limit,
       );

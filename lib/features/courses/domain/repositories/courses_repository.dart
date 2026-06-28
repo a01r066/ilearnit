@@ -19,6 +19,8 @@ abstract interface class CoursesRepository {
   ResultFuture<CoursesPage> fetchCourses({
     InstrumentCategory? category,
     CourseLevel? level,
+    /// `true` → only featured. `null` → no filter.
+    bool? featured,
     String? cursor,
     int limit,
   });

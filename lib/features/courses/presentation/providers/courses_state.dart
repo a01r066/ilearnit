@@ -21,6 +21,11 @@ abstract class CoursesState with _$CoursesState {
     String? nextCursor,
     InstrumentCategory? category,
     CourseLevel? level,
+    /// `true` → list scoped to featured courses (driven by the "See
+    /// all" tap on the home Featured carousel, or by the
+    /// `?featured=true` deep-link query param). `false` /
+    /// unset → catalogue-wide.
+    @Default(false) bool featured,
 
     /// Failure on the initial / refresh load. Null while a load is in
     /// progress and on success.

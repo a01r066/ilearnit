@@ -91,7 +91,16 @@ class HomePage extends ConsumerWidget {
             _SectionHeader(
               title: t.homeFeaturedCourses,
               actionLabel: t.homeSeeAll,
-              onAction: () => context.goNamed(RouteNames.courses),
+              // Featured carousel "See all" pushes the courses tab
+              // with the `?featured=true` deep-link query param, so
+              // the page lands scoped to `where('isFeatured', ==,
+              // true)` and renders a "Showing featured" banner the
+              // user can clear. Mirrors the per-category passthrough
+              // for the popular-by-instrument rails below.
+              onAction: () => context.goNamed(
+                RouteNames.courses,
+                queryParameters: {'featured': 'true'},
+              ),
             ),
             const SizedBox(height: 12),
             featured.when(
@@ -160,7 +169,13 @@ class _PopularInstrumentSection extends ConsumerWidget {
         _SectionHeader(
           title: t.homePopularInstrument(category.label),
           actionLabel: t.homeSeeAll,
-          onAction: () => context.goNamed(RouteNames.courses),
+          // Pass the section's instrument as a query param so the
+          // courses page lands with that category pre-selected in the
+          // filter bar — see `CoursesPage._applyInitialCategory`.
+          onAction: () => context.goNamed(
+            RouteNames.courses,
+            queryParameters: {'category': category.id},
+          ),
         ),
         const SizedBox(height: 12),
         async.when(
@@ -264,7 +279,13 @@ class _CategoriesRow extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: InkWell(
-                onTap: () => context.goNamed(RouteNames.courses),
+                // Tapping a category tile in the "Browse by instrument"
+                // row jumps straight into the courses tab with that
+                // category pre-filtered.
+                onTap: () => context.goNamed(
+                  RouteNames.courses,
+                  queryParameters: {'category': c.id},
+                ),
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 18),

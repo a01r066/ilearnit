@@ -12,6 +12,12 @@ abstract interface class CoursesRemoteDataSource {
   Future<CoursesPageDto> fetchCourses({
     InstrumentCategory? category,
     CourseLevel? level,
+    /// When true, filters to `isFeatured == true`. When null, returns
+    /// every course regardless of featured status. (We use `bool?` not
+    /// `bool` so deep-link callers can distinguish "show featured
+    /// only" from "no preference"; passing `false` to mean "show
+    /// non-featured only" isn't a use case the catalogue surfaces.)
+    bool? featured,
     String? cursor,
     required int limit,
   });
@@ -46,6 +52,7 @@ class CoursesRemoteDataSourceImpl implements CoursesRemoteDataSource {
   Future<CoursesPageDto> fetchCourses({
     InstrumentCategory? category,
     CourseLevel? level,
+    bool? featured,
     String? cursor,
     required int limit,
   }) async {
@@ -53,6 +60,8 @@ class CoursesRemoteDataSourceImpl implements CoursesRemoteDataSource {
 
     if (category != null) q = q.where('category', isEqualTo: category.id);
     if (level != null) q = q.where('level', isEqualTo: level.id);
+    // `featured == true` only — see the dartdoc on the interface.
+    if (featured == true) q = q.where('isFeatured', isEqualTo: true);
 
     q = q.orderBy('publishedAt', descending: true).limit(limit + 1);
 

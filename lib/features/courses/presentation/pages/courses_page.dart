@@ -8,6 +8,7 @@ import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/empty_view.dart';
 import '../../../../core/widgets/error_view.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../domain/entities/instrument_category.dart';
 import '../providers/courses_notifier.dart';
 import '../providers/courses_providers.dart';
 import '../providers/courses_state.dart';
@@ -34,10 +35,80 @@ class _CoursesPageState extends ConsumerState<CoursesPage> {
   /// page fetch. 0.80 matches the roadmap spec.
   static const double _loadMoreThreshold = 0.80;
 
+  /// Last URL filter signature we applied — e.g.
+  /// `"category=guitar|featured=true"`. Compared against the current
+  /// URL on every build; we only re-apply when the signature changes.
+  ///
+  /// This is a string (not a bool latch) on purpose. The
+  /// `_CoursesPageState` instance persists across tab switches inside
+  /// the shell navigator, so a one-shot bool would block a second
+  /// "See all" tap from a different home rail. A signature-based
+  /// comparison reacts to every URL change but ignores manual filter
+  /// changes (which don't touch the URL).
+  String? _lastAppliedQuery;
+
   @override
   void initState() {
     super.initState();
     _scrollCtrl.addListener(_onScroll);
+  }
+
+  /// Reads `?category=<id>` and `?featured=true` from the current
+  /// route and pushes them into `CoursesNotifier` via a SINGLE atomic
+  /// `applyFilters` call. Runs from `build()` (GoRouterState isn't
+  /// available in `initState`) but is idempotent — it only fires when
+  /// the URL filter signature changes.
+  ///
+  /// **Race-free.** The single-call shape means one state mutation +
+  /// one refresh, instead of two `filterBy*` calls each kicking off
+  /// their own refresh that races the constructor's initial refresh.
+  /// `CoursesNotifier.refresh()` carries a generation counter so a
+  /// stale unfiltered result from the constructor can't overwrite
+  /// the filtered result we want.
+  void _applyInitialCategory() {
+    final qp = GoRouterState.of(context).uri.queryParameters;
+    final rawCategory = qp['category'] ?? '';
+    final rawFeatured = qp['featured'] ?? '';
+    final signature = 'category=$rawCategory|featured=$rawFeatured';
+    if (signature == _lastAppliedQuery) return;
+    _lastAppliedQuery = signature;
+
+    InstrumentCategory? category;
+    if (rawCategory.isNotEmpty) {
+      // Strict id match — `InstrumentCategory.fromId` falls back to
+      // `piano` for unknown values, which would silently mis-filter
+      // on a typo'd deep link.
+      for (final c in InstrumentCategory.values) {
+        if (c.id == rawCategory) {
+          category = c;
+          break;
+        }
+      }
+    }
+    final featured = rawFeatured == 'true' || rawFeatured == '1';
+
+    // Skip the apply when nothing differs from current state — keeps
+    // an idempotent tab-switch from refetching the same list.
+    final current = ref.read(coursesNotifierProvider);
+    final sameCategory = category == null
+        ? current.category == null
+        : current.category == category;
+    final sameFeatured = current.featured == featured;
+    if (sameCategory && sameFeatured) return;
+
+    final notifier = ref.read(coursesNotifierProvider.notifier);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      notifier.applyFilters(
+        // category=null + clearCategory=true means "drop the existing
+        // category" — relevant when the user navigates from a
+        // category-scoped see-all back to a generic /courses with no
+        // `?category=`.
+        category: category,
+        clearCategory: rawCategory.isEmpty,
+        featured: featured,
+      );
+    });
   }
 
   @override
@@ -65,6 +136,9 @@ class _CoursesPageState extends ConsumerState<CoursesPage> {
     final notifier = ref.read(coursesNotifierProvider.notifier);
     final t = AppLocalizations.of(context);
 
+    // First-build deep-link handler. Idempotent via `_initialCategoryApplied`.
+    _applyInitialCategory();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(t.coursesTitle),
@@ -87,6 +161,15 @@ class _CoursesPageState extends ConsumerState<CoursesPage> {
             selected: state.category,
             onChanged: notifier.filterByCategory,
           ),
+          // Featured-only banner. Self-hides when the filter is off,
+          // so the page reads as "everything" by default.
+          if (state.featured)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: _FeaturedBanner(
+                onClear: () => notifier.filterByFeatured(false),
+              ),
+            ),
           const SizedBox(height: 8),
           Expanded(child: _buildBody(state, notifier, t)),
         ],
@@ -205,6 +288,51 @@ class _CoursesPageState extends ConsumerState<CoursesPage> {
     }
 
     return const SizedBox.shrink();
+  }
+}
+
+/// Inline "Showing featured only" indicator. Renders when the
+/// featured filter is active (entered via the home Featured carousel
+/// "See all" tap or the `?featured=true` deep-link). Tap the X to
+/// clear and reload the full catalogue.
+class _FeaturedBanner extends StatelessWidget {
+  const _FeaturedBanner({required this.onClear});
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.star_rounded,
+              color: AppColors.primary, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Showing featured courses',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 18),
+            color: AppColors.primary,
+            tooltip: 'Show all courses',
+            onPressed: onClear,
+            visualDensity: VisualDensity.compact,
+          ),
+        ],
+      ),
+    );
   }
 }
 
