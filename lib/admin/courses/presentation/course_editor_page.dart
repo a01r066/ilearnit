@@ -516,13 +516,22 @@ class _SectionPanel extends ConsumerWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    for (final l in items)
+                    for (var i = 0; i < items.length; i++)
                       _LectureRow(
-                        lecture: l,
+                        lecture: items[i],
+                        // First row can't move up; last can't move
+                        // down. Disabled callbacks render as greyed-
+                        // out icons in `_LectureRow`.
+                        onMoveUp: i == 0
+                            ? null
+                            : () => _swap(ref, items[i], items[i - 1]),
+                        onMoveDown: i == items.length - 1
+                            ? null
+                            : () => _swap(ref, items[i], items[i + 1]),
                         onEdit: () =>
-                            _editLecture(context, ref, l),
+                            _editLecture(context, ref, items[i]),
                         onDelete: () =>
-                            _deleteLecture(context, ref, l),
+                            _deleteLecture(context, ref, items[i]),
                       ),
                     const SizedBox(height: 8),
                     SizedBox(
@@ -588,6 +597,25 @@ class _SectionPanel extends ConsumerWidget {
         );
   }
 
+  /// Swap two adjacent lectures' `order` fields via a Firestore batch.
+  /// Driven by the up/down icon buttons on each row. The
+  /// `watchLectures` stream reorders the rendered list on the next
+  /// snapshot — no local state to keep in sync.
+  Future<void> _swap(
+    WidgetRef ref,
+    LectureModel a,
+    LectureModel b,
+  ) async {
+    await ref.read(adminCoursesDataSourceProvider).swapLectureOrder(
+          courseId: courseId,
+          sectionId: section.id,
+          aId: a.id,
+          aOrder: a.order,
+          bId: b.id,
+          bOrder: b.order,
+        );
+  }
+
   Future<void> _deleteSection(BuildContext context, WidgetRef ref) async {
     final ok = await showDialog<bool>(
       context: context,
@@ -623,10 +651,20 @@ class _LectureRow extends StatelessWidget {
     required this.lecture,
     required this.onEdit,
     required this.onDelete,
+    required this.onMoveUp,
+    required this.onMoveDown,
   });
   final LectureModel lecture;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+
+  /// `null` when this lecture is at the top of the section (move-up
+  /// would be a no-op). Renders as a disabled icon so the layout stays
+  /// stable across rows.
+  final VoidCallback? onMoveUp;
+
+  /// `null` when this lecture is at the bottom of the section.
+  final VoidCallback? onMoveDown;
 
   @override
   Widget build(BuildContext context) {
@@ -656,6 +694,23 @@ class _LectureRow extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          // Reorder — up/down stacked tightly so the actions row stays
+          // compact. `visualDensity: compact` shrinks the hit target
+          // to ~32×32 (down from the M3 default of 48×48) so the two
+          // arrows + edit + delete fit on one line at admin-portal
+          // widths.
+          IconButton(
+            tooltip: 'Move up',
+            icon: const Icon(Icons.keyboard_arrow_up),
+            visualDensity: VisualDensity.compact,
+            onPressed: onMoveUp,
+          ),
+          IconButton(
+            tooltip: 'Move down',
+            icon: const Icon(Icons.keyboard_arrow_down),
+            visualDensity: VisualDensity.compact,
+            onPressed: onMoveDown,
           ),
           IconButton(
             tooltip: 'Edit / upload',

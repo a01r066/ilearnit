@@ -182,6 +182,33 @@ class AdminCoursesDataSource {
   }) =>
       _lectures(courseId, sectionId).doc(lectureId).delete();
 
+  /// Atomically swap the `order` field between two lectures in the
+  /// same section. Used by the up/down reorder buttons in the
+  /// curriculum editor — one batch write, one Firestore round-trip,
+  /// no intermediate state where two lectures share the same order
+  /// value (which would otherwise scramble the `.orderBy('order')`
+  /// stream listeners during the in-between frame).
+  Future<void> swapLectureOrder({
+    required String courseId,
+    required String sectionId,
+    required String aId,
+    required int aOrder,
+    required String bId,
+    required int bOrder,
+  }) async {
+    if (aId == bId || aOrder == bOrder) return;
+    final batch = _firestore.batch();
+    batch.update(
+      _lectures(courseId, sectionId).doc(aId),
+      {'order': bOrder},
+    );
+    batch.update(
+      _lectures(courseId, sectionId).doc(bId),
+      {'order': aOrder},
+    );
+    await batch.commit();
+  }
+
   // ---------- User / instructor queries (admin-only) ----------------------
 
   /// Stream every user with role `instructor`. Admin uses this to manage
