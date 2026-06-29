@@ -157,10 +157,86 @@ service cloud.firestore {
 
     match /courses/{courseId} {
       allow read: if true;
+
+      // ----- Create -----------------------------------------------------
+      // Admin can create with any status (e.g. seeding pre-published
+      // content). Instructor can only create as their own course AND
+      // in `draft` status (or with the field absent — defaults to
+      // draft). Stops a malicious instructor client from skipping
+      // review by writing `status: 'published'` directly.
+      allow create: if isAdmin()
+        && (request.resource.data.get('status', 'draft') is string);
       allow create: if isInstructor()
-        && (isAdmin() || request.resource.data.instructorId == uid());
-      allow update, delete: if isAdmin()
-        || (isInstructor() && resource.data.instructorId == uid());
+        && request.resource.data.instructorId == uid()
+        && request.resource.data.get('status', 'draft') == 'draft';
+
+      // ----- Update -----------------------------------------------------
+      // Admin can update anything (any field, any status transition).
+      // The CourseStatus state machine in
+      // `lib/features/courses/domain/entities/course_status.dart` is
+      // the UI source of truth; admin rules are intentionally
+      // permissive so admins can hot-fix bad state from the console.
+      allow update: if isAdmin();
+
+      // Instructor can update their OWN course only, and only:
+      //   • Without touching admin-only fields (isFeatured,
+      //     enrollmentCount, publishedAt, archivedAt, instructorId).
+      //   • With status either unchanged (normal metadata edits)
+      //     OR transitioning along the legal instructor edge:
+      //     draft → submitted, or changes_requested → submitted.
+      //
+      // Mirrors `CourseStatus.allowedNextStates('instructor')` —
+      // those two transitions are the only ones returned for the
+      // instructor role. Updating any other status code from the
+      // instructor client fails rules.
+      allow update: if isInstructor()
+        && resource.data.instructorId == uid()
+        && !request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny([
+                'isFeatured',
+                'enrollmentCount',
+                'publishedAt',
+                'archivedAt',
+                'instructorId',
+              ])
+        && (
+          // Status untouched: any other metadata edit is fine.
+          !request.resource.data.diff(resource.data)
+              .affectedKeys().hasAny(['status'])
+          ||
+          // Legal instructor transition: draft / changes_requested → submitted.
+          (resource.data.get('status', 'draft') in
+                ['draft', 'changes_requested']
+            && request.resource.data.status == 'submitted')
+        );
+
+      // Delete:
+      //   • Admin can delete anything (escape hatch for hard cleanup).
+      //   • Instructor can ONLY delete their own course while it's
+      //     still in `draft`. Once it's left draft (submitted, under
+      //     review, approved, changes_requested, published,
+      //     unpublished, archived) only an admin can delete it. This
+      //     matches the workflow expectation that:
+      //       - Drafts are a sandbox; instructors can throw them away.
+      //       - Anything submitted enters the review pipeline and is
+      //         owned by editorial review from then on. An instructor
+      //         changing their mind about a submitted course pulls it
+      //         back via the "Send back to draft" admin path or asks
+      //         an admin to archive it.
+      //       - Anything published has student-side traces
+      //         (enrollments, reviews, lecture progress). Direct
+      //         delete by the instructor would orphan that data;
+      //         archive is the correct shape, and that's admin-only.
+      //
+      // `.get('status', 'draft')` covers legacy docs written before
+      // the field existed — they read as draft, which preserves the
+      // pre-workflow delete behaviour for the small handful of
+      // courses that pre-date this refactor.
+      allow delete: if isAdmin();
+      allow delete: if isInstructor()
+        && resource.data.instructorId == uid()
+        && resource.data.get('status', 'draft') == 'draft';
+
       // The reviews aggregator (rating + reviewCount) is rewritten by the
       // client when a review is created/deleted. Allow signed-in users to
       // bump those two fields without granting them a full update.

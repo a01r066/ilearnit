@@ -58,6 +58,11 @@ class CoursesRemoteDataSourceImpl implements CoursesRemoteDataSource {
   }) async {
     Query<Map<String, dynamic>> q = _courses;
 
+    // Consumer catalogue only ever shows published courses. Drafts /
+    // submitted / under-review / archived stay invisible to students.
+    // See `CourseStatus` for the workflow.
+    q = q.where('status', isEqualTo: 'published');
+
     if (category != null) q = q.where('category', isEqualTo: category.id);
     if (level != null) q = q.where('level', isEqualTo: level.id);
     // `featured == true` only — see the dartdoc on the interface.
@@ -106,6 +111,7 @@ class CoursesRemoteDataSourceImpl implements CoursesRemoteDataSource {
   Future<List<CourseModel>> fetchFeatured({required int limit}) async {
     try {
       final snap = await _courses
+          .where('status', isEqualTo: 'published')
           .where('isFeatured', isEqualTo: true)
           .orderBy('publishedAt', descending: true)
           .limit(limit)

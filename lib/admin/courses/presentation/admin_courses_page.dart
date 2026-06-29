@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../features/courses/data/models/course_model.dart';
+import '../../../features/courses/domain/entities/course_status.dart';
 import '../../routing/admin_route_names.dart';
 import '../../shared/providers/admin_providers.dart';
+import 'widgets/course_status_chip.dart';
 
 /// Admin-only: every course in the system. Admin can edit metadata
 /// (by opening the same course editor instructors use), feature/unfeature,
@@ -111,6 +113,12 @@ class _CourseRow extends ConsumerWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Workflow status pill.
+          CourseStatusChip(
+            status: CourseStatus.fromId(course.status),
+            dense: true,
+          ),
+          const SizedBox(width: 8),
           if (course.isFeatured)
             Chip(
               label: const Text('Featured'),

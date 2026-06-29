@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../purchases/domain/entities/price_tier.dart';
+import 'course_status.dart';
 import 'instrument_category.dart';
 
 part 'course_entity.freezed.dart';
@@ -25,7 +26,12 @@ abstract class CourseEntity with _$CourseEntity {
     @Default(false) bool isFeatured,
     @Default(<String>[]) List<String> tags,
     @Default(PriceTier.basic) PriceTier priceTier,
+    /// Review / publication state. Defaults to draft so a constructed
+    /// `CourseEntity` (e.g. in tests) doesn't accidentally read as
+    /// already-live.
+    @Default(CourseStatus.draft) CourseStatus status,
     DateTime? publishedAt,
+    DateTime? archivedAt,
   }) = _CourseEntity;
 
   /// App Store / Play Store product id resolved from the tier.

@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../features/auth/presentation/providers/auth_providers.dart';
 import '../../../features/courses/data/models/course_model.dart';
+import '../../../features/courses/domain/entities/course_status.dart';
 import '../../routing/admin_route_names.dart';
 import '../../shared/providers/admin_providers.dart';
+import 'widgets/course_status_chip.dart';
 
 /// Minimal "My courses" — flat page, no Card / no FilledButton inside a
 /// flexed Row / no Image.network without a sized error fallback.
@@ -188,6 +190,15 @@ class _CourseRow extends StatelessWidget {
                   ],
                 ),
               ),
+              // Workflow status pill — colored badge matching the
+              // CourseStatus enum so instructors can see at a glance
+              // which courses are draft / submitted / under review /
+              // changes-requested / approved / published.
+              CourseStatusChip(
+                status: CourseStatus.fromId(course.status),
+                dense: true,
+              ),
+              const SizedBox(width: 8),
               if (course.isFeatured)
                 Container(
                   padding: const EdgeInsets.symmetric(

@@ -5,12 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../features/courses/data/models/course_model.dart';
 import '../../../features/courses/data/models/course_section_model.dart';
 import '../../../features/courses/data/models/lecture_model.dart';
+import '../../../features/courses/domain/entities/course_status.dart';
 import '../../../features/courses/domain/entities/instrument_category.dart';
 import '../../../features/courses/domain/entities/lecture_type.dart';
 import '../../../features/purchases/domain/entities/price_tier.dart';
 import '../../shared/providers/admin_providers.dart';
 import '../data/admin_storage_service.dart';
 import '../data/cloudflare_upload_service.dart';
+import 'widgets/course_status_actions.dart';
+import 'widgets/course_status_chip.dart';
 
 /// Course editor — flat, single-page layout.
 ///
@@ -57,6 +60,7 @@ class _CourseEditorPageState extends ConsumerState<CourseEditorPage> {
           return const Center(child: Text('Course not found.'));
         }
 
+        final status = CourseStatus.fromId(course.status);
         return SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: ConstrainedBox(
@@ -64,8 +68,30 @@ class _CourseEditorPageState extends ConsumerState<CourseEditorPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(course.title,
-                    style: Theme.of(context).textTheme.headlineSmall),
+                // Title + current status pill in one row, with the
+                // workflow actions (Submit / Approve / Publish …)
+                // tucked to the trailing edge. Wrap because long
+                // titles + status + action could exceed one line on
+                // narrow viewports.
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(course.title,
+                        style:
+                            Theme.of(context).textTheme.headlineSmall),
+                    CourseStatusChip(status: status),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: CourseStatusActions(
+                    courseId: course.id,
+                    current: status,
+                  ),
+                ),
                 const SizedBox(height: 24),
                 _MetadataSection(course: course),
                 const SizedBox(height: 32),

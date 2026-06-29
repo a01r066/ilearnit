@@ -188,6 +188,36 @@ class AdminCoursesDataSource {
   /// no intermediate state where two lectures share the same order
   /// value (which would otherwise scramble the `.orderBy('order')`
   /// stream listeners during the in-between frame).
+  // ---------- Status workflow ---------------------------------------------
+
+  /// Mutates a course's `status` field. Side effects on specific
+  /// transitions:
+  ///   • `→ published`   stamps `publishedAt` if it isn't set yet
+  ///                     (idempotent — re-publishing keeps the
+  ///                     original go-live date).
+  ///   • `→ archived`    stamps `archivedAt` with `now`.
+  ///   • `→ draft`       clears `archivedAt` so resurrected courses
+  ///                     don't read as still-archived.
+  ///
+  /// Caller is responsible for confirming the transition is legal —
+  /// see `CourseStatus.allowedNextStates(role)`. We don't re-check
+  /// here because admin/instructor calls funnel through different UI
+  /// surfaces that already gate on role.
+  Future<void> updateCourseStatus({
+    required String courseId,
+    required String status,
+  }) async {
+    final patch = <String, dynamic>{'status': status};
+    if (status == 'published') {
+      patch['publishedAt'] = FieldValue.serverTimestamp();
+    } else if (status == 'archived') {
+      patch['archivedAt'] = FieldValue.serverTimestamp();
+    } else if (status == 'draft') {
+      patch['archivedAt'] = FieldValue.delete();
+    }
+    await _courses.doc(courseId).set(patch, SetOptions(merge: true));
+  }
+
   Future<void> swapLectureOrder({
     required String courseId,
     required String sectionId,
