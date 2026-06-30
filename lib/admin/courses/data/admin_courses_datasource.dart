@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 import '../../../core/constants/api_endpoints.dart';
 import '../../../features/auth/data/models/user_model.dart';
 import '../../../features/courses/data/models/course_model.dart';
 import '../../../features/courses/data/models/course_section_model.dart';
 import '../../../features/courses/data/models/lecture_model.dart';
+import 'cloudflare_upload_service.dart';
 
 /// Admin/instructor side of the courses data layer.
 ///
@@ -14,10 +16,20 @@ import '../../../features/courses/data/models/lecture_model.dart';
 /// need (create/update/delete) and admin-scoped queries (list all, list
 /// by instructor).
 class AdminCoursesDataSource {
-  AdminCoursesDataSource({required FirebaseFirestore firestore})
-      : _firestore = firestore;
+  AdminCoursesDataSource({
+    required FirebaseFirestore firestore,
+    FirebaseStorage? storage,
+    CloudflareUploadService? cloudflare,
+  })  : _firestore = firestore,
+        _storage = storage ?? FirebaseStorage.instance,
+        _cloudflare = cloudflare ?? CloudflareUploadService();
 
   final FirebaseFirestore _firestore;
+  // Optional deps for the cascade-cleanup that `deleteLecture` runs.
+  // Injected so a unit test can verify the cleanup sequence without
+  // hitting real Storage / Cloud Functions.
+  final FirebaseStorage _storage;
+  final CloudflareUploadService _cloudflare;
 
   CollectionReference<Map<String, dynamic>> get _courses =>
       _firestore.collection(FirestoreCollections.courses);
@@ -128,13 +140,34 @@ class AdminCoursesDataSource {
         'order': order,
       });
 
+  /// Thrown by [deleteSection] when the target section still owns one
+  /// or more lectures. The admin UI catches this and surfaces it as a
+  /// friendly "delete the lectures first" message instead of a stack
+  /// trace.
+  static const sectionNotEmptyError =
+      'Section is not empty. Delete each lecture first so the per-'
+      'lecture cleanup (Cloudflare video, Storage files, Q&A, notes, '
+      'reports) runs against each one. Then re-try the section delete.';
+
+  /// Delete an empty section. Refuses to delete a section that still
+  /// owns lectures — the previous behaviour quietly iterated `delete()`
+  /// over every lecture doc, which bypassed the full cascade
+  /// (`deleteLecture` runs Cloudflare, Storage, Q&A, and triggers
+  /// `onLectureDeleted` for the per-user cleanup). Orphaned Cloudflare
+  /// videos + Storage files were the actual cost. Forcing the admin
+  /// to delete lectures one-by-one routes every one through the
+  /// proper teardown.
+  ///
+  /// Uses the cheap `count()` aggregation instead of fetching every
+  /// lecture doc — costs ~1 read regardless of section size.
   Future<void> deleteSection({
     required String courseId,
     required String sectionId,
   }) async {
-    final lecturesSnap = await _lectures(courseId, sectionId).get();
-    for (final l in lecturesSnap.docs) {
-      await l.reference.delete();
+    final agg = await _lectures(courseId, sectionId).count().get();
+    final count = agg.count ?? 0;
+    if (count > 0) {
+      throw StateError(sectionNotEmptyError);
     }
     await _sections(courseId).doc(sectionId).delete();
   }
@@ -175,12 +208,180 @@ class AdminCoursesDataSource {
     await _lectures(courseId, sectionId).doc(lecture.id).update(json);
   }
 
+  /// Delete a lecture AND cascade-clean its associated media:
+  ///
+  ///   1. Read the doc first so we have `cloudflareVideoId`,
+  ///      `mediaUrl`, and `resources[*].url`.
+  ///   2. Delete the Cloudflare Stream video (if any). Idempotent —
+  ///      the server treats 404 as success.
+  ///   3. Delete the legacy Firebase Storage media (if any).
+  ///   4. Delete each Firebase Storage resource URL.
+  ///   5. Delete the Firestore doc last.
+  ///
+  /// Steps 2–4 are **best-effort**. A single failed Storage delete
+  /// (e.g. the file was already removed manually, the URL is malformed
+  /// from legacy data) MUST NOT block the Firestore delete — otherwise
+  /// the admin gets stuck with a row that can't be removed. Failures
+  /// are logged via the cloud-functions/print path and the doc delete
+  /// proceeds anyway.
+  ///
+  /// **What doesn't get cleaned up** — sub-collections under the
+  /// lecture (progress rollups, etc.) and any aggregated counters on
+  /// the parent course/section docs. Those are out of scope for this
+  /// method and would warrant a Cloud Function trigger if needed.
   Future<void> deleteLecture({
     required String courseId,
     required String sectionId,
     required String lectureId,
-  }) =>
-      _lectures(courseId, sectionId).doc(lectureId).delete();
+  }) async {
+    final docRef = _lectures(courseId, sectionId).doc(lectureId);
+
+    // Step 1 — read first. If the doc is gone already, there's nothing
+    // to cascade-clean; bail out early without surfacing an error.
+    final snap = await docRef.get();
+    if (!snap.exists) return;
+    LectureModel? lecture;
+    try {
+      final data = snap.data() ?? <String, dynamic>{};
+      lecture = LectureModel.fromJson({...data, 'id': snap.id});
+    } catch (e) {
+      // Corrupt doc — we can still delete it. Just skip the cascade.
+      // ignore: avoid_print
+      print('deleteLecture: could not parse lecture $lectureId: $e');
+    }
+
+    if (lecture != null) {
+      // Step 2 — Cloudflare. `deleteVideo` swallows-and-logs on
+      // failure, so a Cloudflare API hiccup doesn't surface here.
+      final cfId = lecture.cloudflareVideoId;
+      if (cfId != null && cfId.isNotEmpty) {
+        await _cloudflare.deleteVideo(cfId);
+      }
+
+      // Step 3 — legacy Storage media file. Fire-and-forget pattern:
+      // collect the futures + await them in a single `Future.wait`
+      // with `eagerError: false` so one failure doesn't cancel the
+      // others.
+      final cleanupFutures = <Future<void>>[];
+      final media = lecture.mediaUrl;
+      if (media != null && media.isNotEmpty) {
+        cleanupFutures.add(_safeDeleteStorageUrl(media));
+      }
+
+      // Step 4 — every supplementary resource.
+      for (final r in lecture.resources) {
+        if (r.url.isNotEmpty) {
+          cleanupFutures.add(_safeDeleteStorageUrl(r.url));
+        }
+      }
+
+      if (cleanupFutures.isNotEmpty) {
+        await Future.wait(cleanupFutures, eagerError: false);
+      }
+    }
+
+    // Step 5 — Q&A subcollection cascade (questions + their nested
+    // replies). Best-effort; failures are logged + we keep going.
+    // The `onLectureDeleted` Cloud Function trigger runs the same
+    // cascade with Admin SDK privileges as a backstop, so anything
+    // we miss here gets caught server-side within seconds.
+    await _safeDeleteQa(courseId, sectionId, lectureId);
+
+    // Step 6 — final Firestore delete.
+    await docRef.delete();
+  }
+
+  /// Recursively delete `…/lectures/{lid}/questions/{qid}` and every
+  /// `replies/{rid}` underneath. Batched in chunks of 500 (Firestore's
+  /// per-batch write ceiling). Each failure is caught + logged so the
+  /// rest of the cascade continues.
+  ///
+  /// **Why client-side AND Cloud-Function-side.** The trigger is the
+  /// authoritative pass (Admin SDK, no rules, idempotent on already-
+  /// empty subcollections), but doing it here gives the admin an
+  /// immediate visual "questions are gone" while the trigger settles.
+  Future<void> _safeDeleteQa(
+    String courseId,
+    String sectionId,
+    String lectureId,
+  ) async {
+    try {
+      final questionsRef = _lectures(courseId, sectionId)
+          .doc(lectureId)
+          .collection('questions');
+
+      // First fetch all question docs. For typical lecture sizes
+      // (dozens of questions, not thousands) this is one round-trip.
+      final qSnap = await questionsRef.get();
+      if (qSnap.docs.isEmpty) return;
+
+      for (final q in qSnap.docs) {
+        // Each question's replies are also a subcollection. Page
+        // through them in chunks of 500 so an enormous reply thread
+        // doesn't exceed Firestore's batch limit.
+        final repliesRef = q.reference.collection('replies');
+        await _deleteCollectionInBatches(repliesRef);
+
+        // Finally delete the question doc itself.
+        try {
+          await q.reference.delete();
+        } catch (e) {
+          // ignore: avoid_print
+          print('deleteLecture: question delete failed (${q.id}): $e');
+        }
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('deleteLecture: Q&A cascade failed for $lectureId: $e');
+    }
+  }
+
+  /// Pages through every doc in [col] and deletes them via batched
+  /// commits. Each batch is at most 500 ops (the Firestore ceiling).
+  /// Stops when a page returns fewer than [pageSize] docs, indicating
+  /// we've drained the collection.
+  Future<void> _deleteCollectionInBatches(
+    CollectionReference<Map<String, dynamic>> col, {
+    int pageSize = 200,
+  }) async {
+    while (true) {
+      final QuerySnapshot<Map<String, dynamic>> snap =
+          await col.limit(pageSize).get();
+      if (snap.docs.isEmpty) return;
+      final batch = _firestore.batch();
+      for (final d in snap.docs) {
+        batch.delete(d.reference);
+      }
+      try {
+        await batch.commit();
+      } catch (e) {
+        // ignore: avoid_print
+        print(
+            'deleteLecture: batch delete in ${col.path} failed: $e — stopping.');
+        return;
+      }
+      // Less than pageSize → collection drained.
+      if (snap.docs.length < pageSize) return;
+    }
+  }
+
+  /// Best-effort `FirebaseStorage.refFromURL(url).delete()`. Swallows
+  /// any exception so a single bad URL doesn't fail the cascade.
+  /// `refFromURL` is the canonical way to map an https
+  /// `firebasestorage.googleapis.com/...?alt=media&token=...` URL
+  /// back to a `Reference` we can call `.delete()` on.
+  Future<void> _safeDeleteStorageUrl(String url) async {
+    try {
+      await _storage.refFromURL(url).delete();
+    } catch (e) {
+      // Common causes: file was already deleted manually, URL was
+      // synthetic / generated outside Storage (legacy data), or the
+      // bucket name in the URL doesn't match the current FirebaseApp.
+      // Log + move on so other deletes still run.
+      // ignore: avoid_print
+      print('deleteLecture: storage delete failed for $url: $e');
+    }
+  }
 
   /// Atomically swap the `order` field between two lectures in the
   /// same section. Used by the up/down reorder buttons in the

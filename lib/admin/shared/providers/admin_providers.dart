@@ -16,7 +16,11 @@ import '../../subscriptions/data/admin_subscriptions_datasource.dart';
 // ---------- Datasources / services ----------------------------------------
 
 final adminCoursesDataSourceProvider = Provider<AdminCoursesDataSource>(
-  (ref) => AdminCoursesDataSource(firestore: ref.watch(firestoreProvider)),
+  (ref) => AdminCoursesDataSource(
+    firestore: ref.watch(firestoreProvider),
+    storage: ref.watch(firebaseStorageProvider),
+    cloudflare: ref.watch(cloudflareUploadServiceProvider),
+  ),
 );
 
 final adminStorageServiceProvider = Provider<AdminStorageService>(

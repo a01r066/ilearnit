@@ -514,20 +514,46 @@ class _SectionPanel extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(section.title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      )),
-                ),
-                IconButton(
-                  tooltip: 'Delete section',
-                  icon: const Icon(Icons.delete_outline, color: Colors.red),
-                  onPressed: () => _deleteSection(context, ref),
-                ),
-              ],
+            // Header trash icon — wrapped in its own StreamBuilder so
+            // it can disable itself when the section still owns
+            // lectures. We share the same lectures stream the body
+            // already consumes; Firestore's snapshot listener is
+            // multiplexed so the second subscription is free (no
+            // extra reads).
+            StreamBuilder<List<LectureModel>>(
+              stream: lectures,
+              builder: (context, headerSnap) {
+                final lectureCount = headerSnap.data?.length ?? 0;
+                final canDelete =
+                    headerSnap.hasData && lectureCount == 0;
+                return Row(
+                  children: [
+                    Expanded(
+                      child: Text(section.title,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          )),
+                    ),
+                    IconButton(
+                      tooltip: canDelete
+                          ? 'Delete section'
+                          : 'Delete each lecture first '
+                              '($lectureCount remaining)',
+                      icon: Icon(
+                        Icons.delete_outline,
+                        // Grey out when blocked so the affordance
+                        // reads as disabled, not just dim red.
+                        color: canDelete
+                            ? Colors.red
+                            : theme.colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.5),
+                      ),
+                      onPressed:
+                          canDelete ? () => _deleteSection(context, ref) : null,
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 8),
             StreamBuilder<List<LectureModel>>(
@@ -647,10 +673,17 @@ class _SectionPanel extends ConsumerWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete section?'),
+        title: const Text('Delete empty section?'),
+        // Reflect the new "drafts-only / empty-only" policy. Sections
+        // with lectures get the trash icon disabled upstream, but the
+        // dialog still spells out the rule so the admin understands
+        // why they had to clear lectures first.
         content: Text(
-          'Section "${section.title}" and all of its lectures will be '
-          'removed from this course.',
+          'Section "${section.title}" will be removed from this course. '
+          'Only empty sections can be deleted — every lecture must be '
+          'removed individually so its full cleanup '
+          '(Cloudflare video, Storage files, Q&A, notes, reports) '
+          'runs.',
         ),
         actions: [
           TextButton(
@@ -666,10 +699,27 @@ class _SectionPanel extends ConsumerWidget {
       ),
     );
     if (ok != true) return;
-    await ref.read(adminCoursesDataSourceProvider).deleteSection(
-          courseId: courseId,
-          sectionId: section.id,
-        );
+    try {
+      await ref.read(adminCoursesDataSourceProvider).deleteSection(
+            courseId: courseId,
+            sectionId: section.id,
+          );
+    } on StateError catch (e) {
+      // Race window: the user opened the confirm dialog while the
+      // section was empty, then a lecture got added (their own
+      // background tab, or another admin) before they confirmed.
+      // Surface the datasource's friendly message instead of letting
+      // it bubble as an uncaught error.
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Delete failed: $e')),
+      );
+    }
   }
 }
 

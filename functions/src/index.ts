@@ -22,7 +22,7 @@ import {getAuth} from 'firebase-admin/auth';
 import {getFirestore, FieldValue} from 'firebase-admin/firestore';
 import {getMessaging, MulticastMessage, TopicMessage} from 'firebase-admin/messaging';
 import {getStorage} from 'firebase-admin/storage';
-import {onDocumentCreated, onDocumentUpdated} from 'firebase-functions/v2/firestore';
+import {onDocumentCreated, onDocumentDeleted, onDocumentUpdated} from 'firebase-functions/v2/firestore';
 import {HttpsError, onCall} from 'firebase-functions/v2/https';
 import {logger} from 'firebase-functions/v2';
 import {defineSecret} from 'firebase-functions/params';
@@ -909,6 +909,308 @@ export const createCloudflareUpload = onCall(
       // option if it takes too long.
       expiresAt: payload.result.scheduledDeletion ?? null,
     };
+  },
+);
+
+// ---------- onLectureDeleted --------------------------------------------
+//
+// Cascade-cleanup trigger that fires after a lecture doc is deleted.
+// Runs with Admin SDK privileges so it can reach data the admin's
+// client SDK can't:
+//
+//   1. Q&A subcollections (questions + nested replies). The admin
+//      client also runs this cascade for instant UI feedback, but
+//      doing it again server-side is idempotent and catches whatever
+//      the client missed (network drop, app crash, mid-batch error).
+//   2. Per-user lecture progress at
+//      `users/{uid}/courseProgress/{courseId}/lectures/{lectureId}`.
+//      The client can't reach these (rules deny cross-user reads);
+//      this trigger uses the course's enrollments list as the uid
+//      seed, which scales with course popularity instead of total
+//      user count.
+//
+// Idempotent: a re-fire on an already-cleaned lecture is a no-op
+// (queries return empty, batches are skipped). Safe to retry on
+// failure.
+
+export const onLectureDeleted = onDocumentDeleted(
+  'courses/{courseId}/sections/{sectionId}/lectures/{lectureId}',
+  async (event) => {
+    const {courseId, sectionId, lectureId} = event.params;
+    logger.info(
+      `onLectureDeleted: cleaning up courses/${courseId}/sections/` +
+        `${sectionId}/lectures/${lectureId}`,
+    );
+
+    // ---- 1. Q&A subcollections -------------------------------------
+    try {
+      const questionsRef = db
+        .collection('courses')
+        .doc(courseId)
+        .collection('sections')
+        .doc(sectionId)
+        .collection('lectures')
+        .doc(lectureId)
+        .collection('questions');
+
+      const questions = await questionsRef.get();
+      for (const q of questions.docs) {
+        // Drain replies in pages of 200.
+        const repliesRef = q.ref.collection('replies');
+        await deleteCollectionInBatches(repliesRef);
+        await q.ref.delete().catch((e) =>
+          logger.warn(
+            `onLectureDeleted: question ${q.id} delete failed: ${e}`,
+          ),
+        );
+      }
+    } catch (e) {
+      logger.error(`onLectureDeleted: Q&A cascade failed: ${e}`);
+    }
+
+    // ---- 2. Per-user lecture progress -------------------------------
+    //
+    // Lecture progress doc id == lectureId, parent at
+    // `users/{uid}/courseProgress/{courseId}`. We can't query for it
+    // with a single collectionGroup hit (FieldPath.documentId() on a
+    // collectionGroup matches the full path, not just the doc id), so
+    // we walk every uid that has an enrollment for this course — that's
+    // the universe of users who could have written progress for any
+    // lecture in it.
+    try {
+      const enrollments = await db
+        .collection('enrollments')
+        .where('courseId', '==', courseId)
+        .get();
+      const uids = new Set<string>();
+      for (const e of enrollments.docs) {
+        const uid = e.data().userId as string | undefined;
+        if (uid) uids.add(uid);
+      }
+
+      let deleted = 0;
+      for (const uid of uids) {
+        const ref = db
+          .collection('users')
+          .doc(uid)
+          .collection('courseProgress')
+          .doc(courseId)
+          .collection('lectures')
+          .doc(lectureId);
+        try {
+          await ref.delete();
+          deleted++;
+        } catch (e) {
+          logger.warn(
+            `onLectureDeleted: progress delete failed for ${uid}: ${e}`,
+          );
+        }
+      }
+      logger.info(
+        `onLectureDeleted: pruned ${deleted}/${uids.size} per-user ` +
+          `progress docs.`,
+      );
+    } catch (e) {
+      logger.error(`onLectureDeleted: progress cascade failed: ${e}`);
+    }
+
+    // ---- 3. Per-user lecture notes ---------------------------------
+    //
+    // Notes live at `users/{uid}/notes/{noteId}` with a denormalized
+    // `lectureId` field. A `collectionGroup('notes')` query filtered
+    // on that field returns every matching note across every user in
+    // one round-trip — no enrollments pivot needed. Requires a
+    // collection-group single-field index on `notes.lectureId` (added
+    // to firestore.indexes.json).
+    try {
+      const notes = await db
+        .collectionGroup('notes')
+        .where('lectureId', '==', lectureId)
+        .get();
+      if (!notes.empty) {
+        // Batch in chunks of 200 to stay well under the 500-op
+        // WriteBatch ceiling.
+        const docs = notes.docs;
+        for (let i = 0; i < docs.length; i += 200) {
+          const slice = docs.slice(i, i + 200);
+          const batch = db.batch();
+          for (const d of slice) batch.delete(d.ref);
+          await batch.commit();
+        }
+        logger.info(
+          `onLectureDeleted: deleted ${notes.size} per-user notes.`,
+        );
+      }
+    } catch (e) {
+      logger.error(`onLectureDeleted: notes cascade failed: ${e}`);
+    }
+
+    // ---- 4. Moderation reports filed against this lecture's UGC ---
+    //
+    // Reports for questions / replies under this lecture have
+    // `lectureId` denormalized on them (see `ReportsDataSource.submit`).
+    // We delete each matching report; for any that are still `open`,
+    // we tally them and adjust `reports/_aggregates.openCount` in a
+    // single counter mutation so the admin badge stays accurate.
+    //
+    // Naked deletes don't fire `onReportResolved` (that trigger
+    // listens for open→non-open transitions, not raw deletes), which
+    // is why the counter sync lives here.
+    try {
+      const reports = await db
+        .collection('reports')
+        .where('lectureId', '==', lectureId)
+        .get();
+      if (!reports.empty) {
+        let openCount = 0;
+        const docs = reports.docs;
+        for (let i = 0; i < docs.length; i += 200) {
+          const slice = docs.slice(i, i + 200);
+          const batch = db.batch();
+          for (const d of slice) {
+            if ((d.data().status as string | undefined) === 'open') {
+              openCount++;
+            }
+            batch.delete(d.ref);
+          }
+          await batch.commit();
+        }
+        if (openCount > 0) {
+          // Negative increment to claw back the counter. `set+merge`
+          // because the aggregates doc may not exist yet (no reports
+          // ever filed on this project).
+          await db.doc('reports/_aggregates').set(
+            {openCount: FieldValue.increment(-openCount)},
+            {merge: true},
+          );
+        }
+        logger.info(
+          `onLectureDeleted: deleted ${reports.size} reports ` +
+            `(${openCount} were open).`,
+        );
+      }
+    } catch (e) {
+      logger.error(`onLectureDeleted: reports cascade failed: ${e}`);
+    }
+  },
+);
+
+/**
+ * Helper — drain a collection by paginated batch deletes. Each batch
+ * is at most 200 ops to stay well under Firestore's 500-op ceiling
+ * with headroom for SDK overhead.
+ */
+async function deleteCollectionInBatches(
+  ref: FirebaseFirestore.CollectionReference,
+  pageSize = 200,
+): Promise<void> {
+  while (true) {
+    const snap = await ref.limit(pageSize).get();
+    if (snap.empty) return;
+    const batch = db.batch();
+    for (const d of snap.docs) batch.delete(d.ref);
+    try {
+      await batch.commit();
+    } catch (e) {
+      logger.warn(
+        `deleteCollectionInBatches: ${ref.path} batch failed: ${e}`,
+      );
+      return;
+    }
+    if (snap.size < pageSize) return;
+  }
+}
+
+// ---------- deleteCloudflareVideo ---------------------------------------
+//
+// Admin-only delete of a Cloudflare Stream video. Called from
+// `AdminCoursesDataSource.deleteLecture` after the lecture's Firestore
+// doc is read but BEFORE the doc is deleted, so a failure here can be
+// retried without losing the uid reference.
+//
+// The Cloudflare API endpoint is:
+//   DELETE /client/v4/accounts/{accountId}/stream/{uid}
+//
+// Returns 200 + a wrapped success payload on hit, 404 on already-deleted.
+// We treat 404 as success — idempotency means a retry after a partial
+// failure can run through cleanly.
+
+export const deleteCloudflareVideo = onCall(
+  {secrets: [CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID]},
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Sign in required.');
+    }
+    const role = await getRole(request.auth.uid);
+    if (role !== 'instructor' && role !== 'admin') {
+      throw new HttpsError(
+        'permission-denied',
+        'Instructor or admin role required.',
+      );
+    }
+
+    const videoUid = (request.data?.videoUid as string | undefined)?.trim();
+    if (!videoUid || !/^[a-f0-9]{32}$/i.test(videoUid)) {
+      throw new HttpsError(
+        'invalid-argument',
+        'videoUid must be a 32-char hex string.',
+      );
+    }
+
+    const accountId = CLOUDFLARE_ACCOUNT_ID.value().trim();
+    const token = CLOUDFLARE_API_TOKEN.value().trim();
+    if (!/^[a-f0-9]{32}$/i.test(accountId) || !token) {
+      throw new HttpsError(
+        'failed-precondition',
+        'Cloudflare account id or token misconfigured.',
+      );
+    }
+
+    const url =
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}` +
+      `/stream/${videoUid}`;
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (e) {
+      logger.error(`Cloudflare DELETE fetch failed for ${videoUid}: ${e}`);
+      throw new HttpsError(
+        'unavailable',
+        'Could not reach Cloudflare Stream.',
+      );
+    }
+
+    // 404 → already gone (or never existed). Treat as success so the
+    // caller can safely retry without juggling state.
+    if (response.status === 404) {
+      logger.info(
+        `deleteCloudflareVideo: ${videoUid} already absent — treating as ok.`,
+      );
+      return {ok: true, alreadyAbsent: true};
+    }
+
+    if (!response.ok) {
+      let bodyText = '';
+      try {
+        bodyText = (await response.text()).slice(0, 500);
+      } catch (_) {/* ignore */}
+      logger.warn(
+        `Cloudflare DELETE returned ${response.status} for ${videoUid}. ` +
+          `Body: ${bodyText}`,
+      );
+      throw new HttpsError(
+        'internal',
+        `Cloudflare Stream returned ${response.status}: ${bodyText}`,
+      );
+    }
+
+    return {ok: true, alreadyAbsent: false};
   },
 );
 

@@ -58,6 +58,27 @@ class CloudflareUploadService {
   final FirebaseFunctions _functions;
   final Dio _dio;
 
+  /// Delete a Cloudflare Stream video by uid. Calls the
+  /// `deleteCloudflareVideo` Cloud Function — the API token never
+  /// leaves the server. Best-effort: returns true on success, false
+  /// on any failure (logged via `logger` upstream).
+  ///
+  /// Idempotent: the server treats 404 ("already gone") as success,
+  /// so a retry after a partial cleanup is safe.
+  Future<bool> deleteVideo(String videoUid) async {
+    if (videoUid.trim().isEmpty) return true;
+    try {
+      final res = await _functions
+          .httpsCallable('deleteCloudflareVideo')
+          .call<Map<String, dynamic>>({'videoUid': videoUid.trim()});
+      return (res.data['ok'] as bool?) ?? false;
+    } catch (e) {
+      // ignore: avoid_print
+      print('CloudflareUploadService.deleteVideo($videoUid) failed: $e');
+      return false;
+    }
+  }
+
   /// One-shot pick + upload. Returns the broadcast progress stream so
   /// the caller can drive a `LinearProgressIndicator` + result text
   /// from a single source.
