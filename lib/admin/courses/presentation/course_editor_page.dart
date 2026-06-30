@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../features/courses/data/models/course_model.dart';
 import '../../../features/courses/data/models/course_section_model.dart';
 import '../../../features/courses/data/models/lecture_model.dart';
+import '../../../features/courses/data/models/lecture_resource_model.dart';
 import '../../../features/courses/domain/entities/course_status.dart';
 import '../../../features/courses/domain/entities/instrument_category.dart';
 import '../../../features/courses/domain/entities/lecture_type.dart';
@@ -780,7 +781,8 @@ class _LectureDraft {
     required this.cloudflareVideoId,
     required this.fileSizeBytes,
     required this.order,
-  });
+    List<LectureResourceModel>? resources,
+  }) : resources = resources ?? <LectureResourceModel>[];
 
   factory _LectureDraft.fromModel(LectureModel m) => _LectureDraft(
         title: m.title,
@@ -792,6 +794,8 @@ class _LectureDraft {
         cloudflareVideoId: m.cloudflareVideoId,
         fileSizeBytes: m.fileSizeBytes,
         order: m.order,
+        // Defensive copy — the draft is mutable, the model isn't.
+        resources: List<LectureResourceModel>.of(m.resources),
       );
 
   String title;
@@ -803,6 +807,14 @@ class _LectureDraft {
   String? cloudflareVideoId;
   int fileSizeBytes;
   int order;
+
+  /// Supplementary downloads (PDF / audio / doc) attached to this
+  /// lecture. The main lecture media (video / audio file / PDF) lives
+  /// on `mediaUrl` or `cloudflareVideoId`; this list is everything
+  /// *extra* — sheet music, exercise PDFs, MP3 backing tracks, etc.
+  /// Rendered on the mobile lecture page below the player via
+  /// `DocumentLectureResourceTile`.
+  List<LectureResourceModel> resources;
 
   LectureModel toModel(String id) => LectureModel(
         id: id,
@@ -818,6 +830,7 @@ class _LectureDraft {
                 : cloudflareVideoId,
         description: description.isEmpty ? null : description,
         fileSizeBytes: fileSizeBytes,
+        resources: List<LectureResourceModel>.of(resources),
       );
 }
 
@@ -952,6 +965,169 @@ class _LectureEditorDialogState extends ConsumerState<_LectureEditorDialog> {
         }
       });
     });
+  }
+
+  /// Pending resource upload (one at a time). Drives the inline
+  /// progress bar under the "Add resource" button. `null` outside an
+  /// active upload.
+  UploadProgress? _resourceProgress;
+
+  /// Pick a supplementary file (PDF / audio / doc / image) and upload
+  /// it to the lecture's `resources/` Storage path. On success, the
+  /// upload's download URL + a `LectureResourceModel` is appended to
+  /// the draft so it gets persisted by the outer Save flow.
+  Future<void> _pickResource() async {
+    final cid = widget.courseId;
+    final sid = widget.sectionId;
+    final lid = widget.lectureId;
+    if (cid == null || sid == null || lid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Save the lecture first, then re-open to add resources.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.any,
+      withData: true,
+    );
+    if (picked == null || picked.files.isEmpty) return;
+    final file = picked.files.first;
+    final bytes = file.bytes;
+    if (bytes == null) return;
+
+    final ext = (file.extension ?? '').toLowerCase();
+    final format = _resourceFormatFor(ext);
+    final contentType = _resourceContentTypeFor(ext);
+
+    final stream = ref.read(adminStorageServiceProvider).uploadLectureResource(
+          courseId: cid,
+          sectionId: sid,
+          lectureId: lid,
+          filename: file.name,
+          bytes: bytes,
+          contentType: contentType,
+        );
+
+    stream.listen((p) {
+      if (!mounted) return;
+      setState(() {
+        _resourceProgress = p;
+        if (p.phase == UploadPhase.completed && p.downloadUrl != null) {
+          // Append to the draft list. Name defaults to the picked
+          // filename minus extension — admin can rename inline later
+          // via the row's rename button.
+          final displayName = _stripExtension(file.name);
+          _draft.resources = [
+            ..._draft.resources,
+            LectureResourceModel(
+              name: displayName,
+              url: p.downloadUrl!,
+              format: format,
+              sizeBytes: p.totalBytes,
+            ),
+          ];
+          // Clear the progress block after a beat so the user gets
+          // visual confirmation before the indicator disappears.
+          Future<void>.delayed(const Duration(milliseconds: 800), () {
+            if (!mounted) return;
+            setState(() => _resourceProgress = null);
+          });
+        }
+      });
+    });
+  }
+
+  void _removeResource(LectureResourceModel r) {
+    setState(() {
+      _draft.resources = _draft.resources
+          .where((x) => !(x.url == r.url && x.name == r.name))
+          .toList();
+    });
+    // We DON'T delete the file from Storage — the URL might still
+    // resolve from cached entitlements. Hard cleanup is an admin
+    // janitor task; the practical effect of the remove button is
+    // "drop this from the lecture's manifest."
+  }
+
+  Future<void> _renameResource(LectureResourceModel r) async {
+    final ctrl = TextEditingController(text: r.name);
+    final next = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Rename resource'),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Display name',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(ctrl.text.trim()),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    if (next == null || next.isEmpty) return;
+    setState(() {
+      _draft.resources = _draft.resources
+          .map((x) => (x.url == r.url) ? x.copyWith(name: next) : x)
+          .toList();
+    });
+  }
+
+  /// Maps a file extension to the `format` string consumed by
+  /// `DocumentLectureResourceTile` (drives the icon + the local
+  /// filename when downloaded).
+  String _resourceFormatFor(String ext) {
+    if (ext == 'pdf') return 'pdf';
+    if (ext == 'doc' || ext == 'docx') return ext;
+    if (ext == 'mp3' || ext == 'm4a' || ext == 'wav' || ext == 'aac') {
+      return ext;
+    }
+    return ext.isEmpty ? 'bin' : ext;
+  }
+
+  String _resourceContentTypeFor(String ext) {
+    switch (ext) {
+      case 'pdf':
+        return 'application/pdf';
+      case 'doc':
+        return 'application/msword';
+      case 'docx':
+        return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      case 'mp3':
+        return 'audio/mpeg';
+      case 'm4a':
+        return 'audio/mp4';
+      case 'wav':
+        return 'audio/wav';
+      case 'aac':
+        return 'audio/aac';
+      case 'png':
+      case 'jpg':
+      case 'jpeg':
+        return 'image/$ext';
+      default:
+        return 'application/octet-stream';
+    }
+  }
+
+  String _stripExtension(String name) {
+    final i = name.lastIndexOf('.');
+    return i <= 0 ? name : name.substring(0, i);
   }
 
   FileType _pickerType(LectureType t) {
@@ -1138,6 +1314,76 @@ class _LectureEditorDialogState extends ConsumerState<_LectureEditorDialog> {
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ),
+
+              // ---- Resources -------------------------------------
+              // Attached PDFs / audio / docs surfaced to students
+              // below the player in the consumer app. See
+              // `DocumentLectureResourceTile` for the renderer.
+              const Divider(height: 32),
+              Text('Resources',
+                  style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(height: 4),
+              Text(
+                'Sheet music, backing tracks, exercise PDFs — anything '
+                'students should be able to download alongside the lecture.',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color:
+                          Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              if (_draft.resources.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    'No resources attached yet.',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final r in _draft.resources)
+                      _ResourceRow(
+                        resource: r,
+                        onRename: () => _renameResource(r),
+                        onRemove: () => _removeResource(r),
+                      ),
+                  ],
+                ),
+              if (_resourceProgress != null && !_resourceProgress!.isTerminal)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, bottom: 8),
+                  child: LinearProgressIndicator(
+                    value: _resourceProgress!.fraction,
+                  ),
+                ),
+              if (_resourceProgress?.phase == UploadPhase.failed)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    'Upload failed: ${_resourceProgress?.error}',
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
+              const SizedBox(height: 4),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.attach_file_rounded),
+                  label: Text(
+                    _resourceProgress != null &&
+                            !_resourceProgress!.isTerminal
+                        ? 'Uploading…'
+                        : 'Add resource',
+                  ),
+                  onPressed: (_resourceProgress != null &&
+                          !_resourceProgress!.isTerminal)
+                      ? null
+                      : _pickResource,
+                ),
+              ),
             ],
           ),
         ),
@@ -1156,6 +1402,90 @@ class _LectureEditorDialogState extends ConsumerState<_LectureEditorDialog> {
           child: const Text('Save'),
         ),
       ],
+    );
+  }
+}
+
+/// Single row inside the "Resources" panel of the lecture editor.
+/// Icon + display name + format chip + rename / remove buttons.
+class _ResourceRow extends StatelessWidget {
+  const _ResourceRow({
+    required this.resource,
+    required this.onRename,
+    required this.onRemove,
+  });
+  final LectureResourceModel resource;
+  final VoidCallback onRename;
+  final VoidCallback onRemove;
+
+  IconData get _icon {
+    switch (resource.format.toLowerCase()) {
+      case 'pdf':
+        return Icons.picture_as_pdf_outlined;
+      case 'doc':
+      case 'docx':
+        return Icons.description_outlined;
+      case 'mp3':
+      case 'm4a':
+      case 'wav':
+      case 'aac':
+        return Icons.audiotrack_outlined;
+      case 'png':
+      case 'jpg':
+      case 'jpeg':
+        return Icons.image_outlined;
+      default:
+        return Icons.insert_drive_file_outlined;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: theme.dividerColor),
+      ),
+      child: Row(
+        children: [
+          Icon(_icon, color: theme.colorScheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  resource.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  '${resource.format.toUpperCase()} · '
+                  '${_formatBytes(resource.sizeBytes)}',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Rename',
+            icon: const Icon(Icons.edit_outlined),
+            visualDensity: VisualDensity.compact,
+            onPressed: onRename,
+          ),
+          IconButton(
+            tooltip: 'Remove',
+            icon: const Icon(Icons.close, color: Colors.red),
+            visualDensity: VisualDensity.compact,
+            onPressed: onRemove,
+          ),
+        ],
+      ),
     );
   }
 }

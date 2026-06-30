@@ -121,7 +121,14 @@ class _DocumentLectureResourceTileState
   CancelToken? _cancelToken;
 
   Future<void> _download() async {
-    final dio = ref.read(dioProvider);
+    // Use the dedicated media-download Dio (no `AuthInterceptor`,
+    // no JSON `Accept` / `Content-Type` defaults). The main
+    // `dioProvider` is configured for our backend API, and its
+    // BaseOptions leak `Content-Type: application/json` onto every
+    // GET, which has been observed to provoke 403s from Firebase
+    // Storage's newer `*.firebasestorage.app` buckets. See
+    // `mediaDownloadDioProvider` for the rationale.
+    final dio = ref.read(mediaDownloadDioProvider);
     final dir = await getApplicationDocumentsDirectory();
     final fileName = widget.overrideFileName ??
         widget.resource.name
@@ -246,9 +253,25 @@ class _DocumentLectureResourceTileState
         onPressed: () => _cancelToken?.cancel('user'),
       );
     }
-    return FilledButton.tonal(
-      onPressed: _open,
-      child: const Text('Open'),
+    // Bounded width — `ListTile.trailing` asserts that the trailing
+    // widget's intrinsic width plus `contentPadding` doesn't exceed
+    // the tile width. M3's `FilledButton` family wants to expand to
+    // fill (`tapTargetSize: TapTargetSize.padded` adds 48dp of slop
+    // on top of the label width), which trips that assertion and
+    // floods the log with `Trailing widget consumes the entire tile
+    // width`. Constraining the width also matches the visual rhythm
+    // of the other two states (IconButton ≈ 48dp).
+    return SizedBox(
+      width: 80,
+      child: FilledButton.tonal(
+        onPressed: _open,
+        style: FilledButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          visualDensity: VisualDensity.compact,
+        ),
+        child: const Text('Open'),
+      ),
     );
   }
 }
