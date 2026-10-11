@@ -4,6 +4,7 @@ import '../../../../core/error/failure.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 import '../../data/datasources/course_qa_datasource.dart';
 import 'qa_form_state.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Drives the "Reply" composer at the bottom of [QuestionThreadPage].
 ///
@@ -61,7 +62,7 @@ class ReplyFormNotifier extends StateNotifier<QAFormState> {
       state = state.copyWith(
         isSubmitting: false,
         lastFailure: Failure.unexpected(
-          message: 'Could not post your reply.',
+          message: L10n.current.qaPostReplyFailed,
           error: e,
         ),
       );

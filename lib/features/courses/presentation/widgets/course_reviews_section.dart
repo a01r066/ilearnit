@@ -16,6 +16,7 @@ import '../../../purchases/presentation/providers/purchases_providers.dart';
 import '../../data/models/course_review_model.dart';
 import '../providers/reviews_providers.dart';
 import 'write_review_sheet.dart';
+import '../../../../l10n/l10n.dart';
 
 /// "Ratings & Reviews" section rendered on the course detail page.
 ///
@@ -34,7 +35,7 @@ class CourseReviewsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Ratings & Reviews',
+        Text(context.l10n.reviewsTitle,
             style: context.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w800,
             )),
@@ -43,7 +44,7 @@ class CourseReviewsSection extends ConsumerWidget {
           loading: () => const _ReviewsSkeleton(),
           error: (e, _) => Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Text('Failed to load reviews: $e',
+            child: Text(context.l10n.reviewsLoadFailed,
                 style: TextStyle(color: context.colors.error)),
           ),
           data: (list) {
@@ -73,7 +74,7 @@ class CourseReviewsSection extends ConsumerWidget {
                 const SizedBox(height: 16),
                 if (visible.isEmpty)
                   Text(
-                    'No reviews yet — be the first.',
+                    context.l10n.reviewsEmpty,
                     style: context.textTheme.bodyLarge?.copyWith(
                       color: context.colors.onSurfaceVariant,
                     ),
@@ -124,7 +125,9 @@ class _Summary extends StatelessWidget {
             _Stars(rating: average, size: 18),
             const SizedBox(height: 4),
             Text(
-              count == 1 ? '1 review' : '$count reviews',
+              count == 1
+                  ? context.l10n.reviewsCountOne
+                  : context.l10n.reviewsCountMany('$count'),
               style: context.textTheme.bodyMedium?.copyWith(
                 color: context.colors.onSurfaceVariant,
               ),
@@ -178,15 +181,15 @@ class _WriteReviewCta extends ConsumerWidget {
         icon: Icon(hasOwn ? Icons.edit_outlined : Icons.rate_review_outlined),
         label: Text(
           user == null
-              ? 'Sign in to write a review'
-              : (hasOwn ? 'Edit your review' : 'Write a review'),
+              ? context.l10n.reviewSignInToWrite
+              : (hasOwn ? context.l10n.reviewEdit : context.l10n.reviewWrite),
         ),
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(48),
         ),
         onPressed: () {
           if (user == null) {
-            context.showSnack('Sign in to leave a review.');
+            context.showSnack(context.l10n.reviewSignInSnack);
             context.goNamed(RouteNames.login);
             return;
           }
@@ -215,7 +218,7 @@ class _AccessGateHint extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Unlock this course (or subscribe) to leave a review.',
+              context.l10n.reviewAccessGate,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),

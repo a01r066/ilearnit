@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/course_section_entity.dart';
 import '../../domain/entities/lecture_entity.dart';
 import 'lecture_tile.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Expandable curriculum section. Sections collapse by default; only the
 /// first one expands (handled by parent via [initiallyExpanded]).
@@ -51,7 +52,7 @@ class SectionTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'Section ${index + 1}',
+                  context.l10n.sectionNumber('${index + 1}'),
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -73,7 +74,10 @@ class SectionTile extends StatelessWidget {
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              '${section.lectureCount} lectures • ${section.formattedTotalDuration}',
+              context.l10n.sectionSummary(
+                '${section.lectureCount}',
+                section.formattedTotalDuration,
+              ),
               style: theme.textTheme.bodySmall?.copyWith(color: hint),
             ),
           ),

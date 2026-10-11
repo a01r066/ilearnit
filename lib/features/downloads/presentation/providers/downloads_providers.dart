@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../../../courses/presentation/providers/courses_providers.dart';
 import '../../data/datasources/downloads_manifest_store.dart';
 import '../../data/datasources/downloads_service.dart';
 import '../../domain/entities/download_entity.dart';
@@ -25,8 +26,10 @@ final downloadsManifestStoreProvider = Provider<DownloadsManifestStore>(
 
 final downloadsServiceProvider = Provider<DownloadsService>(
   (ref) {
+    final media = ref.watch(lectureMediaServiceProvider);
     final service = DownloadsService(
       manifest: ref.watch(downloadsManifestStoreProvider),
+      resolveUrl: media.resolveRef,
     );
     ref.onDispose(service.dispose);
     return service;

@@ -5,6 +5,7 @@ import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../domain/entities/report_content_type.dart';
 import '../../domain/entities/report_reason.dart';
 import '../providers/moderation_providers.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Modal bottom sheet that collects a [ReportReason] + optional notes
 /// and writes a `reports/{id}` doc via [ReportsDataSource.submit].
@@ -75,17 +76,16 @@ class _ReportContentSheetState extends ConsumerState<ReportContentSheet> {
             reporterNotes: _notesCtrl.text,
           );
       if (!mounted) return;
+      // Capture before popping — this sheet's context unmounts.
+      final messenger = ScaffoldMessenger.of(context);
+      final thanks = context.l10n.reportThanks;
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Thanks — our team will review this shortly.'),
-        ),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(thanks)));
     } catch (e) {
       if (!mounted) return;
       setState(() => _submitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not submit report: $e')),
+        SnackBar(content: Text(context.l10n.reportFailed)),
       );
     }
   }
@@ -110,19 +110,21 @@ class _ReportContentSheetState extends ConsumerState<ReportContentSheet> {
                 Icon(Icons.flag_outlined,
                     color: theme.colorScheme.error),
                 const SizedBox(width: 8),
-                Text('Report ${widget.contentType.label.toLowerCase()}',
+                Text(
+                    context.l10n
+                        .reportTitle(widget.contentType.label.toLowerCase()),
                     style: theme.textTheme.titleLarge),
               ],
             ),
             const SizedBox(height: 4),
             Text(
-              'Help us keep this community safe. Reports are reviewed within 24 hours.',
+              context.l10n.reportIntro,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 16),
-            Text('Reason', style: theme.textTheme.titleSmall),
+            Text(context.l10n.reportReason, style: theme.textTheme.titleSmall),
             const SizedBox(height: 8),
             // Radio list — explicit reasons drive consistent admin
             // triage. Avoid a single free-text field; it makes
@@ -145,9 +147,9 @@ class _ReportContentSheetState extends ConsumerState<ReportContentSheet> {
               enabled: !_submitting,
               maxLines: 3,
               maxLength: 500,
-              decoration: const InputDecoration(
-                labelText: 'Additional notes (optional)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: context.l10n.reportNotes,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 8),
@@ -161,7 +163,7 @@ class _ReportContentSheetState extends ConsumerState<ReportContentSheet> {
                         width: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Submit report'),
+                    : Text(context.l10n.reportSubmit),
               ),
             ),
           ],

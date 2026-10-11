@@ -141,6 +141,7 @@ class _Header extends StatelessWidget {
         children: [
           if (canGoBack)
             IconButton(
+              tooltip: MaterialLocalizations.of(context).backButtonTooltip,
               icon: const Icon(Icons.arrow_back_rounded),
               onPressed: onBack,
             )

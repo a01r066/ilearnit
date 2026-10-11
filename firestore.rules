@@ -41,15 +41,25 @@ service cloud.firestore {
       // Owner reads own doc; admins read all.
       allow read: if isSignedIn() && (uid() == userId || isAdmin());
 
-      // Owner creates own doc on first sign-in.
-      allow create: if isSignedIn() && uid() == userId;
+      // Owner creates own doc on first sign-in. Privileged fields are
+      // pinned: a brand-new account can only be a non-suspended student
+      // with no subscription. (Without this, anyone could sign up via the
+      // Auth REST API and create users/{uid} with role: 'admin' — both
+      // these rules and the Cloud Functions' getRole() trust that field.)
+      allow create: if isSignedIn()
+        && uid() == userId
+        && request.resource.data.get('role', 'student') == 'student'
+        && request.resource.data.get('isSuspended', false) == false
+        && !('subscription' in request.resource.data);
 
-      // Owner can write their own non-privileged fields — explicitly
-      // NOT role / isSuspended.
+      // Owner can write their own non-privileged fields. Server-owned:
+      //   role, isSuspended  — admin / Cloud Functions only
+      //   subscription       — written ONLY by the verifySubscription
+      //                        callable after receipt validation
       allow update: if isSignedIn()
         && uid() == userId
         && !(request.resource.data.diff(resource.data).affectedKeys()
-              .hasAny(['role', 'isSuspended']));
+              .hasAny(['role', 'isSuspended', 'subscription']));
 
       // Admins can update anything (including role + isSuspended).
       allow update: if isAdmin();
@@ -106,6 +116,24 @@ service cloud.firestore {
       match /blocks/{blockedUid} {
         allow read, write: if isSignedIn() && uid() == userId;
       }
+
+      // --- Owned-course records (entitlements) ---------------------------
+      // users/{uid}/purchases/{courseId} — read-only from clients.
+      // The ONLY path that creates / updates these docs is the
+      // `verifyPurchase` callable Cloud Function, which uses the Admin
+      // SDK and bypasses these rules after validating the Apple / Play
+      // receipt. A client that writes directly is attempting to mint a
+      // free entitlement; deny.
+      match /purchases/{courseId} {
+        allow read: if isSignedIn() && (uid() == userId || isAdmin());
+        allow write: if false;
+      }
+
+      // --- Owned songbooks — written only by verifySongbookPurchase ------
+      match /songbooks/{songbookId} {
+        allow read: if isSignedIn() && (uid() == userId || isAdmin());
+        allow write: if false;
+      }
     }
 
     // ============================================================
@@ -156,7 +184,28 @@ service cloud.firestore {
     // ============================================================
 
     match /courses/{courseId} {
-      allow read: if true;
+      // ----- Read -------------------------------------------------------
+      // Public catalogue = published courses only. Drafts, in-review,
+      // unpublished and archived courses are visible to their instructor,
+      // admins and moderators; buyers keep single-doc access to a course
+      // they own even after it's unpublished/archived.
+      // List queries MUST filter `status == 'published'` (or
+      // `instructorId == <me>`) so rules can prove every result is allowed.
+      function isPublishedCourse() {
+        return resource.data.get('status', 'draft') == 'published';
+      }
+      allow get: if isPublishedCourse()
+        || isAdmin()
+        || isModerator()
+        || (isSignedIn() && (
+              resource.data.instructorId == uid()
+              || exists(/databases/$(database)/documents/users/$(uid())/purchases/$(courseId))));
+      // Direct field access (not .get()) so the query planner can match
+      // it against `where('status', '==', 'published')`.
+      allow list: if resource.data.status == 'published'
+        || isAdmin()
+        || isModerator()
+        || (isSignedIn() && resource.data.instructorId == uid());
 
       // ----- Create -----------------------------------------------------
       // Admin can create with any status (e.g. seeding pre-published
@@ -237,27 +286,24 @@ service cloud.firestore {
         && resource.data.instructorId == uid()
         && resource.data.get('status', 'draft') == 'draft';
 
-      // The reviews aggregator (rating + reviewCount) is rewritten by the
-      // client when a review is created/deleted. Allow signed-in users to
-      // bump those two fields without granting them a full update.
-      allow update: if isSignedIn()
-        && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['rating', 'reviewCount']);
+      // `rating` + `reviewCount` are maintained by the
+      // onCourseReviewWritten Cloud Function (Admin SDK). No client rule.
 
       // --- Reviews -------------------------------------------------------
-      // Read: public. Write: only the author (doc id == uid). The UI gates
-      // who can open the WriteReviewSheet via `hasUnlockedAccessProvider`
-      // (purchased OR active subscription); this rule trusts that gate but
-      // still constrains shape + ownership.
-      //
-      // Note: rules cannot yet enforce "purchased OR subscribed" because
-      // the enrollment doc id format isn't deterministic. Once enrollments
-      // are written at `enrollments/{uid}_{courseId}`, swap this rule to
-      // include an `exists(...)` check on that path.
+      // Read: public. Write: only the author (doc id == uid) who owns the
+      // course (server-minted users/{uid}/purchases/{courseId}) or has an
+      // active Personal Plan (server-written users/{uid}.subscription).
+      // Both entitlement sources are unforgeable by clients.
+      function canReview(courseId) {
+        return exists(/databases/$(database)/documents/users/$(uid())/purchases/$(courseId))
+          || userDoc().get('subscription', {}).get('expiresAt', timestamp.value(0)) > request.time;
+      }
       match /reviews/{userId} {
         allow read: if true;
         allow create, update: if isSignedIn()
           && uid() == userId
+          && !isSuspended()
+          && canReview(courseId)
           && request.resource.data.userId == uid()
           && request.resource.data.rating is int
           && request.resource.data.rating >= 1
@@ -405,13 +451,27 @@ service cloud.firestore {
             && get(/databases/$(database)/documents/courses/$(resource.data.courseId))
                  .data.instructorId == uid())
       );
-      allow create: if isSignedIn()
-        && request.resource.data.userId == uid();
+      // Clients NEVER mint enrollments directly — that would let a user
+      // self-enroll without paying. The `verifyPurchase` callable (which
+      // uses the Admin SDK) creates enrollments after validating the
+      // store receipt. Admin manual-grant also uses an Admin SDK path.
+      allow create: if false;
       // Admin can update enrollment.status (e.g. → 'cancelled' as part
       // of a refund) and delete outright.
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
+
+    // ============================================================
+    // IAP bookkeeping — server-only (Admin SDK in functions/src/iap.ts)
+    // ============================================================
+    //   _iap_transactions/{hash}   one doc per store transaction; makes
+    //                              grants idempotent + account-bound
+    //   _iap_subscriptions/{hash}  binds a store subscription to one uid
+    //   purchase_intents/{uid_pid} courseId the user is about to buy
+    match /_iap_transactions/{id}  { allow read, write: if false; }
+    match /_iap_subscriptions/{id} { allow read, write: if false; }
+    match /purchase_intents/{id}   { allow read, write: if false; }
 
     // ============================================================
     // transactions/{transactionId}

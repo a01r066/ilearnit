@@ -1,11 +1,9 @@
 {
   "@@locale": "en",
-
   "appTitle": "iLearnIt",
   "@appTitle": {
     "description": "The application title shown in MaterialApp.title and the launcher label."
   },
-
   "languageEnglish": "English",
   "@languageEnglish": {
     "description": "Native name of the English language as shown in the language picker."
@@ -14,18 +12,19 @@
   "@languageVietnamese": {
     "description": "Native name of the Vietnamese language as shown in the language picker."
   },
-
   "navHome": "Home",
   "navCourses": "Courses",
   "navInstructors": "Instructors",
   "navProfile": "Profile",
-
   "homeWelcomeAnon": "Welcome to iLearnIt",
   "homeWelcomeNamed": "Hello, {name} 👋",
   "@homeWelcomeNamed": {
     "description": "Greeting shown when the user is signed in. {name} is the user's first name.",
     "placeholders": {
-      "name": { "type": "String", "example": "Thanh" }
+      "name": {
+        "type": "String",
+        "example": "Thanh"
+      }
     }
   },
   "homeWelcomeSubtitle": "What will you practice today?",
@@ -37,21 +36,20 @@
   "@homePopularInstrument": {
     "description": "Section heading on the Home tab for popular courses of a single instrument.",
     "placeholders": {
-      "instrument": { "type": "String", "example": "Guitar" }
+      "instrument": {
+        "type": "String",
+        "example": "Guitar"
+      }
     }
   },
   "homeNoPopularYet": "No popular courses yet.",
-
   "instrumentGuitar": "Guitar",
   "instrumentPiano": "Piano",
   "instrumentViolin": "Violin",
-
   "coursesTitle": "Courses",
   "coursesFilterAll": "All",
   "coursesEmpty": "No courses found.",
-
   "instructorsTitle": "Instructors",
-
   "settingsTitle": "Settings",
   "settingsAppearance": "Appearance",
   "settingsTheme": "Theme",
@@ -61,7 +59,6 @@
   "settingsThemeProfessional": "Professional",
   "settingsLanguage": "Language",
   "settingsLanguageDescription": "Choose your preferred language for the app interface.",
-
   "authSignIn": "Sign in",
   "authSignUp": "Sign up",
   "authSignOut": "Sign out",
@@ -74,7 +71,6 @@
   "authOrContinueWith": "or continue with",
   "authContinueWithGoogle": "Continue with Google",
   "authContinueWithApple": "Continue with Apple",
-
   "commonOk": "OK",
   "commonCancel": "Cancel",
   "commonRetry": "Retry",
@@ -82,23 +78,23 @@
   "commonLoading": "Loading…",
   "commonError": "Something went wrong",
   "commonEmpty": "Nothing here yet",
-
   "purchaseBuy": "Buy",
   "purchaseBuyForPrice": "Buy for {price}",
   "@purchaseBuyForPrice": {
     "description": "Buy button on a course detail page, including the formatted price.",
     "placeholders": {
-      "price": { "type": "String", "example": "$9.99" }
+      "price": {
+        "type": "String",
+        "example": "$9.99"
+      }
     }
   },
   "purchaseOwned": "Owned",
   "purchaseRestore": "Restore purchases",
   "purchaseRestoring": "Restoring…",
   "purchaseRestored": "Purchases restored.",
-
   "lectureLocked": "This lecture is locked. Purchase the course to unlock.",
   "lectureFreePreview": "Free preview",
-
   "subscriptionTitle": "Subscription",
   "subscriptionActivePlans": "Active plans",
   "subscriptionNoneActive": "You don't have any active subscriptions",
@@ -115,19 +111,28 @@
   "startingAtPerMonth": "Starting at {price} per month. Cancel any time.",
   "@startingAtPerMonth": {
     "placeholders": {
-      "price": { "type": "String", "example": "₫250.000" }
+      "price": {
+        "type": "String",
+        "example": "₫250.000"
+      }
     }
   },
   "subscriptionRenewsOn": "Renews on {date}",
   "@subscriptionRenewsOn": {
     "placeholders": {
-      "date": { "type": "String", "example": "Jun 1, 2026" }
+      "date": {
+        "type": "String",
+        "example": "Jun 1, 2026"
+      }
     }
   },
   "subscriptionCancelsOn": "Cancels on {date}",
   "@subscriptionCancelsOn": {
     "placeholders": {
-      "date": { "type": "String", "example": "Jun 1, 2026" }
+      "date": {
+        "type": "String",
+        "example": "Jun 1, 2026"
+      }
     }
   },
   "planBilledYearly": "Billed yearly",
@@ -140,7 +145,10 @@
   "saveAmount": "Save {amount}",
   "@saveAmount": {
     "placeholders": {
-      "amount": { "type": "String", "example": "₫6.600.000" }
+      "amount": {
+        "type": "String",
+        "example": "₫6.600.000"
+      }
     }
   },
   "checkoutFeature1": "Access to every iLearnIt course, anytime",
@@ -151,10 +159,12 @@
   "checkoutBillingDisclaimer": "Cancel anytime by visiting the Subscriptions page in your account. Your subscription begins at checkout and a charge of {total} (plus applicable taxes) will apply immediately and automatically each billing period until you cancel. By placing this order, you agree to our Terms of Use and authorize this recurring charge. No refunds unless required by law.",
   "@checkoutBillingDisclaimer": {
     "placeholders": {
-      "total": { "type": "String", "example": "₫3.000.000" }
+      "total": {
+        "type": "String",
+        "example": "₫3.000.000"
+      }
     }
   },
-
   "searchHint": "Search courses",
   "searchCancel": "Cancel",
   "searchRecentSearches": "Recent searches",
@@ -163,14 +173,16 @@
   "searchNoMatchesForQuery": "No matches for \"{query}\"",
   "@searchNoMatchesForQuery": {
     "placeholders": {
-      "query": { "type": "String", "example": "fingerstyle" }
+      "query": {
+        "type": "String",
+        "example": "fingerstyle"
+      }
     }
   },
   "searchTryDifferent": "Try a different term or adjust your filters.",
   "badgeBestseller": "Bestseller",
   "badgeHighestRated": "Highest rated",
   "badgeNew": "New",
-
   "songbooksTitle": "Songbooks",
   "songbooksSearchHint": "Search for Songbooks",
   "songbooksRecentlyViewed": "Recently Viewed",
@@ -189,7 +201,6 @@
   "songbookYouMightAlsoLike": "You might also like",
   "songbookNotFound": "Songbook not found.",
   "songbookNoReviewsYet": "No reviews yet.",
-
   "instructorTitle": "Instructor",
   "instructorTotalStudents": "Total students",
   "instructorReviews": "Reviews",
@@ -197,7 +208,10 @@
   "instructorAboutName": "About {name}",
   "@instructorAboutName": {
     "placeholders": {
-      "name": { "type": "String", "example": "Legacy Learning Systems" }
+      "name": {
+        "type": "String",
+        "example": "Legacy Learning Systems"
+      }
     }
   },
   "instructorShowMore": "Show more",
@@ -205,7 +219,10 @@
   "instructorMyCoursesCount": "My courses ({count})",
   "@instructorMyCoursesCount": {
     "placeholders": {
-      "count": { "type": "int", "example": "2" }
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
     }
   },
   "instructorNoCoursesYet": "No published courses yet.",
@@ -215,7 +232,6 @@
   "instructorLinkTwitter": "X / Twitter",
   "instructorLinkYouTube": "YouTube",
   "instructorLinkInstagram": "Instagram",
-
   "legalPrivacyPolicyTitle": "Privacy Policy",
   "legalTermsOfServiceTitle": "Terms of Service",
   "legalLoadFailed": "Could not load this document. Please try again.",
@@ -223,7 +239,6 @@
   "legalAgreementAnd": " and ",
   "legalAgreementPeriod": ".",
   "legalAbout": "About iLearnIt",
-
   "deleteAccountTitle": "Delete account",
   "deleteAccountWarningHeader": "This will permanently delete your account",
   "deleteAccountWarningBody": "We will delete your profile, enrollments, reviews you authored, instructor application, and any files you uploaded. This cannot be undone.",
@@ -240,7 +255,6 @@
   "deleteAccountInProgress": "Deleting your account…",
   "deleteAccountSuccess": "Your account has been deleted.",
   "deleteAccountFailed": "We could not delete your account. Please try again or contact support.",
-
   "continueLearningTitle": "Continue learning",
   "@continueLearningTitle": {
     "description": "Section header on the Home tab for in-progress courses."
@@ -249,22 +263,25 @@
   "@courseProgressInProgress": {
     "description": "Progress copy on the course detail card.",
     "placeholders": {
-      "completed": { "type": "int", "example": "3" },
-      "total": { "type": "int", "example": "12" }
+      "completed": {
+        "type": "int",
+        "example": "3"
+      },
+      "total": {
+        "type": "int",
+        "example": "12"
+      }
     }
   },
   "courseProgressFinished": "Course completed",
   "courseProgressResume": "Resume",
   "courseProgressUntitled": "Untitled course",
-
   "onboardingSkip": "Skip",
   "onboardingContinue": "Continue",
   "onboardingDone": "Done",
   "onboardingEnableNotifications": "Enable notifications",
-
   "onboardingInstrumentTitle": "What do you play?",
   "onboardingInstrumentSubtitle": "Pick your primary instrument. You can change this anytime in Settings.",
-
   "onboardingLevelTitle": "Where are you in your journey?",
   "onboardingLevelSubtitle": "We'll tune your recommendations to match.",
   "onboardingLevelBeginner": "Beginner",
@@ -273,7 +290,6 @@
   "onboardingLevelIntermediateBlurb": "Comfortable with basics — ready to explore technique and repertoire.",
   "onboardingLevelAdvanced": "Advanced",
   "onboardingLevelAdvancedBlurb": "Years of practice — focused on mastery and performance.",
-
   "onboardingNotificationsTitle": "Stay on track",
   "onboardingNotificationsSubtitle": "Enable notifications so iLearnIt can keep your practice habit going.",
   "onboardingNotificationsReason1": "Get notified when your instructors release new lessons.",
@@ -281,14 +297,12 @@
   "onboardingNotificationsReason3": "Get friendly daily reminders to practice.",
   "onboardingNotificationsThanks": "Thanks — you're all set.",
   "onboardingNotificationsCanChange": "No worries. You can enable notifications anytime from Settings.",
-
   "notificationsInboxTitle": "Notifications",
   "notificationsEmpty": "You're all caught up.\nNew alerts will appear here.",
   "notificationsMarkAllRead": "Mark all as read",
   "notificationsClearAll": "Clear all",
   "notificationsClearAllConfirmTitle": "Clear all notifications?",
   "notificationsClearAllConfirmBody": "This will permanently remove every notification from your inbox.",
-
   "notificationsPrefsTitle": "Notifications",
   "notificationsPrefsSubtitle": "Choose what kinds of push notifications you want to receive. Changes apply across your devices.",
   "notificationsPrefsSubtitleShort": "Choose what alerts you receive",
@@ -296,7 +310,6 @@
   "notificationsPrefsTopicAllBlurb": "Get every announcement we send to the community.",
   "notificationsPrefsTopicInstrumentBlurb": "New courses, lessons, and tips for this instrument.",
   "notificationsPrefsUpdateFailed": "Could not update — please try again.",
-
   "downloadsTitle": "Downloads",
   "downloadsEmpty": "You haven't downloaded any lectures yet.\nTap the download button on any lecture to save it for offline viewing.",
   "downloadsClearAll": "Remove all downloads",
@@ -306,26 +319,29 @@
   "@downloadsUsed": {
     "description": "Storage usage indicator on the Downloads page header.",
     "placeholders": {
-      "size": { "type": "String", "example": "124 MB" }
+      "size": {
+        "type": "String",
+        "example": "124 MB"
+      }
     }
   },
-
   "downloadCta": "Download",
   "downloadInProgress": "Downloading",
   "downloadResume": "Resume download",
   "downloadCompleted": "Downloaded",
   "downloadDelete": "Delete download",
-
   "coursesLoadingMore": "Loading more courses…",
   "coursesEndOfList": "You've reached the end.",
-
   "wishlistTitle": "Saved courses",
   "wishlistSubtitleEmpty": "Bookmark a course to come back to it",
   "wishlistSubtitleCount": "{count, plural, =1{1 course saved} other{{count} courses saved}}",
   "@wishlistSubtitleCount": {
     "description": "Pluralized subtitle on the Profile → Saved tile.",
     "placeholders": {
-      "count": { "type": "int", "example": "3" }
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
     }
   },
   "wishlistEmptyTitle": "No saved courses yet",
@@ -336,36 +352,38 @@
   "wishlistError": "Could not update — please try again.",
   "wishlistSignInPrompt": "Sign in to save courses.",
   "wishlistUntitled": "Untitled course",
-
   "learningPathsTitle": "Learning paths",
   "learningPathEyebrow": "LEARNING PATH",
   "learningPathCourseCount": "{count, plural, =1{1 course} other{{count} courses}}",
   "@learningPathCourseCount": {
     "placeholders": {
-      "count": { "type": "int", "example": "12" }
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
     }
   },
   "learningPathTotalHours": "{hours} hr",
   "@learningPathTotalHours": {
     "placeholders": {
-      "hours": { "type": "String", "example": "32" }
+      "hours": {
+        "type": "String",
+        "example": "32"
+      }
     }
   },
   "learningPathCurriculumHeader": "What you'll cover",
   "learningPathCourseMissing": "(Course no longer available)",
   "learningPathNotFound": "Learning path not found.",
-
   "practiceTitle": "Practice tools",
   "practiceTileSubtitle": "Metronome + tuner",
   "practiceMetronome": "Metronome",
   "practiceTuner": "Tuner",
-
   "metronomeTimeSignature": "Time signature",
   "metronomeTapTempo": "Tap tempo",
   "metronomeTapHere": "Tap here in rhythm",
   "metronomeStart": "Start",
   "metronomeStop": "Stop",
-
   "tunerStart": "Start listening",
   "tunerStop": "Stop",
   "tunerListening": "Listening…",
@@ -375,7 +393,6 @@
   "tunerHintFlat": "Tune up.",
   "tunerHintSharp": "Tune down.",
   "tunerPermissionDenied": "Microphone access is required. Re-enable it in Settings → iLearnIt → Microphone.",
-
   "qaSectionHeader": "Questions",
   "qaAsk": "Ask a question",
   "qaAskTitle": "Ask a question",
@@ -387,13 +404,19 @@
   "qaSeeAll": "See all {count}",
   "@qaSeeAll": {
     "placeholders": {
-      "count": { "type": "int", "example": "12" }
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
     }
   },
   "qaReplyCount": "{count, plural, =0{No replies} =1{1 reply} other{{count} replies}}",
   "@qaReplyCount": {
     "placeholders": {
-      "count": { "type": "int", "example": "3" }
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
     }
   },
   "qaThreadTitle": "Question",
@@ -404,7 +427,6 @@
   "qaReplyHint": "Write a reply…",
   "qaSend": "Send",
   "qaVerifiedInstructor": "Verified instructor",
-
   "notesSectionHeader": "My notes",
   "notesAddCta": "Add note",
   "notesAddTitle": "New note",
@@ -419,7 +441,10 @@
   "notesMoreInProfile": "{count, plural, =1{1 more in My notes} other{{count} more in My notes}}",
   "@notesMoreInProfile": {
     "placeholders": {
-      "count": { "type": "int", "example": "3" }
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
     }
   },
   "notesEdit": "Edit",
@@ -432,8 +457,489 @@
   "notesProfileSubtitle": "Your timestamped thoughts across every lecture.",
   "notesEmptyPageTitle": "Nothing here yet",
   "notesEmptyPageBody": "Open any lecture and tap \"Add note\" to start your library.",
-
   "settingsPrivacySection": "Privacy",
   "settingsAnalyticsTitle": "Send anonymous usage data",
-  "settingsAnalyticsSubtitle": "Helps us spot crashes and improve the app. Toggle off to stop all collection."
+  "settingsAnalyticsSubtitle": "Helps us spot crashes and improve the app. Toggle off to stop all collection.",
+  "errTimeout": "Connection timed out. Please try again.",
+  "errRequestFailed": "Request failed.",
+  "errRequestCancelled": "Request cancelled.",
+  "errBadCertificate": "Secure connection failed.",
+  "errUnknownNetwork": "Unknown network error.",
+  "errNoInternet": "No internet connection.",
+  "authErrInvalidEmail": "That email address is invalid.",
+  "authErrDisabled": "This account has been disabled.",
+  "authErrInvalidCredentials": "Invalid email or password.",
+  "authErrEmailInUse": "An account already exists for that email.",
+  "authErrWeakPassword": "Password is too weak.",
+  "authErrTooManyRequests": "Too many attempts. Try again later.",
+  "authErrGeneric": "Authentication failed.",
+  "valEmailRequired": "Email is required.",
+  "valEmailInvalid": "Enter a valid email.",
+  "valPasswordRequired": "Password is required.",
+  "valPasswordMin": "At least 8 characters.",
+  "valFieldRequired": "{field} is required.",
+  "@valFieldRequired": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "valThisField": "This field",
+  "valMismatch": "{field} does not match.",
+  "@valMismatch": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "valConfirmation": "Confirmation",
+  "navMyLearning": "My learning",
+  "routeNotFound": "Page not found.",
+  "timeJustNow": "just now",
+  "timeMinutesAgo": "{n}m ago",
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "timeHoursAgo": "{n}h ago",
+  "@timeHoursAgo": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "timeDaysAgo": "{n}d ago",
+  "@timeDaysAgo": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "timeMinutesShort": "{n}m",
+  "@timeMinutesShort": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "timeHoursShort": "{n}h",
+  "@timeHoursShort": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "timeDaysShort": "{n}d",
+  "@timeDaysShort": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "authErrNoUser": "Sign-in did not complete. Please try again.",
+  "authErrGoogleFailed": "Google sign-in failed.",
+  "authErrCancelled": "Sign-in cancelled.",
+  "authErrAppleOnly": "Sign in with Apple is only available on Apple devices.",
+  "authErrAppleFailed": "Apple sign-in failed.",
+  "authErrNotSignedIn": "You are not signed in.",
+  "authErrNoEmailReauth": "Your account has no email — try Google or Apple re-auth.",
+  "authErrReauthFailed": "Re-authentication failed.",
+  "authErrReauthCancelled": "Re-authentication cancelled.",
+  "authErrDeleteFailed": "Account deletion failed.",
+  "authSkipGuestTooltip": "Skip — continue as guest",
+  "authWelcomeBack": "Welcome back",
+  "authSignInSubtitle": "Sign in to continue your lessons.",
+  "authContinueAsGuest": "Continue as guest",
+  "authEnterEmailFirst": "Enter your email above first.",
+  "authResetSent": "Password reset email sent.",
+  "authResetFailed": "Could not send reset email.",
+  "authAcceptTermsFirst": "Please accept the Terms and Community Guidelines to continue.",
+  "authCreateAccount": "Create account",
+  "authSignUpSubtitle": "Pick up your instrument — guitar, piano or violin.",
+  "authDisplayName": "Display name",
+  "authAgreePrefix": "I agree to the ",
+  "authAgreeTerms": "Terms",
+  "authAgreeAnd": " and ",
+  "authAgreeGuidelines": "Community Guidelines",
+  "authAgreeSuffix": ". I will not post abusive, illegal, or objectionable content.",
+  "profileGuest": "Guest",
+  "profilePlanActive": "Personal Plan · active",
+  "profilePlanCta": "Unlock all courses with Personal Plan",
+  "profileModerationQueue": "Moderation queue",
+  "profileModerationSubtitle": "Review reported content",
+  "profileGuestTitle": "Save your progress",
+  "profileGuestBody": "Sign in to unlock courses, save bookmarks, take notes, and pick up where you left off across devices.",
+  "myLearningLoadFailed": "Could not load your library.",
+  "commonTryAgainLater": "Please check your connection and try again.",
+  "myLearningEmptyTitle": "Nothing in your library yet.",
+  "myLearningEmptyBody": "Start any lecture and it will show up here so you can pick up where you left off.",
+  "commonSearch": "Search",
+  "progressCompleted": "Completed",
+  "progressPercentComplete": "{percent}% complete",
+  "@progressPercentComplete": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "purchaseContinueCourse": "Continue course",
+  "purchaseIncludedInPlan": "Included in your Personal Plan",
+  "purchaseSignInToUnlockCourse": "Sign in to unlock this course.",
+  "purchaseSignInToUnlock": "Sign in to unlock",
+  "purchaseUnlockFor": "Unlock for {price}",
+  "@purchaseUnlockFor": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "purchaseUnavailable": "In-app purchases aren't available on this device.",
+  "purchaseRestoreDone": "Restore complete. Your purchases will appear shortly.",
+  "purchaseRestoreSubtitle": "Sync purchases made with your App Store or Google Play account.",
+  "purchaseProductUnavailable": "This item is not available in the store right now.",
+  "purchaseStoreDeclined": "The store could not start the purchase. Please try again.",
+  "purchaseNotSupportedPlatform": "In-app purchases are not supported on this platform.",
+  "purchaseAlreadyOwned": "You already own this course.",
+  "purchaseCourseUnavailable": "This course is not available for purchase.",
+  "purchaseFailed": "Purchase could not be completed. Please try again.",
+  "subscriptionVerifyFailed": "We could not confirm your subscription. Please try again or use Restore purchases.",
+  "subscriptionOtherAccount": "This subscription is linked to another iLearnIt account.",
+  "errLoadFailed": "Could not load data. Please try again.",
+  "courseNotFound": "Course not found.",
+  "videoUnavailable": "Video unavailable. Please try again.",
+  "notesSaveFailed": "Could not save your note.",
+  "qaPostQuestionFailed": "Could not post your question.",
+  "qaPostReplyFailed": "Could not post your reply.",
+  "durationHM": "{h}h {m}min",
+  "@durationHM": {
+    "placeholders": {
+      "h": {
+        "type": "String"
+      },
+      "m": {
+        "type": "String"
+      }
+    }
+  },
+  "durationM": "{m} min",
+  "@durationM": {
+    "placeholders": {
+      "m": {
+        "type": "String"
+      }
+    }
+  },
+  "durationS": "{s}s",
+  "@durationS": {
+    "placeholders": {
+      "s": {
+        "type": "String"
+      }
+    }
+  },
+  "courseTaughtBy": "Taught by ",
+  "courseAbout": "About this course",
+  "courseCurriculumSoon": "Curriculum coming soon.",
+  "courseCurriculum": "Curriculum",
+  "courseCurriculumSummary": "{sections} sections • {lectures} lectures • {duration}",
+  "@courseCurriculumSummary": {
+    "placeholders": {
+      "sections": {
+        "type": "String"
+      },
+      "lectures": {
+        "type": "String"
+      },
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "courseLessons": "{count} lessons",
+  "@courseLessons": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "courseEnrolled": "{count} enrolled",
+  "@courseEnrolled": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "commonRefresh": "Refresh",
+  "coursesShowingFeatured": "Showing featured courses",
+  "coursesShowAll": "Show all courses",
+  "instructorsEmpty": "No instructors yet.",
+  "instructorStudents": "{count} students",
+  "@instructorStudents": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "commonLoadFailed": "Something went wrong. Pull down to try again.",
+  "courseByInstructor": "by {name}",
+  "@courseByInstructor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lectureNotFound": "Lecture not found.",
+  "lectureMinimize": "Minimize",
+  "lectureVideoMissing": "Video unavailable.",
+  "lectureAudioMissing": "Audio unavailable.",
+  "lecturePurchaseToWatch": "Purchase this course to watch this lecture.",
+  "lectureEncoding": "Video still encoding — try again in a minute.",
+  "lectureResources": "Resources",
+  "lecturePurchaseToOpen": "Purchase this course to open this lecture.",
+  "lectureLoadFailed": "Could not load this lecture. Please try again.",
+  "audioLoadFailed": "Could not load audio.",
+  "playerBack10": "Back 10 seconds",
+  "playerForward30": "Forward 30 seconds",
+  "playerBack15": "Back 15 seconds",
+  "playerForward15": "Forward 15 seconds",
+  "playerPlay": "Play",
+  "playerPause": "Pause",
+  "commonClose": "Close",
+  "videoLoadFailed": "Could not load video.",
+  "levelBeginner": "Beginner",
+  "levelIntermediate": "Intermediate",
+  "levelAdvanced": "Advanced",
+  "lectureTypeVideo": "Video",
+  "lectureTypeAudio": "Audio",
+  "lectureTypePdf": "PDF",
+  "lectureTypeDoc": "Document",
+  "reasonSpam": "Spam or scam",
+  "reasonHarassment": "Harassment or bullying",
+  "reasonHate": "Hate speech or symbols",
+  "reasonSexual": "Nudity or sexual content",
+  "reasonViolence": "Violence or dangerous content",
+  "reasonSelfHarm": "Self-harm or suicide",
+  "reasonMisinformation": "False information",
+  "reasonIp": "Copyright / IP infringement",
+  "reasonOther": "Something else",
+  "ugcReview": "Review",
+  "ugcQuestion": "Question",
+  "ugcAnswer": "Answer",
+  "ugcNote": "Note",
+  "lectureAdditionalResources": "Additional resources",
+  "commonOpen": "Open",
+  "downloadPurchaseToDownload": "Purchase this course to download.",
+  "downloadFailed": "Download failed.",
+  "commonCancelDownload": "Cancel download",
+  "lecturePreviewBadge": "Preview",
+  "lectureLockedLabel": "Locked",
+  "sectionNumber": "Section {n}",
+  "@sectionNumber": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionSummary": "{count} lectures • {duration}",
+  "@sectionSummary": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewsTitle": "Ratings & Reviews",
+  "reviewsLoadFailed": "Could not load reviews.",
+  "reviewsEmpty": "No reviews yet — be the first.",
+  "reviewsCountOne": "1 review",
+  "reviewsCountMany": "{count} reviews",
+  "@reviewsCountMany": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewSignInToWrite": "Sign in to write a review",
+  "reviewEdit": "Edit your review",
+  "reviewWrite": "Write a review",
+  "reviewSignInSnack": "Sign in to leave a review.",
+  "reviewAccessGate": "Unlock this course (or subscribe) to leave a review.",
+  "reviewBodyLabel": "Your review (optional)",
+  "reviewBodyHint": "What did you think of the course?",
+  "commonSubmit": "Submit",
+  "reviewDeleteTitle": "Delete your review?",
+  "reviewDeleteBody": "This will remove your rating and review from this course.",
+  "commonDelete": "Delete",
+  "reviewDeleteMine": "Delete my review",
+  "instructorCoursesLoadFailed": "Could not load courses.",
+  "commonCouldNotOpenLink": "Could not open link.",
+  "playerForward10": "Forward 10 seconds",
+  "eulaAcceptFailed": "Could not save your acceptance. Please try again.",
+  "eulaUpdatedTitle": "Updated agreement",
+  "eulaUpdatedBody": "We've updated our Terms and Community Guidelines ({date}). Please review and accept to continue using iLearnIt.",
+  "@eulaUpdatedBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "eulaReadTerms": "Read terms",
+  "eulaReadGuidelines": "Read guidelines",
+  "eulaAccept": "I accept",
+  "blockFailed": "Could not block this user. Please try again.",
+  "blockThisUser": "this user",
+  "blockTitle": "Block {name}?",
+  "@blockTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "blockBody": "You won't see any reviews, questions, answers, or notes from {name}. They won't be notified.",
+  "@blockBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "blockAction": "Block",
+  "reportThanks": "Thanks — our team will review this shortly.",
+  "reportFailed": "Could not submit the report. Please try again.",
+  "reportTitle": "Report {type}",
+  "@reportTitle": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "reportIntro": "Help us keep this community safe. Reports are reviewed within 24 hours.",
+  "reportReason": "Reason",
+  "reportNotes": "Additional notes (optional)",
+  "reportSubmit": "Submit report",
+  "commonMore": "More",
+  "ugcReport": "Report",
+  "ugcBlockName": "Block {name}",
+  "@ugcBlockName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ugcUnblockName": "Unblock {name}",
+  "@ugcUnblockName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ugcUserFallback": "user",
+  "modTitle": "Moderation",
+  "modNoAccess": "You do not have access.",
+  "modOpenCount": "{count} open",
+  "@modOpenCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "modNoOpenReports": "No open reports",
+  "modNothingToTriage": "Nothing to triage",
+  "modEmptyHint": "Reports tied to your courses will appear here.",
+  "modActionFailed": "Action failed. Please try again.",
+  "modHide": "Hide",
+  "modDismiss": "Dismiss",
+  "notesSignInSnack": "Sign in to save notes.",
+  "qaSignInToReply": "Sign in to reply",
+  "qaSignInToJoin": "Sign in to join the conversation.",
+  "qaSignInToAsk": "Sign in to ask a question.",
+  "filterTitle": "Filters",
+  "filterReset": "Reset",
+  "filterInstrument": "Instrument",
+  "filterLevel": "Level",
+  "filterMinRating": "Minimum rating",
+  "filterAny": "Any",
+  "filterMaxPrice": "Max price",
+  "filterApply": "Apply",
+  "learningPathCourseLoadFailed": "Could not load this course.",
+  "legalCommunityGuidelinesTitle": "Community Guidelines",
+  "songbookLoadFailed": "Could not load this songbook.",
+  "songbookSectionFailed": "{section} — failed to load.",
+  "@songbookSectionFailed": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "notifChannelName": "iLearnIt notifications",
+  "notifChannelDesc": "Course updates, application status, and announcements.",
+  "a11yShowPassword": "Show password",
+  "a11yHidePassword": "Hide password",
+  "a11yRateStars": "Rate {n} out of 5 stars",
+  "@a11yRateStars": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "updateRequiredTitle": "Update required",
+  "updateRequiredBody": "This version of iLearnIt is no longer supported. Please update to keep learning.",
+  "updateNow": "Update",
+  "updateAvailableBody": "A new version of iLearnIt is available.",
+  "updateLater": "Not now",
+  "songbookPreparing": "Preparing your songbook…",
+  "songbookNoViewer": "No app on this device can open PDF files.",
+  "songbookLocked": "Get this songbook (or the Personal Plan) to open it.",
+  "songbookOpenFailed": "Could not open the songbook. Please try again.",
+  "songbookSamplePage": "Sample · {page}/{total}",
+  "@songbookSamplePage": {
+    "placeholders": {
+      "page": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "songbookOpen": "Open songbook",
+  "songbookSignInToGet": "Sign in to get this songbook.",
+  "songbookGetForPrice": "Get Songbook · {price}",
+  "@songbookGetForPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "songbookOtherAccount": "This purchase is linked to another iLearnIt account."
 }

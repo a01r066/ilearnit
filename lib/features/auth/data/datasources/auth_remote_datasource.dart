@@ -14,6 +14,7 @@ import '../../../../core/error/exceptions.dart';
 import '../../../moderation/eula/eula_version.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../models/user_model.dart';
+import '../../../../l10n/l10n.dart';
 
 abstract interface class AuthRemoteDataSource {
   Stream<User?> authStateChanges();
@@ -80,7 +81,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     FirebaseFunctions? functions,
   })  : _auth = auth,
         _firestore = firestore,
-        _googleSignIn = googleSignIn ?? GoogleSignIn(),
+        // iOS reads the OAuth client from the flavor's Firebase options
+        // (no GoogleService-Info.plist is bundled — see bootstrap.dart),
+        // so dev and prod each sign in against their own project.
+        _googleSignIn = googleSignIn ??
+            GoogleSignIn(
+              clientId:
+                  !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS
+                      ? auth.app.options.iosClientId
+                      : null,
+            ),
         _functions = functions ?? FirebaseFunctions.instance;
 
   final FirebaseAuth _auth;
@@ -108,7 +118,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     );
     final user = credential.user;
     if (user == null) {
-      throw AuthException(message: 'Login returned no user.');
+      throw AuthException(message: L10n.current.authErrNoUser);
     }
     final doc = await fetchUserDoc(user.uid);
     return doc ?? UserModel.fromFirebase(user);
@@ -126,7 +136,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     );
     final user = credential.user;
     if (user == null) {
-      throw AuthException(message: 'Signup returned no user.');
+      throw AuthException(message: L10n.current.authErrNoUser);
     }
     await user.updateDisplayName(displayName);
 
@@ -167,7 +177,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       account = await _googleSignIn.signIn();
     } catch (e) {
       throw AuthException(
-        message: 'Google sign-in failed.',
+        message: L10n.current.authErrGoogleFailed,
         code: e.toString().contains('canceled') ||
                 e.toString().contains('cancelled')
             ? AuthCancellation.code
@@ -177,7 +187,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     if (account == null) {
       // User dismissed the picker.
       throw AuthException(
-        message: 'Sign-in cancelled.',
+        message: L10n.current.authErrCancelled,
         code: AuthCancellation.code,
       );
     }
@@ -191,7 +201,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final result = await _auth.signInWithCredential(credential);
     final user = result.user;
     if (user == null) {
-      throw AuthException(message: 'Google sign-in returned no user.');
+      throw AuthException(message: L10n.current.authErrNoUser);
     }
     return _upsertSocialUser(user);
   }
@@ -204,7 +214,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final result = await _auth.signInWithPopup(provider);
       final user = result.user;
       if (user == null) {
-        throw AuthException(message: 'Google sign-in returned no user.');
+        throw AuthException(message: L10n.current.authErrNoUser);
       }
       return _upsertSocialUser(user);
     } on FirebaseAuthException catch (e) {
@@ -212,12 +222,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           e.code == 'cancelled-popup-request' ||
           e.code == 'user-cancelled') {
         throw AuthException(
-          message: 'Sign-in cancelled.',
+          message: L10n.current.authErrCancelled,
           code: AuthCancellation.code,
         );
       }
       throw AuthException(
-        message: e.message ?? 'Google sign-in failed.',
+        message: L10n.current.authErrGoogleFailed,
         code: e.code,
       );
     }
@@ -236,7 +246,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     if (platform != TargetPlatform.iOS &&
         platform != TargetPlatform.macOS) {
       throw AuthException(
-        message: 'Sign in with Apple is only available on Apple devices.',
+        message: L10n.current.authErrAppleOnly,
         code: 'unsupported-platform',
       );
     }
@@ -261,7 +271,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on SignInWithAppleAuthorizationException catch (e) {
       if (e.code == AuthorizationErrorCode.canceled) {
         throw AuthException(
-          message: 'Sign-in cancelled.',
+          message: L10n.current.authErrCancelled,
           code: AuthCancellation.code,
         );
       }
@@ -276,7 +286,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final result = await _auth.signInWithCredential(oauth);
     final user = result.user;
     if (user == null) {
-      throw AuthException(message: 'Apple sign-in returned no user.');
+      throw AuthException(message: L10n.current.authErrNoUser);
     }
 
     // Apple only returns the display name on the *first* authorization. If we
@@ -305,7 +315,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final result = await _auth.signInWithPopup(provider);
       final user = result.user;
       if (user == null) {
-        throw AuthException(message: 'Apple sign-in returned no user.');
+        throw AuthException(message: L10n.current.authErrNoUser);
       }
       return _upsertSocialUser(user);
     } on FirebaseAuthException catch (e) {
@@ -313,12 +323,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           e.code == 'cancelled-popup-request' ||
           e.code == 'user-cancelled') {
         throw AuthException(
-          message: 'Sign-in cancelled.',
+          message: L10n.current.authErrCancelled,
           code: AuthCancellation.code,
         );
       }
       throw AuthException(
-        message: e.message ?? 'Apple sign-in failed.',
+        message: L10n.current.authErrAppleFailed,
         code: e.code,
       );
     }
@@ -406,7 +416,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final user = _auth.currentUser;
     if (user == null) {
       throw AuthException(
-        message: 'You are not signed in.',
+        message: L10n.current.authErrNotSignedIn,
         code: 'no-current-user',
       );
     }
@@ -419,7 +429,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final email = user.email;
     if (email == null || email.isEmpty) {
       throw AuthException(
-        message: 'Your account has no email — try Google or Apple re-auth.',
+        message: L10n.current.authErrNoEmailReauth,
         code: 'no-email',
       );
     }
@@ -431,7 +441,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       await user.reauthenticateWithCredential(cred);
     } on FirebaseAuthException catch (e) {
       throw AuthException(
-        message: e.message ?? 'Re-authentication failed.',
+        message: L10n.current.authErrReauthFailed,
         code: e.code,
       );
     }
@@ -455,7 +465,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final GoogleSignInAccount? account = await _googleSignIn.signIn();
     if (account == null) {
       throw AuthException(
-        message: 'Re-authentication cancelled.',
+        message: L10n.current.authErrReauthCancelled,
         code: AuthCancellation.code,
       );
     }
@@ -482,7 +492,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final platform = defaultTargetPlatform;
     if (platform != TargetPlatform.iOS && platform != TargetPlatform.macOS) {
       throw AuthException(
-        message: 'Sign in with Apple is only available on Apple devices.',
+        message: L10n.current.authErrAppleOnly,
         code: 'unsupported-platform',
       );
     }
@@ -501,7 +511,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on SignInWithAppleAuthorizationException catch (e) {
       if (e.code == AuthorizationErrorCode.canceled) {
         throw AuthException(
-          message: 'Re-authentication cancelled.',
+          message: L10n.current.authErrReauthCancelled,
           code: AuthCancellation.code,
         );
       }
@@ -525,12 +535,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       // `unauthenticated` should never bubble up — we just confirmed the
       // user exists above — but treat it explicitly anyway.
       throw AuthException(
-        message: e.message ?? 'Account deletion failed.',
+        message: L10n.current.authErrDeleteFailed,
         code: e.code,
       );
     } on FirebaseAuthException catch (e) {
       throw AuthException(
-        message: e.message ?? 'Account deletion failed.',
+        message: L10n.current.authErrDeleteFailed,
         code: e.code,
       );
     }

@@ -5,6 +5,7 @@ import '../../../../shared/providers/firebase_providers.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../subscriptions/presentation/providers/subscription_providers.dart';
 import '../../data/datasources/iap_remote_datasource.dart';
+import '../../data/datasources/purchase_verification_datasource.dart';
 import '../../data/datasources/purchases_firestore_datasource.dart';
 import '../../data/repositories/purchases_repository_impl.dart';
 import '../../domain/repositories/purchases_repository.dart';
@@ -13,6 +14,11 @@ import 'purchases_state.dart';
 
 final iapRemoteDataSourceProvider = Provider<IapRemoteDataSource>(
   (_) => IapRemoteDataSourceImpl(),
+);
+
+final purchaseVerificationDataSourceProvider =
+    Provider<PurchaseVerificationDataSource>(
+  (_) => PurchaseVerificationDataSource(),
 );
 
 final purchasesFirestoreDataSourceProvider =
@@ -26,6 +32,7 @@ final purchasesRepositoryProvider = Provider<PurchasesRepository>(
   (ref) => PurchasesRepositoryImpl(
     iap: ref.watch(iapRemoteDataSourceProvider),
     firestore: ref.watch(purchasesFirestoreDataSourceProvider),
+    verifier: ref.watch(purchaseVerificationDataSourceProvider),
     auth: ref.watch(firebaseAuthProvider),
   ),
 );

@@ -45,7 +45,11 @@ last column that changes between releases.
 - [ ] **Privacy policy URL** is live (`https://ilearnit.info/privacy`) — both stores require it
 - [ ] **Support / contact URL** is live (`https://ilearnit.info/contact`)
 - [ ] **Firebase prod project (`ilearnit-31f41`)** has Auth, Firestore, Storage, Crashlytics enabled
-- [ ] **App Check** registered for prod with real device-attestation providers (Play Integrity, DeviceCheck)
+- [ ] **App Check** registered for prod (Play Integrity, App Attest + DeviceCheck, reCAPTCHA v3 for admin web); dev debug tokens registered (`production_migration.md` §2.8)
+- [ ] **Remote Config** update-gate keys created (`production_migration.md` §2.8b)
+- [ ] **Capabilities** on both App IDs: Push Notifications, Sign in with Apple, App Attest (`ios/Runner/Runner.entitlements`)
+- [ ] **IAP verification configured**: Apple / Play secrets, `functions/.env.prod` params, `functions/certs/`, store notifications registered (`iap_setup.md`)
+- [ ] **Security rollout** done in order (`production_migration.md` Appendix D)
 - [ ] **Crashlytics dSYM upload** working on iOS (Xcode → Build Phases)
 - [ ] **Sample/test accounts** seeded in prod for store reviewers (Apple *requires* one)
 - [ ] **`pubspec.yaml` version** bumped (see §2)
@@ -362,12 +366,20 @@ You already have `docs/iap_setup.md` covering product creation. The condensed
 checklist for store-readiness:
 
 - **Play Console** → Monetize → Products → In-app products: create
-  `info.ilearnit.tier_basic`, `…tier_standard`, `…tier_premium` as
-  **non-consumable managed products** with the right prices. Status must be
-  **Active**.
+  `info.ilearnit.course_tier_basic`, `…tier_standard`, `…tier_premium`
+  (consumed server-side by `verifyPurchase` after the course is granted)
+  with the right prices. Status must be **Active**.
 - **App Store Connect** → your app → **Features → In-App Purchases**:
-  same three IDs, type **Non-Consumable**. Each one needs a localized
-  display name, description, and a screenshot. Status must be **Ready to Submit**.
+  same three IDs, type **Consumable** (one tier serves many courses;
+  ownership is tracked per account on the server). Each one needs a
+  localized display name, description, and a screenshot. Status must be
+  **Ready to Submit**. Product types can't be changed later — old
+  `info.ilearnit.tier_*` non-consumables must stay inactive.
+- **Personal Plan**: `info.ilearnit.personal_monthly` / `_yearly`
+  auto-renewable subscriptions (`subscriptions.md`).
+- **Songbooks**: one **Non-Consumable** (App Store) / in-app product (Play)
+  per songbook, id = `songbooks/{id}.productId`
+  (`info.ilearnit.songbook.<slug>`) — see `songbooks.md`.
 - IAP products **must be submitted alongside the binary** for the first review
   on App Store Connect — Apple won't approve products separately the first time.
 
@@ -394,6 +406,12 @@ These get apps rejected. Most are 30-second fixes once you know.
   Confirm `compileSdkVersion = 34` (or higher) in gradle.
 - **Missing `INTERNET` / `WAKE_LOCK` permissions** the manifest needs (Flutter
   adds these automatically, but custom plugins sometimes don't).
+- **Photo & video permissions policy.** Don't ship `READ_MEDIA_IMAGES` /
+  `READ_MEDIA_VIDEO` without a core use case. Our manifest strips them
+  (and `READ_MEDIA_AUDIO`, `AD_ID`, AdServices) with `tools:node="remove"`;
+  re-check the merged manifest after adding plugins.
+- **Advertising ID declaration.** We remove `AD_ID`, so answer "No" in
+  Play Console → App content → Advertising ID.
 - **64-bit ABI missing.** App Bundles include both 32 + 64 automatically; APKs
   may not. Stick to AAB.
 
@@ -402,7 +420,14 @@ These get apps rejected. Most are 30-second fixes once you know.
 - **"App lacks lasting value" (Guideline 4.2).** Reviewers want to see real
   content. Make sure the 100 sample courses are visible to the demo account.
 - **Sign in with Apple required.** If you offer Google/Facebook login, you
-  *must* also offer Sign in with Apple. We use email-only so this doesn't apply.
+  *must* also offer Sign in with Apple. We offer Google, so Sign in with
+  Apple is implemented and must stay enabled on iOS.
+- **Privacy manifest** (`ios/Runner/PrivacyInfo.xcprivacy`) must match the
+  App Privacy answers in App Store Connect.
+- **Incomplete features (Guideline 2.1).** Don't ship visibly dead
+  controls — the tuner is hidden behind `kTunerEnabled`. "Get Songbook"
+  only appears once a songbook has a PDF uploaded; create its
+  non-consumable product in both stores and submit it with the build.
 - **Encryption export compliance** (`ITSAppUsesNonExemptEncryption` in Info.plist).
   Set to `false` if you only use Apple's standard TLS:
   ```xml
@@ -486,11 +511,14 @@ android/
 
 ios/
 ├── ExportOptions-AppStore.plist  # ← App Store distribution config
-└── ExportOptions-AdHoc.plist     # ← Ad-hoc / TestFlight internal config
+├── ExportOptions-AdHoc.plist     # ← Ad-hoc / TestFlight internal config
+├── Flutter/{dev,prod}*.xcconfig  # ← per-flavor GOOGLE_REVERSED_CLIENT_ID
+└── Runner/PrivacyInfo.xcprivacy  # ← Apple privacy manifest
 
 docs/
 ├── signing_and_publishing.md     # ← this file
-└── iap_setup.md                  # ← IAP product creation
+├── iap_setup.md                  # ← IAP product creation + server verification
+└── production_migration.md       # ← full go-live runbook
 ```
 
 That's the whole pipeline. Every subsequent release reduces to: bump version,

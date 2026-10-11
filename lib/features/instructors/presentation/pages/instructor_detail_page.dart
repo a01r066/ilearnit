@@ -11,6 +11,7 @@ import '../../../../core/utils/extensions.dart';
 import '../../../courses/data/models/course_model.dart';
 import '../../data/models/instructor_model.dart';
 import '../providers/instructor_providers.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Detail page for one instructor / publisher.
 ///
@@ -42,21 +43,14 @@ class _InstructorDetailPageState
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Instructor'),
+        title: Text(context.l10n.instructorTitle),
         centerTitle: true,
         leading: _CircleIconButton(
           icon: Icons.chevron_left,
           onTap: () => context.pop(),
         ),
-        actions: [
-          _CircleIconButton(
-            icon: Icons.ios_share,
-            onTap: () {
-              // TODO: wire to share_plus when added.
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
+        // Share button removed until share_plus is wired up — a
+        // button that does nothing is an App Review 2.1 risk.
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
@@ -65,7 +59,7 @@ class _InstructorDetailPageState
         error: (e, _) => Center(child: Text('$e')),
         data: (m) {
           if (m == null) {
-            return const Center(child: Text('Instructor not found.'));
+            return Center(child: Text(context.l10n.instructorNotFound));
           }
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
@@ -93,7 +87,7 @@ class _InstructorDetailPageState
                   ),
                 ),
                 error: (e, _) => Text(
-                  'Failed to load courses: $e',
+                  context.l10n.instructorCoursesLoadFailed,
                   style: TextStyle(color: context.colors.error),
                 ),
                 data: (items) => _MyCoursesSection(items: items),
@@ -186,13 +180,13 @@ class _StatsRow extends StatelessWidget {
       children: [
         Expanded(
           child: _Stat(
-            label: 'Total students',
+            label: context.l10n.instructorTotalStudents,
             value: fmt.format(instructor.studentCount),
           ),
         ),
         Expanded(
           child: _Stat(
-            label: 'Reviews',
+            label: context.l10n.instructorReviews,
             value: fmt.format(instructor.reviewCount),
           ),
         ),
@@ -250,13 +244,13 @@ class _About extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('About me',
+        Text(context.l10n.instructorAboutMe,
             style: context.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w900,
             )),
         const SizedBox(height: 16),
         Text(
-          'About ${instructor.name}',
+          context.l10n.instructorAboutName(instructor.name),
           style: context.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w800,
           ),
@@ -265,13 +259,18 @@ class _About extends StatelessWidget {
         Text(body, style: context.textTheme.bodyLarge),
         if (tooLong) ...[
           const SizedBox(height: 12),
-          GestureDetector(
-            onTap: onToggle,
-            child: Text(
-              expanded ? 'Show less' : 'Show more',
-              style: context.textTheme.bodyLarge?.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w700,
+          Semantics(
+            button: true,
+            child: GestureDetector(
+              onTap: onToggle,
+              child: Text(
+                expanded
+                    ? context.l10n.instructorShowLess
+                    : context.l10n.instructorShowMore,
+                style: context.textTheme.bodyLarge?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
@@ -293,7 +292,7 @@ class _MyCoursesSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'My courses (${items.length})',
+          context.l10n.instructorMyCoursesCount(items.length),
           style: context.textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.w900,
           ),
@@ -301,7 +300,7 @@ class _MyCoursesSection extends StatelessWidget {
         const SizedBox(height: 16),
         if (items.isEmpty)
           Text(
-            'No published courses yet.',
+            context.l10n.instructorNoCoursesYet,
             style: context.textTheme.bodyMedium?.copyWith(
               color: context.colors.onSurfaceVariant,
             ),
@@ -438,9 +437,9 @@ class _BestsellerChip extends StatelessWidget {
         color: const Color(0xFFECEAB1),
         borderRadius: BorderRadius.circular(2),
       ),
-      child: const Text(
-        'Bestseller',
-        style: TextStyle(
+      child: Text(
+        context.l10n.badgeBestseller,
+        style: const TextStyle(
           color: Color(0xFF3D3A00),
           fontSize: 12,
           fontWeight: FontWeight.w700,
@@ -523,7 +522,7 @@ class _SocialLinks extends StatelessWidget {
       if (url == null || url.isEmpty) return;
       rows.add(
         InkWell(
-          onTap: () => _open(url),
+          onTap: () => _open(context, url),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Row(
@@ -542,20 +541,35 @@ class _SocialLinks extends StatelessWidget {
       );
     }
 
-    add(Icons.link, 'Website', instructor.websiteUrl);
-    add(Icons.facebook, 'Facebook', instructor.facebookUrl);
-    add(Icons.alternate_email, 'X / Twitter', instructor.twitterUrl);
-    add(Icons.play_circle_outline, 'YouTube', instructor.youtubeUrl);
-    add(Icons.camera_alt_outlined, 'Instagram', instructor.instagramUrl);
+    final t = context.l10n;
+    add(Icons.link, t.instructorLinkWebsite, instructor.websiteUrl);
+    add(Icons.facebook, t.instructorLinkFacebook, instructor.facebookUrl);
+    add(Icons.alternate_email, t.instructorLinkTwitter, instructor.twitterUrl);
+    add(Icons.play_circle_outline, t.instructorLinkYouTube, instructor.youtubeUrl);
+    add(Icons.camera_alt_outlined, t.instructorLinkInstagram, instructor.instagramUrl);
 
     return Column(children: rows);
   }
 
-  Future<void> _open(String url) async {
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+  Future<void> _open(BuildContext context, String url) async {
+    // Instructor-entered links often omit the scheme ("www.site.com").
+    final raw = url.trim();
+    final uri = Uri.tryParse(
+      raw.startsWith('http://') || raw.startsWith('https://')
+          ? raw
+          : 'https://$raw',
+    );
+    // Only open web links — the value comes from Firestore.
+    if (uri == null || uri.host.isEmpty) return;
+    // No canLaunchUrl(): on Android 11+ it returns false for https unless
+    // the manifest declares <queries>, so taps silently did nothing.
+    final messenger = ScaffoldMessenger.of(context);
+    final couldNotOpen = context.l10n.commonCouldNotOpenLink;
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!ok) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(couldNotOpen)),
+      );
     }
   }
 }
@@ -574,13 +588,17 @@ class _CircleIconButton extends StatelessWidget {
         color: Theme.of(context).colorScheme.surface,
         shape: const CircleBorder(),
         elevation: 1,
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onTap,
-          child: SizedBox(
-            width: 40,
-            height: 40,
-            child: Icon(icon),
+        child: Semantics(
+          button: true,
+          label: MaterialLocalizations.of(context).backButtonTooltip,
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onTap,
+            child: SizedBox(
+              width: 40,
+              height: 40,
+              child: Icon(icon),
+            ),
           ),
         ),
       ),

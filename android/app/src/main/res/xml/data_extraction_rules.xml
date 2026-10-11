@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+ (API 31+). Offline lectures (files/downloads) and lecture
+     resources (files/resources) are re-downloadable and per-account;
+     never back them up or copy them to a new device. -->
+<data-extraction-rules>
+  <cloud-backup>
+    <exclude domain="file" path="downloads/" />
+    <exclude domain="file" path="resources/" />
+    <exclude domain="file" path="songbooks/" />
+    <exclude domain="root" path="app_flutter/downloads/" />
+    <exclude domain="root" path="app_flutter/ilearnit/" />
+  </cloud-backup>
+  <device-transfer>
+    <exclude domain="file" path="downloads/" />
+    <exclude domain="file" path="resources/" />
+    <exclude domain="file" path="songbooks/" />
+    <exclude domain="root" path="app_flutter/downloads/" />
+    <exclude domain="root" path="app_flutter/ilearnit/" />
+  </device-transfer>
+</data-extraction-rules>

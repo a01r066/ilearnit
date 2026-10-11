@@ -4,3 +4,6 @@
 ASSET_PREFIX=prod
 BUNDLE_NAME=iLearnIt
 BUNDLE_DISPLAY_NAME=iLearnIt
+
+// Google Sign-In URL scheme for this flavor (Info.plist CFBundleURLSchemes).
+GOOGLE_REVERSED_CLIENT_ID=com.googleusercontent.apps.539584702115-e6nhghh8d23uq1qvojlmn2p1df756id5

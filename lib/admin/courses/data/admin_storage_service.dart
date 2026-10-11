@@ -75,6 +75,18 @@ class AdminStorageService {
     return _runUpload(ref, bytes, contentType);
   }
 
+  /// Upload the paid songbook PDF. Private: stored as a `gs://` reference;
+  /// readers get a signed URL from `resolveSongbookContent`.
+  Stream<UploadProgress> uploadSongbookContent({
+    required String songbookId,
+    required String filename,
+    required Uint8List bytes,
+    required String contentType,
+  }) {
+    final ref = _storage.ref('songbooks/$songbookId/content/$filename');
+    return _runUpload(ref, bytes, contentType, privateObject: true);
+  }
+
   /// Upload a songbook wide banner (~16:9) shown on the detail page.
   Stream<UploadProgress> uploadSongbookBanner({
     required String songbookId,
@@ -112,7 +124,7 @@ class AdminStorageService {
     final ref = _storage.ref(
       'courses/$courseId/sections/$sectionId/lectures/$lectureId/media/$filename',
     );
-    return _runUpload(ref, bytes, contentType);
+    return _runUpload(ref, bytes, contentType, privateObject: true);
   }
 
   /// Upload a supplementary resource (sheet music PDF, exercise file).
@@ -127,16 +139,23 @@ class AdminStorageService {
     final ref = _storage.ref(
       'courses/$courseId/sections/$sectionId/lectures/$lectureId/resources/$filename',
     );
-    return _runUpload(ref, bytes, contentType);
+    return _runUpload(ref, bytes, contentType, privateObject: true);
   }
 
   // ---------- internals ---------------------------------------------------
 
+  /// [privateObject]: paid lecture media / resources. We store a
+  /// `gs://bucket/path` reference instead of a token-bearing download URL
+  /// (which anyone could share). The `onLectureObjectFinalized` Cloud
+  /// Function strips the download token, and the mobile app gets a
+  /// short-lived signed URL from `resolveLectureMedia` after an
+  /// entitlement check.
   Stream<UploadProgress> _runUpload(
     Reference ref,
     Uint8List bytes,
-    String contentType,
-  ) {
+    String contentType, {
+    bool privateObject = false,
+  }) {
     final controller = StreamController<UploadProgress>();
     final total = bytes.lengthInBytes;
 
@@ -166,7 +185,9 @@ class AdminStorageService {
 
     task.then((snap) async {
       try {
-        final url = await ref.getDownloadURL();
+        final url = privateObject
+            ? 'gs://${ref.bucket}/${ref.fullPath}'
+            : await ref.getDownloadURL();
         controller.add(UploadProgress(
           phase: UploadPhase.completed,
           fraction: 1,

@@ -7,6 +7,7 @@ import 'package:video_player/video_player.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../data/services/mini_player_service.dart';
 import '../providers/mini_player_providers.dart';
+import '../../../../l10n/l10n.dart';
 
 // `go_router` import retained for `context.pushNamed` in `_expand`.
 
@@ -104,14 +105,18 @@ class _Bar extends ConsumerWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
+                          // ±10 s to match the replay_10 / forward_10
+                          // icons (the old ±15 s contradicted them).
                           IconButton(
-                            tooltip: 'Back 15 s',
+                            tooltip: context.l10n.playerBack10,
                             icon: const Icon(Icons.replay_10),
                             onPressed: () =>
-                                svc.seekBy(const Duration(seconds: -15)),
+                                svc.seekBy(const Duration(seconds: -10)),
                           ),
                           IconButton(
-                            tooltip: state.isPlaying ? 'Pause' : 'Play',
+                            tooltip: state.isPlaying
+                                ? context.l10n.playerPause
+                                : context.l10n.playerPlay,
                             iconSize: 32,
                             icon: Icon(
                               state.isPlaying
@@ -124,23 +129,16 @@ class _Bar extends ConsumerWidget {
                                 : svc.play(),
                           ),
                           IconButton(
-                            tooltip: 'Forward 15 s',
+                            tooltip: context.l10n.playerForward10,
                             icon: const Icon(Icons.forward_10),
                             onPressed: () =>
-                                svc.seekBy(const Duration(seconds: 15)),
+                                svc.seekBy(const Duration(seconds: 10)),
                           ),
-                          // Headphones — placeholder for the future
-                          // "audio-only mode" toggle. v1: no-op with
-                          // an informative tooltip so the affordance
-                          // is at least documented in the UI.
+                          // (Disabled "audio-only mode" placeholder
+                          // removed — a dead control is an App Review
+                          // 2.1 risk and confuses screen readers.)
                           IconButton(
-                            tooltip:
-                                'Audio-only mode (coming soon)',
-                            icon: const Icon(Icons.headphones),
-                            onPressed: null,
-                          ),
-                          IconButton(
-                            tooltip: 'Close',
+                            tooltip: context.l10n.commonClose,
                             icon: const Icon(Icons.close),
                             onPressed: svc.close,
                           ),

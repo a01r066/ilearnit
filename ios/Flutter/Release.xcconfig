@@ -1,2 +1,5 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
 #include "Generated.xcconfig"
+
+// Google Sign-In URL scheme for this flavor (Info.plist CFBundleURLSchemes).
+GOOGLE_REVERSED_CLIENT_ID=com.googleusercontent.apps.941373047874-tacfaqbvrfb3pgdo3jgrte8jjni1o7kr

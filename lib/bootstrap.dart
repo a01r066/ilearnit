@@ -8,12 +8,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/app.dart';
+import 'app/session_cleanup.dart';
+import 'core/security/app_check_bootstrap.dart';
 import 'core/notifications/data/fcm_service.dart';
 import 'core/notifications/presentation/notification_providers.dart';
 import 'core/observability/observability_bootstrap.dart';
 import 'core/observability/observability_providers.dart';
 import 'core/storage/prefs_service.dart';
 import 'features/purchases/presentation/providers/purchases_providers.dart';
+import 'features/songbooks/presentation/providers/songbook_providers.dart';
 import 'features/subscriptions/presentation/providers/subscription_providers.dart';
 import 'firebase_options_dev.dart' as dev_opts;
 import 'firebase_options_prod.dart' as prod_opts;
@@ -33,7 +36,15 @@ Future<void> bootstrap() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  await Firebase.initializeApp(options: _firebaseOptions(), name: 'ilearnit');
+  // Initialize the DEFAULT app from the flavor's options. Every service
+  // uses `.instance` (= the default app); a named app here would leave
+  // the default to whatever native config file happened to be bundled.
+  // iOS bundles no GoogleService-Info.plist on purpose, so dev builds can
+  // never silently talk to the production project.
+  await Firebase.initializeApp(options: _firebaseOptions());
+
+  // Attest requests before any Firestore / Functions / Storage call.
+  await activateAppCheck();
 
   // Register the FCM background message handler immediately after Firebase
   // is up — must happen before runApp so the OS-spawned isolate can find it.
@@ -95,9 +106,17 @@ Future<void> bootstrap() async {
   // stream and writes entitlements to Firestore.
   container.read(subscriptionNotifierProvider);
 
+  // Songbook purchases (non-consumable) — verify restored / interrupted
+  // transactions even before the Songbooks screen is opened.
+  container.read(songbookPurchasesNotifierProvider);
+
   // Eagerly init the notification bootstrap so the FCM/local stack is up
   // and listening before the first UI render.
   container.read(notificationBootstrapProvider);
+
+  // Clear mini player, offline downloads and signed URLs when a session
+  // ends (logout, account deletion, revoked token).
+  container.read(sessionCleanupProvider);
 
   runApp(
     UncontrolledProviderScope(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/course_badge.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Small filled chip rendered under the price on the result tile. Yellow
 /// for bestseller, amber for highest-rated, green for new release.
@@ -10,7 +11,7 @@ class CourseBadgeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final spec = _specFor(badge);
+    final spec = _specFor(context, badge);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
@@ -28,25 +29,26 @@ class CourseBadgeChip extends StatelessWidget {
     );
   }
 
-  _BadgeSpec _specFor(CourseBadge b) {
+  _BadgeSpec _specFor(BuildContext context, CourseBadge b) {
+    final t = context.l10n;
     switch (b) {
       case CourseBadge.bestseller:
-        return const _BadgeSpec(
-          label: 'Bestseller',
-          bg: Color(0xFFECEAB1),
-          fg: Color(0xFF3D3A00),
+        return _BadgeSpec(
+          label: t.badgeBestseller,
+          bg: const Color(0xFFECEAB1),
+          fg: const Color(0xFF3D3A00),
         );
       case CourseBadge.highestRated:
-        return const _BadgeSpec(
-          label: 'Highest rated',
-          bg: Color(0xFFF7C788),
-          fg: Color(0xFF3D2400),
+        return _BadgeSpec(
+          label: t.badgeHighestRated,
+          bg: const Color(0xFFF7C788),
+          fg: const Color(0xFF3D2400),
         );
       case CourseBadge.newRelease:
-        return const _BadgeSpec(
-          label: 'New',
-          bg: Color(0xFFB5DCC8),
-          fg: Color(0xFF103B2C),
+        return _BadgeSpec(
+          label: t.badgeNew,
+          bg: const Color(0xFFB5DCC8),
+          fg: const Color(0xFF103B2C),
         );
     }
   }

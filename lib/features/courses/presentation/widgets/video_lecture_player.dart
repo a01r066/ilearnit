@@ -1,10 +1,12 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../mini_player/data/services/mini_player_service.dart';
 import '../../../mini_player/presentation/providers/mini_player_providers.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Signature for the per-second tick the player emits while playing.
 /// Driven by a listener on the shared [VideoPlayerController] owned by
@@ -80,14 +82,25 @@ class _VideoLecturePlayerState extends ConsumerState<VideoLecturePlayer> {
         initialPositionSec: widget.initialPositionSec,
       );
 
+      if (!mounted) return;
       final video = _service.videoController;
-      if (video == null || !mounted) return;
+      if (video == null || !video.value.isInitialized) {
+        // A newer track replaced this one, or init failed silently.
+        setState(() => _error = context.l10n.videoLoadFailed);
+        return;
+      }
 
       final chewie = ChewieController(
         videoPlayerController: video,
         autoPlay: false, // service has already called play()
         looping: false,
         allowFullScreen: true,
+        // Chewie's default restores ALL orientations after fullscreen,
+        // which silently undoes the app-wide portrait lock in bootstrap.
+        deviceOrientationsAfterFullScreen: const [
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ],
         allowMuting: true,
         showControls: true,
         materialProgressColors: ChewieProgressColors(
@@ -142,10 +155,10 @@ class _VideoLecturePlayerState extends ConsumerState<VideoLecturePlayer> {
     if (_error != null) {
       return Container(
         color: Colors.black,
-        child: const Center(
+        child: Center(
           child: Text(
-            'Could not load video.',
-            style: TextStyle(color: Colors.white70),
+            context.l10n.videoLoadFailed,
+            style: const TextStyle(color: Colors.white70),
           ),
         ),
       );

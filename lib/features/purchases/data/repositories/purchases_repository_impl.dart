@@ -7,33 +7,48 @@ import 'package:in_app_purchase/in_app_purchase.dart' as iap;
 import '../../../../core/error/error_mapper.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/typedefs/typedefs.dart';
+import '../../domain/entities/price_tier.dart';
 import '../../domain/entities/product_price_entity.dart';
 import '../../domain/entities/purchase_entity.dart';
 import '../../domain/entities/purchase_status.dart';
 import '../../domain/repositories/purchases_repository.dart';
 import '../datasources/iap_remote_datasource.dart';
+import '../datasources/purchase_verification_datasource.dart';
 import '../datasources/purchases_firestore_datasource.dart';
-import '../models/purchase_model.dart';
+import '../../../../l10n/l10n.dart';
 
+/// Course purchases.
+///
+/// Flow:
+///   1. `buyCourse` → `createPurchaseIntent` (server records which course
+///      this tier purchase is for and returns the tier product id) →
+///      store sheet for a CONSUMABLE tier product.
+///   2. The platform stream delivers the transaction → `verifyPurchase`
+///      validates the receipt, grants `users/{uid}/purchases/{courseId}`
+///      and (Android) consumes the token.
+///   3. Only after the server answers do we finish the store transaction.
+///
+/// Nothing here writes entitlements to Firestore — rules forbid it.
 class PurchasesRepositoryImpl implements PurchasesRepository {
   PurchasesRepositoryImpl({
     required IapRemoteDataSource iap,
     required PurchasesFirestoreDataSource firestore,
+    required PurchaseVerificationDataSource verifier,
     required FirebaseAuth auth,
   })  : _iap = iap,
         _firestore = firestore,
+        _verifier = verifier,
         _auth = auth;
 
   final IapRemoteDataSource _iap;
   final PurchasesFirestoreDataSource _firestore;
+  final PurchaseVerificationDataSource _verifier;
   final FirebaseAuth _auth;
 
-  /// In-memory map: productId → courseId, populated by `buyCourse(...)` so
-  /// the platform purchase stream (which only carries productId) can be
-  /// correlated back to the originating course. Restored purchases that
-  /// arrive without a prior `buyCourse` call still need correlation —
-  /// they're resolved via `applicationUserName` carried on PurchaseDetails.
-  final Map<String, String> _pendingProductToCourse = {};
+  /// productId → courseId for purchases started in THIS process. Only a
+  /// hint: after an app kill the server resolves the course from the
+  /// intent recorded in step 1.
+  final Map<String, String> _courseHints = {};
 
   @override
   Future<bool> get isAvailable => _iap.isAvailable;
@@ -43,8 +58,7 @@ class PurchasesRepositoryImpl implements PurchasesRepository {
     Set<String> productIds,
   ) async {
     try {
-      final out = await _iap.fetchProducts(productIds);
-      return Right(out);
+      return Right(await _iap.fetchProducts(productIds));
     } catch (e, st) {
       return Left(mapToFailure(e, st));
     }
@@ -56,17 +70,27 @@ class PurchasesRepositoryImpl implements PurchasesRepository {
     required String productId,
   }) async {
     try {
-      _pendingProductToCourse[productId] = courseId;
-      // Embed our courseId in `applicationUserName` so the platform echoes
-      // it back on every PurchaseDetails — useful for restore flows where
-      // the in-memory map is empty.
-      await _iap.buyNonConsumable(
-        productId: productId,
-        applicationUserName: courseId,
+      // The server derives the product from the course tier; trust it
+      // over the client-side value so a stale build can't pay the wrong
+      // tier.
+      final serverProductId = await _verifier.createIntent(courseId);
+      _courseHints[serverProductId] = courseId;
+      await _iap.buyConsumable(
+        productId: serverProductId,
+        applicationUserName: _auth.currentUser?.uid,
       );
       return const Right(null);
+    } on PurchaseVerificationException catch (e) {
+      final t = L10n.current;
+      return Left(Failure.server(
+        message: switch (e.code) {
+          'already-exists' => t.purchaseAlreadyOwned,
+          'failed-precondition' || 'not-found' => t.purchaseCourseUnavailable,
+          'unauthenticated' => t.purchaseSignInToUnlockCourse,
+          _ => t.purchaseFailed,
+        },
+      ));
     } catch (e, st) {
-      _pendingProductToCourse.remove(productId);
       return Left(mapToFailure(e, st));
     }
   }
@@ -74,6 +98,9 @@ class PurchasesRepositoryImpl implements PurchasesRepository {
   @override
   ResultFuture<void> restorePurchases() async {
     try {
+      // iOS: replays non-consumables only — course tiers are consumables,
+      // so this mainly re-delivers unfinished Android purchases. Course
+      // ownership itself lives server-side on the account.
       await _iap.restorePurchases();
       return const Right(null);
     } catch (e, st) {
@@ -85,22 +112,20 @@ class PurchasesRepositoryImpl implements PurchasesRepository {
   Stream<PurchaseEntity> purchaseUpdates() async* {
     await for (final batch in _iap.purchaseStream) {
       for (final p in batch) {
-        // Resolve courseId — first from in-memory map (live purchase),
-        // then from applicationUserName (restore), then skip.
-        final courseId = _pendingProductToCourse.remove(p.productID) ??
-            _courseIdFromVerificationData(p);
-        if (courseId == null) {
-          // Couldn't map this product back to a course. Complete the txn
-          // so the store stops resending; UI will reflect ownership the
-          // next time the user signs in (if a Cloud Function backfills).
-          if (p.pendingCompletePurchase) {
-            await _iap.completePurchase(p);
-          }
-          continue;
-        }
+        // Subscriptions are handled by SubscriptionNotifier on the same
+        // stream — leave them alone.
+        if (PriceTier.fromProductId(p.productID) == null) continue;
 
-        final status = mapPlatformPurchaseStatus(p.status);
-        final entity = PurchaseEntity(
+        final entity = await _handle(p);
+        if (entity != null) yield entity;
+      }
+    }
+  }
+
+  Future<PurchaseEntity?> _handle(iap.PurchaseDetails p) async {
+    final hint = _courseHints[p.productID];
+    PurchaseEntity entityFor(String courseId, PurchaseStatus status) =>
+        PurchaseEntity(
           courseId: courseId,
           productId: p.productID,
           status: status,
@@ -111,40 +136,63 @@ class PurchasesRepositoryImpl implements PurchasesRepository {
           purchasedAt: _parseDate(p.transactionDate),
         );
 
-        // Persist confirmed purchases; for pending/failed we just emit.
-        if ((status == PurchaseStatus.purchased ||
-                status == PurchaseStatus.restored) &&
-            _auth.currentUser != null) {
-          try {
-            await _firestore.upsertPurchase(
-              uid: _auth.currentUser!.uid,
-              purchase: PurchaseModel(
-                courseId: entity.courseId,
-                productId: entity.productId,
-                status: PurchaseModel.idFromStatus(status),
-                transactionId: entity.transactionId,
-                source: entity.source,
-                purchasedAt: entity.purchasedAt ?? DateTime.now(),
-              ),
-            );
-          } catch (_) {
-            // Swallow — UI will retry on the next stream emission, and
-            // restorePurchases() can be used to recover.
-          }
-        }
+    switch (p.status) {
+      case iap.PurchaseStatus.pending:
+        // Ask to Buy / slow card. Keep waiting; the store emits again.
+        return hint == null ? null : entityFor(hint, PurchaseStatus.pending);
 
-        // TODO(security): verify the receipt server-side (Cloud Function)
-        // before completing. For now we trust the platform stream.
-        if (p.pendingCompletePurchase) {
-          try {
-            await _iap.completePurchase(p);
-          } catch (_) {
-            // The platform will retry on next stream pump.
-          }
-        }
+      case iap.PurchaseStatus.canceled:
+      case iap.PurchaseStatus.error:
+        // StoreKit keeps failed transactions queued until finished —
+        // leaving them open blocks the next purchase of the same product.
+        await _safeComplete(p);
+        _courseHints.remove(p.productID);
+        return hint == null ? null : entityFor(hint, PurchaseStatus.failed);
 
-        yield entity;
+      case iap.PurchaseStatus.purchased:
+      case iap.PurchaseStatus.restored:
+        break;
+    }
+
+    // Wait for Firebase Auth to restore the session on cold start before
+    // deciding there's no user.
+    final user = _auth.currentUser ?? await _auth.authStateChanges().first;
+    if (user == null) {
+      // Leave the transaction open; it is re-delivered after sign-in.
+      return null;
+    }
+
+    try {
+      final result = await _verifier.verifyCourse(p, courseIdHint: hint);
+      _courseHints.remove(p.productID);
+      // Android: the server consumed the token (which also acknowledges
+      // it). Acknowledging a consumed purchase errors, so skip it.
+      if (!result.consumed) await _safeComplete(p);
+      return entityFor(result.courseId, PurchaseStatus.purchased);
+    } on PurchaseVerificationException catch (e) {
+      if (!e.retryable) {
+        _courseHints.remove(p.productID);
+        // iOS: finish so a bad / unmatched receipt doesn't loop forever
+        // (the server logged it for support). Android: leave it
+        // unacknowledged — Play auto-refunds after 3 days.
+        if (PurchaseVerificationDataSource.platform == 'ios') {
+          await _safeComplete(p);
+        }
       }
+      // Retryable: keep the transaction open so it replays on next launch.
+      return hint == null ? null : entityFor(hint, PurchaseStatus.failed);
+    } catch (_) {
+      // Unknown failure — treat as retryable.
+      return hint == null ? null : entityFor(hint, PurchaseStatus.failed);
+    }
+  }
+
+  Future<void> _safeComplete(iap.PurchaseDetails p) async {
+    if (!p.pendingCompletePurchase) return;
+    try {
+      await _iap.completePurchase(p);
+    } catch (_) {
+      // The platform re-delivers on the next stream pump.
     }
   }
 
@@ -167,26 +215,10 @@ class PurchasesRepositoryImpl implements PurchasesRepository {
     }
   }
 
-  // ── Helpers ─────────────────────────────────────────────────────────
-
-  /// On Android and iOS, the platform echoes `applicationUserName` back via
-  /// the verification-data fields. We tucked the courseId there during
-  /// `buyCourse(...)`. This works around the restore-flow case where the
-  /// in-memory map is empty (cold start after a re-install).
-  String? _courseIdFromVerificationData(iap.PurchaseDetails p) {
-    // The plugin doesn't currently expose `applicationUserName` on
-    // PurchaseDetails directly, so this is a placeholder. The robust
-    // long-term answer is a Cloud Function that maps productId+receipt
-    // back to courseId server-side.
-    return null;
-  }
-
   DateTime? _parseDate(String? raw) {
     if (raw == null || raw.isEmpty) return null;
     final millis = int.tryParse(raw);
-    if (millis != null) {
-      return DateTime.fromMillisecondsSinceEpoch(millis);
-    }
+    if (millis != null) return DateTime.fromMillisecondsSinceEpoch(millis);
     return DateTime.tryParse(raw);
   }
 }

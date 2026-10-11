@@ -14,6 +14,7 @@ import '../providers/auth_providers.dart';
 import '../providers/auth_state.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/social_sign_in_button.dart';
+import '../../../../l10n/l10n.dart';
 
 class SignupPage extends ConsumerStatefulWidget {
   const SignupPage({super.key});
@@ -51,11 +52,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
       // branch fires when an autofill-driven enter-key press skips the
       // gate.
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Please accept the Terms and Community Guidelines to continue.',
-          ),
-        ),
+        SnackBar(content: Text(context.l10n.authAcceptTermsFirst)),
       );
       return;
     }
@@ -89,10 +86,10 @@ class _SignupPageState extends ConsumerState<SignupPage> {
       // a guest — matches the LoginPage skip behaviour so the two
       // entry points feel symmetric.
       appBar: AppBar(
-        title: const Text('Create account'),
+        title: Text(t.authCreateAccount),
         actions: [
           IconButton(
-            tooltip: 'Skip — continue as guest',
+            tooltip: t.authSkipGuestTooltip,
             icon: const Icon(Icons.close),
             onPressed:
                 isLoading ? null : () => context.go(RoutePaths.home),
@@ -109,11 +106,11 @@ class _SignupPageState extends ConsumerState<SignupPage> {
               child: ListView(
                 children: [
                   const SizedBox(height: 8),
-                  Text('Welcome to iLearnIt',
+                  Text(t.homeWelcomeAnon,
                       style: context.textTheme.headlineLarge),
                   const SizedBox(height: 8),
                   Text(
-                    'Pick up your instrument — guitar, piano or violin.',
+                    t.authSignUpSubtitle,
                     style: context.textTheme.bodyLarge?.copyWith(
                       color: context.colors.onSurfaceVariant,
                     ),
@@ -121,12 +118,12 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                   const SizedBox(height: 24),
                   AuthTextField(
                     controller: _name,
-                    label: 'Display name',
+                    label: t.authDisplayName,
                     textInputAction: TextInputAction.next,
                     prefixIcon: Icons.person_outline_rounded,
                     autofillHints: const [AutofillHints.name],
                     validator: (v) =>
-                        Validators.required(v, label: 'Display name'),
+                        Validators.required(v, label: t.authDisplayName),
                   ),
                   const SizedBox(height: 16),
                   AuthTextField(
@@ -148,6 +145,9 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                     autofillHints: const [AutofillHints.newPassword],
                     validator: Validators.password,
                     suffix: IconButton(
+                      tooltip: _obscure
+                          ? t.a11yShowPassword
+                          : t.a11yHidePassword,
                       icon: Icon(
                         _obscure
                             ? Icons.visibility_outlined
@@ -167,7 +167,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                     validator: (v) => Validators.matches(
                       v,
                       _password.text,
-                      label: 'Confirmation',
+                      label: t.authConfirmPassword,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -189,38 +189,41 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                           child: Wrap(
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              const Text('I agree to the '),
-                              GestureDetector(
-                                onTap: () => context.pushNamed(
-                                  RouteNames.legal,
-                                  pathParameters: {'slug': 'terms'},
-                                ),
-                                child: Text(
-                                  'Terms',
-                                  style: TextStyle(
-                                    color: context.colors.primary,
-                                    decoration: TextDecoration.underline,
+                              Text(t.authAgreePrefix),
+                              Semantics(
+                                link: true,
+                                child: GestureDetector(
+                                  onTap: () => context.pushNamed(
+                                    RouteNames.legal,
+                                    pathParameters: {'slug': 'terms'},
+                                  ),
+                                  child: Text(
+                                    t.authAgreeTerms,
+                                    style: TextStyle(
+                                      color: context.colors.primary,
+                                      decoration: TextDecoration.underline,
+                                    ),
                                   ),
                                 ),
                               ),
-                              const Text(' and '),
-                              GestureDetector(
-                                onTap: () => context.pushNamed(
-                                  RouteNames.legal,
-                                  pathParameters: {'slug': 'community'},
-                                ),
-                                child: Text(
-                                  'Community Guidelines',
-                                  style: TextStyle(
-                                    color: context.colors.primary,
-                                    decoration: TextDecoration.underline,
+                              Text(t.authAgreeAnd),
+                              Semantics(
+                                link: true,
+                                child: GestureDetector(
+                                  onTap: () => context.pushNamed(
+                                    RouteNames.legal,
+                                    pathParameters: {'slug': 'community'},
+                                  ),
+                                  child: Text(
+                                    t.authAgreeGuidelines,
+                                    style: TextStyle(
+                                      color: context.colors.primary,
+                                      decoration: TextDecoration.underline,
+                                    ),
                                   ),
                                 ),
                               ),
-                              const Text(
-                                '. I will not post abusive, illegal, '
-                                'or objectionable content.',
-                              ),
+                              Text(t.authAgreeSuffix),
                             ],
                           ),
                         ),
@@ -236,7 +239,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                             width: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Create account'),
+                        : Text(t.authCreateAccount),
                   ),
                   const SizedBox(height: 24),
                   _OrDivider(label: t.authOrContinueWith),

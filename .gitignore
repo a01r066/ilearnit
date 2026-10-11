@@ -95,6 +95,9 @@ coverage/
 .env
 .env.dev
 .env.prod
+# functions/.env.<alias> hold non-secret params only (package/bundle ids)
+!functions/.env.dev
+!functions/.env.prod
 
 # Sample data
 /sample_data/ilearnit-dev-cedd97325478.json

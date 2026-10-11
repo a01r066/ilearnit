@@ -12,6 +12,7 @@ import '../../../courses/presentation/providers/courses_providers.dart';
 import '../../../progress/presentation/providers/progress_providers.dart';
 import '../../data/models/learning_path_model.dart';
 import '../providers/learning_paths_providers.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Detail page for a single learning path.
 ///
@@ -202,7 +203,7 @@ class _PathCourseRow extends ConsumerWidget {
         error: (e, _) => _Shell(
           child: Padding(
             padding: const EdgeInsets.all(12),
-            child: Text('Error: $e',
+            child: Text(context.l10n.learningPathCourseLoadFailed,
                 style: TextStyle(color: context.colors.error)),
           ),
         ),

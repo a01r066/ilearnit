@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/instrument_category.dart';
+import '../../../../l10n/l10n.dart';
 
 class CategoryFilterBar extends StatelessWidget {
   const CategoryFilterBar({
@@ -21,7 +22,7 @@ class CategoryFilterBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         children: [
           _Chip(
-            label: 'All',
+            label: context.l10n.coursesFilterAll,
             isSelected: selected == null,
             onTap: () => onChanged(null),
           ),

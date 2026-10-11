@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../wishlist/presentation/widgets/bookmark_button.dart';
 import '../../domain/entities/course_entity.dart';
 import '../../domain/entities/instrument_category.dart';
+import '../../../../l10n/l10n.dart';
 
 class CourseCard extends StatelessWidget {
   const CourseCard({super.key, required this.course, this.onTap});
@@ -105,7 +106,7 @@ class CourseCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'by ${course.instructorName}',
+                        context.l10n.courseByInstructor(course.instructorName),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall,
@@ -142,7 +143,7 @@ class _StatsRow extends StatelessWidget {
         Icon(Icons.video_library_outlined, size: 16, color: hint),
         Flexible(
           child: Text(
-            ' ${course.lessonCount} lessons',
+            ' ${context.l10n.courseLessons('${course.lessonCount}')}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall,

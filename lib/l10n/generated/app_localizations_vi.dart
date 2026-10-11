@@ -922,16 +922,16 @@ class AppLocalizationsVi extends AppLocalizations {
   String get notesEdit => 'Sửa';
 
   @override
-  String get notesDelete => 'Xóa';
+  String get notesDelete => 'Xoá';
 
   @override
-  String get notesCancel => 'Hủy';
+  String get notesCancel => 'Huỷ';
 
   @override
-  String get notesDeleted => 'Đã xóa ghi chú';
+  String get notesDeleted => 'Đã xoá ghi chú';
 
   @override
-  String get notesDeleteConfirmTitle => 'Xóa ghi chú này?';
+  String get notesDeleteConfirmTitle => 'Xoá ghi chú này?';
 
   @override
   String get notesDeleteConfirmBody => 'Hành động này không thể hoàn tác.';
@@ -959,4 +959,831 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get settingsAnalyticsSubtitle =>
       'Giúp chúng tôi phát hiện lỗi và cải thiện ứng dụng. Tắt để dừng mọi thu thập.';
+
+  @override
+  String get errTimeout => 'Kết nối quá thời gian. Vui lòng thử lại.';
+
+  @override
+  String get errRequestFailed => 'Yêu cầu thất bại.';
+
+  @override
+  String get errRequestCancelled => 'Yêu cầu đã bị huỷ.';
+
+  @override
+  String get errBadCertificate => 'Kết nối bảo mật thất bại.';
+
+  @override
+  String get errUnknownNetwork => 'Lỗi mạng không xác định.';
+
+  @override
+  String get errNoInternet => 'Không có kết nối Internet.';
+
+  @override
+  String get authErrInvalidEmail => 'Địa chỉ email không hợp lệ.';
+
+  @override
+  String get authErrDisabled => 'Tài khoản này đã bị vô hiệu hoá.';
+
+  @override
+  String get authErrInvalidCredentials => 'Email hoặc mật khẩu không đúng.';
+
+  @override
+  String get authErrEmailInUse => 'Đã có tài khoản sử dụng email này.';
+
+  @override
+  String get authErrWeakPassword => 'Mật khẩu quá yếu.';
+
+  @override
+  String get authErrTooManyRequests =>
+      'Bạn đã thử quá nhiều lần. Vui lòng thử lại sau.';
+
+  @override
+  String get authErrGeneric => 'Xác thực thất bại.';
+
+  @override
+  String get valEmailRequired => 'Vui lòng nhập email.';
+
+  @override
+  String get valEmailInvalid => 'Vui lòng nhập email hợp lệ.';
+
+  @override
+  String get valPasswordRequired => 'Vui lòng nhập mật khẩu.';
+
+  @override
+  String get valPasswordMin => 'Tối thiểu 8 ký tự.';
+
+  @override
+  String valFieldRequired(String field) {
+    return 'Vui lòng nhập $field.';
+  }
+
+  @override
+  String get valThisField => 'Trường này';
+
+  @override
+  String valMismatch(String field) {
+    return '$field không khớp.';
+  }
+
+  @override
+  String get valConfirmation => 'Xác nhận';
+
+  @override
+  String get navMyLearning => 'Việc học của tôi';
+
+  @override
+  String get routeNotFound => 'Không tìm thấy trang.';
+
+  @override
+  String get timeJustNow => 'vừa xong';
+
+  @override
+  String timeMinutesAgo(String n) {
+    return '$n phút trước';
+  }
+
+  @override
+  String timeHoursAgo(String n) {
+    return '$n giờ trước';
+  }
+
+  @override
+  String timeDaysAgo(String n) {
+    return '$n ngày trước';
+  }
+
+  @override
+  String timeMinutesShort(String n) {
+    return '$n phút';
+  }
+
+  @override
+  String timeHoursShort(String n) {
+    return '$n giờ';
+  }
+
+  @override
+  String timeDaysShort(String n) {
+    return '$n ngày';
+  }
+
+  @override
+  String get authErrNoUser => 'Đăng nhập chưa hoàn tất. Vui lòng thử lại.';
+
+  @override
+  String get authErrGoogleFailed => 'Đăng nhập bằng Google thất bại.';
+
+  @override
+  String get authErrCancelled => 'Đã huỷ đăng nhập.';
+
+  @override
+  String get authErrAppleOnly =>
+      'Đăng nhập bằng Apple chỉ khả dụng trên thiết bị Apple.';
+
+  @override
+  String get authErrAppleFailed => 'Đăng nhập bằng Apple thất bại.';
+
+  @override
+  String get authErrNotSignedIn => 'Bạn chưa đăng nhập.';
+
+  @override
+  String get authErrNoEmailReauth =>
+      'Tài khoản của bạn không có email — hãy xác thực lại bằng Google hoặc Apple.';
+
+  @override
+  String get authErrReauthFailed => 'Xác thực lại thất bại.';
+
+  @override
+  String get authErrReauthCancelled => 'Đã huỷ xác thực lại.';
+
+  @override
+  String get authErrDeleteFailed => 'Xoá tài khoản thất bại.';
+
+  @override
+  String get authSkipGuestTooltip => 'Bỏ qua — tiếp tục với tư cách khách';
+
+  @override
+  String get authWelcomeBack => 'Chào mừng trở lại';
+
+  @override
+  String get authSignInSubtitle => 'Đăng nhập để tiếp tục bài học của bạn.';
+
+  @override
+  String get authContinueAsGuest => 'Tiếp tục với tư cách khách';
+
+  @override
+  String get authEnterEmailFirst => 'Vui lòng nhập email ở trên trước.';
+
+  @override
+  String get authResetSent => 'Đã gửi email đặt lại mật khẩu.';
+
+  @override
+  String get authResetFailed => 'Không thể gửi email đặt lại mật khẩu.';
+
+  @override
+  String get authAcceptTermsFirst =>
+      'Vui lòng đồng ý với Điều khoản và Nguyên tắc cộng đồng để tiếp tục.';
+
+  @override
+  String get authCreateAccount => 'Tạo tài khoản';
+
+  @override
+  String get authSignUpSubtitle =>
+      'Cầm nhạc cụ lên nào — guitar, piano hoặc violin.';
+
+  @override
+  String get authDisplayName => 'Tên hiển thị';
+
+  @override
+  String get authAgreePrefix => 'Tôi đồng ý với ';
+
+  @override
+  String get authAgreeTerms => 'Điều khoản';
+
+  @override
+  String get authAgreeAnd => ' và ';
+
+  @override
+  String get authAgreeGuidelines => 'Nguyên tắc cộng đồng';
+
+  @override
+  String get authAgreeSuffix =>
+      '. Tôi sẽ không đăng nội dung lăng mạ, bất hợp pháp hoặc phản cảm.';
+
+  @override
+  String get profileGuest => 'Khách';
+
+  @override
+  String get profilePlanActive => 'Gói Cá nhân · đang hoạt động';
+
+  @override
+  String get profilePlanCta => 'Mở khoá mọi khoá học với Gói Cá nhân';
+
+  @override
+  String get profileModerationQueue => 'Hàng chờ kiểm duyệt';
+
+  @override
+  String get profileModerationSubtitle => 'Xem xét nội dung bị báo cáo';
+
+  @override
+  String get profileGuestTitle => 'Lưu tiến độ học của bạn';
+
+  @override
+  String get profileGuestBody =>
+      'Đăng nhập để mở khoá khoá học, lưu đánh dấu, ghi chú và học tiếp trên mọi thiết bị.';
+
+  @override
+  String get myLearningLoadFailed => 'Không thể tải thư viện của bạn.';
+
+  @override
+  String get commonTryAgainLater => 'Vui lòng kiểm tra kết nối và thử lại.';
+
+  @override
+  String get myLearningEmptyTitle => 'Thư viện của bạn chưa có gì.';
+
+  @override
+  String get myLearningEmptyBody =>
+      'Hãy bắt đầu một bài giảng bất kỳ, bài đó sẽ hiện ở đây để bạn học tiếp từ chỗ đã dừng.';
+
+  @override
+  String get commonSearch => 'Tìm kiếm';
+
+  @override
+  String get progressCompleted => 'Đã hoàn thành';
+
+  @override
+  String progressPercentComplete(String percent) {
+    return 'Đã hoàn thành $percent%';
+  }
+
+  @override
+  String get purchaseContinueCourse => 'Tiếp tục khoá học';
+
+  @override
+  String get purchaseIncludedInPlan => 'Đã bao gồm trong Gói Cá nhân của bạn';
+
+  @override
+  String get purchaseSignInToUnlockCourse =>
+      'Đăng nhập để mở khoá khoá học này.';
+
+  @override
+  String get purchaseSignInToUnlock => 'Đăng nhập để mở khoá';
+
+  @override
+  String purchaseUnlockFor(String price) {
+    return 'Mở khoá với giá $price';
+  }
+
+  @override
+  String get purchaseUnavailable =>
+      'Thiết bị này không hỗ trợ mua trong ứng dụng.';
+
+  @override
+  String get purchaseRestoreDone =>
+      'Đã khôi phục. Giao dịch mua của bạn sẽ hiển thị trong giây lát.';
+
+  @override
+  String get purchaseRestoreSubtitle =>
+      'Đồng bộ các giao dịch mua bằng tài khoản App Store hoặc Google Play của bạn.';
+
+  @override
+  String get purchaseProductUnavailable =>
+      'Mặt hàng này hiện không có trên cửa hàng.';
+
+  @override
+  String get purchaseStoreDeclined =>
+      'Cửa hàng không thể bắt đầu giao dịch. Vui lòng thử lại.';
+
+  @override
+  String get purchaseNotSupportedPlatform =>
+      'Nền tảng này không hỗ trợ mua trong ứng dụng.';
+
+  @override
+  String get purchaseAlreadyOwned => 'Bạn đã sở hữu khoá học này.';
+
+  @override
+  String get purchaseCourseUnavailable => 'Khoá học này hiện không mở bán.';
+
+  @override
+  String get purchaseFailed =>
+      'Không thể hoàn tất giao dịch. Vui lòng thử lại.';
+
+  @override
+  String get subscriptionVerifyFailed =>
+      'Không thể xác nhận gói đăng ký. Vui lòng thử lại hoặc dùng Khôi phục giao dịch mua.';
+
+  @override
+  String get subscriptionOtherAccount =>
+      'Gói đăng ký này đã liên kết với một tài khoản iLearnIt khác.';
+
+  @override
+  String get errLoadFailed => 'Không thể tải dữ liệu. Vui lòng thử lại.';
+
+  @override
+  String get courseNotFound => 'Không tìm thấy khoá học.';
+
+  @override
+  String get videoUnavailable => 'Không thể phát video. Vui lòng thử lại.';
+
+  @override
+  String get notesSaveFailed => 'Không thể lưu ghi chú.';
+
+  @override
+  String get qaPostQuestionFailed => 'Không thể đăng câu hỏi.';
+
+  @override
+  String get qaPostReplyFailed => 'Không thể đăng câu trả lời.';
+
+  @override
+  String durationHM(String h, String m) {
+    return '$h giờ $m phút';
+  }
+
+  @override
+  String durationM(String m) {
+    return '$m phút';
+  }
+
+  @override
+  String durationS(String s) {
+    return '$s giây';
+  }
+
+  @override
+  String get courseTaughtBy => 'Giảng viên: ';
+
+  @override
+  String get courseAbout => 'Giới thiệu khoá học';
+
+  @override
+  String get courseCurriculumSoon => 'Nội dung khoá học sắp ra mắt.';
+
+  @override
+  String get courseCurriculum => 'Nội dung khoá học';
+
+  @override
+  String courseCurriculumSummary(
+    String sections,
+    String lectures,
+    String duration,
+  ) {
+    return '$sections chương • $lectures bài giảng • $duration';
+  }
+
+  @override
+  String courseLessons(String count) {
+    return '$count bài học';
+  }
+
+  @override
+  String courseEnrolled(String count) {
+    return '$count học viên';
+  }
+
+  @override
+  String get commonRefresh => 'Làm mới';
+
+  @override
+  String get coursesShowingFeatured => 'Đang hiển thị khoá học nổi bật';
+
+  @override
+  String get coursesShowAll => 'Hiện tất cả khoá học';
+
+  @override
+  String get instructorsEmpty => 'Chưa có giảng viên nào.';
+
+  @override
+  String instructorStudents(String count) {
+    return '$count học viên';
+  }
+
+  @override
+  String get commonLoadFailed => 'Đã có lỗi xảy ra. Kéo xuống để thử lại.';
+
+  @override
+  String courseByInstructor(String name) {
+    return 'bởi $name';
+  }
+
+  @override
+  String get lectureNotFound => 'Không tìm thấy bài giảng.';
+
+  @override
+  String get lectureMinimize => 'Thu nhỏ';
+
+  @override
+  String get lectureVideoMissing => 'Video không khả dụng.';
+
+  @override
+  String get lectureAudioMissing => 'Âm thanh không khả dụng.';
+
+  @override
+  String get lecturePurchaseToWatch => 'Hãy mua khoá học này để xem bài giảng.';
+
+  @override
+  String get lectureEncoding =>
+      'Video đang được xử lý — vui lòng thử lại sau một phút.';
+
+  @override
+  String get lectureResources => 'Tài liệu';
+
+  @override
+  String get lecturePurchaseToOpen => 'Hãy mua khoá học này để mở bài giảng.';
+
+  @override
+  String get lectureLoadFailed => 'Không thể tải bài giảng. Vui lòng thử lại.';
+
+  @override
+  String get audioLoadFailed => 'Không thể tải âm thanh.';
+
+  @override
+  String get playerBack10 => 'Lùi 10 giây';
+
+  @override
+  String get playerForward30 => 'Tới 30 giây';
+
+  @override
+  String get playerBack15 => 'Lùi 15 giây';
+
+  @override
+  String get playerForward15 => 'Tới 15 giây';
+
+  @override
+  String get playerPlay => 'Phát';
+
+  @override
+  String get playerPause => 'Tạm dừng';
+
+  @override
+  String get commonClose => 'Đóng';
+
+  @override
+  String get videoLoadFailed => 'Không thể tải video.';
+
+  @override
+  String get levelBeginner => 'Cơ bản';
+
+  @override
+  String get levelIntermediate => 'Trung cấp';
+
+  @override
+  String get levelAdvanced => 'Nâng cao';
+
+  @override
+  String get lectureTypeVideo => 'Video';
+
+  @override
+  String get lectureTypeAudio => 'Âm thanh';
+
+  @override
+  String get lectureTypePdf => 'PDF';
+
+  @override
+  String get lectureTypeDoc => 'Tài liệu';
+
+  @override
+  String get reasonSpam => 'Thư rác hoặc lừa đảo';
+
+  @override
+  String get reasonHarassment => 'Quấy rối hoặc bắt nạt';
+
+  @override
+  String get reasonHate => 'Ngôn từ hoặc biểu tượng thù ghét';
+
+  @override
+  String get reasonSexual => 'Ảnh khoả thân hoặc nội dung tình dục';
+
+  @override
+  String get reasonViolence => 'Bạo lực hoặc nội dung nguy hiểm';
+
+  @override
+  String get reasonSelfHarm => 'Tự gây hại hoặc tự tử';
+
+  @override
+  String get reasonMisinformation => 'Thông tin sai lệch';
+
+  @override
+  String get reasonIp => 'Vi phạm bản quyền / sở hữu trí tuệ';
+
+  @override
+  String get reasonOther => 'Lý do khác';
+
+  @override
+  String get ugcReview => 'Đánh giá';
+
+  @override
+  String get ugcQuestion => 'Câu hỏi';
+
+  @override
+  String get ugcAnswer => 'Câu trả lời';
+
+  @override
+  String get ugcNote => 'Ghi chú';
+
+  @override
+  String get lectureAdditionalResources => 'Tài liệu bổ sung';
+
+  @override
+  String get commonOpen => 'Mở';
+
+  @override
+  String get downloadPurchaseToDownload => 'Hãy mua khoá học này để tải về.';
+
+  @override
+  String get downloadFailed => 'Tải về thất bại.';
+
+  @override
+  String get commonCancelDownload => 'Huỷ tải về';
+
+  @override
+  String get lecturePreviewBadge => 'Học thử';
+
+  @override
+  String get lectureLockedLabel => 'Đã khoá';
+
+  @override
+  String sectionNumber(String n) {
+    return 'Chương $n';
+  }
+
+  @override
+  String sectionSummary(String count, String duration) {
+    return '$count bài giảng • $duration';
+  }
+
+  @override
+  String get reviewsTitle => 'Xếp hạng & Đánh giá';
+
+  @override
+  String get reviewsLoadFailed => 'Không thể tải đánh giá.';
+
+  @override
+  String get reviewsEmpty => 'Chưa có đánh giá nào — hãy là người đầu tiên.';
+
+  @override
+  String get reviewsCountOne => '1 đánh giá';
+
+  @override
+  String reviewsCountMany(String count) {
+    return '$count đánh giá';
+  }
+
+  @override
+  String get reviewSignInToWrite => 'Đăng nhập để viết đánh giá';
+
+  @override
+  String get reviewEdit => 'Sửa đánh giá của bạn';
+
+  @override
+  String get reviewWrite => 'Viết đánh giá';
+
+  @override
+  String get reviewSignInSnack => 'Đăng nhập để để lại đánh giá.';
+
+  @override
+  String get reviewAccessGate =>
+      'Mở khoá khoá học này (hoặc đăng ký gói) để đánh giá.';
+
+  @override
+  String get reviewBodyLabel => 'Đánh giá của bạn (không bắt buộc)';
+
+  @override
+  String get reviewBodyHint => 'Bạn thấy khoá học thế nào?';
+
+  @override
+  String get commonSubmit => 'Gửi';
+
+  @override
+  String get reviewDeleteTitle => 'Xoá đánh giá của bạn?';
+
+  @override
+  String get reviewDeleteBody =>
+      'Thao tác này sẽ xoá xếp hạng và đánh giá của bạn khỏi khoá học.';
+
+  @override
+  String get commonDelete => 'Xoá';
+
+  @override
+  String get reviewDeleteMine => 'Xoá đánh giá của tôi';
+
+  @override
+  String get instructorCoursesLoadFailed => 'Không thể tải khoá học.';
+
+  @override
+  String get commonCouldNotOpenLink => 'Không thể mở liên kết.';
+
+  @override
+  String get playerForward10 => 'Tới 10 giây';
+
+  @override
+  String get eulaAcceptFailed =>
+      'Không thể lưu xác nhận của bạn. Vui lòng thử lại.';
+
+  @override
+  String get eulaUpdatedTitle => 'Thoả thuận đã cập nhật';
+
+  @override
+  String eulaUpdatedBody(String date) {
+    return 'Chúng tôi đã cập nhật Điều khoản và Nguyên tắc cộng đồng ($date). Vui lòng xem và đồng ý để tiếp tục sử dụng iLearnIt.';
+  }
+
+  @override
+  String get eulaReadTerms => 'Đọc điều khoản';
+
+  @override
+  String get eulaReadGuidelines => 'Đọc nguyên tắc';
+
+  @override
+  String get eulaAccept => 'Tôi đồng ý';
+
+  @override
+  String get blockFailed => 'Không thể chặn người dùng này. Vui lòng thử lại.';
+
+  @override
+  String get blockThisUser => 'người dùng này';
+
+  @override
+  String blockTitle(String name) {
+    return 'Chặn $name?';
+  }
+
+  @override
+  String blockBody(String name) {
+    return 'Bạn sẽ không thấy đánh giá, câu hỏi, câu trả lời hay ghi chú nào từ $name. Người này sẽ không nhận được thông báo.';
+  }
+
+  @override
+  String get blockAction => 'Chặn';
+
+  @override
+  String get reportThanks =>
+      'Cảm ơn bạn — đội ngũ của chúng tôi sẽ sớm xem xét.';
+
+  @override
+  String get reportFailed => 'Không thể gửi báo cáo. Vui lòng thử lại.';
+
+  @override
+  String reportTitle(String type) {
+    return 'Báo cáo $type';
+  }
+
+  @override
+  String get reportIntro =>
+      'Hãy giúp chúng tôi giữ cộng đồng an toàn. Báo cáo được xem xét trong vòng 24 giờ.';
+
+  @override
+  String get reportReason => 'Lý do';
+
+  @override
+  String get reportNotes => 'Ghi chú thêm (không bắt buộc)';
+
+  @override
+  String get reportSubmit => 'Gửi báo cáo';
+
+  @override
+  String get commonMore => 'Thêm';
+
+  @override
+  String get ugcReport => 'Báo cáo';
+
+  @override
+  String ugcBlockName(String name) {
+    return 'Chặn $name';
+  }
+
+  @override
+  String ugcUnblockName(String name) {
+    return 'Bỏ chặn $name';
+  }
+
+  @override
+  String get ugcUserFallback => 'người dùng';
+
+  @override
+  String get modTitle => 'Kiểm duyệt';
+
+  @override
+  String get modNoAccess => 'Bạn không có quyền truy cập.';
+
+  @override
+  String modOpenCount(String count) {
+    return '$count đang chờ';
+  }
+
+  @override
+  String get modNoOpenReports => 'Không có báo cáo nào đang chờ';
+
+  @override
+  String get modNothingToTriage => 'Không có gì cần xử lý';
+
+  @override
+  String get modEmptyHint =>
+      'Báo cáo liên quan đến khoá học của bạn sẽ hiển thị ở đây.';
+
+  @override
+  String get modActionFailed => 'Thao tác thất bại. Vui lòng thử lại.';
+
+  @override
+  String get modHide => 'Ẩn';
+
+  @override
+  String get modDismiss => 'Bỏ qua';
+
+  @override
+  String get notesSignInSnack => 'Đăng nhập để lưu ghi chú.';
+
+  @override
+  String get qaSignInToReply => 'Đăng nhập để trả lời';
+
+  @override
+  String get qaSignInToJoin => 'Đăng nhập để tham gia thảo luận.';
+
+  @override
+  String get qaSignInToAsk => 'Đăng nhập để đặt câu hỏi.';
+
+  @override
+  String get filterTitle => 'Bộ lọc';
+
+  @override
+  String get filterReset => 'Đặt lại';
+
+  @override
+  String get filterInstrument => 'Nhạc cụ';
+
+  @override
+  String get filterLevel => 'Trình độ';
+
+  @override
+  String get filterMinRating => 'Xếp hạng tối thiểu';
+
+  @override
+  String get filterAny => 'Bất kỳ';
+
+  @override
+  String get filterMaxPrice => 'Giá tối đa';
+
+  @override
+  String get filterApply => 'Áp dụng';
+
+  @override
+  String get learningPathCourseLoadFailed => 'Không thể tải khoá học này.';
+
+  @override
+  String get legalCommunityGuidelinesTitle => 'Nguyên tắc cộng đồng';
+
+  @override
+  String get songbookLoadFailed => 'Không thể tải sách bài hát này.';
+
+  @override
+  String songbookSectionFailed(String section) {
+    return '$section — tải thất bại.';
+  }
+
+  @override
+  String get notifChannelName => 'Thông báo iLearnIt';
+
+  @override
+  String get notifChannelDesc =>
+      'Cập nhật khoá học, trạng thái đơn đăng ký và thông báo chung.';
+
+  @override
+  String get a11yShowPassword => 'Hiện mật khẩu';
+
+  @override
+  String get a11yHidePassword => 'Ẩn mật khẩu';
+
+  @override
+  String a11yRateStars(String n) {
+    return 'Đánh giá $n trên 5 sao';
+  }
+
+  @override
+  String get updateRequiredTitle => 'Cần cập nhật ứng dụng';
+
+  @override
+  String get updateRequiredBody =>
+      'Phiên bản iLearnIt này không còn được hỗ trợ. Vui lòng cập nhật để tiếp tục học.';
+
+  @override
+  String get updateNow => 'Cập nhật';
+
+  @override
+  String get updateAvailableBody => 'Đã có phiên bản iLearnIt mới.';
+
+  @override
+  String get updateLater => 'Để sau';
+
+  @override
+  String get songbookPreparing => 'Đang chuẩn bị sách bài hát…';
+
+  @override
+  String get songbookNoViewer => 'Thiết bị không có ứng dụng mở được tệp PDF.';
+
+  @override
+  String get songbookLocked =>
+      'Hãy mua sách bài hát này (hoặc Gói Cá nhân) để mở.';
+
+  @override
+  String get songbookOpenFailed =>
+      'Không thể mở sách bài hát. Vui lòng thử lại.';
+
+  @override
+  String songbookSamplePage(String page, String total) {
+    return 'Trang mẫu · $page/$total';
+  }
+
+  @override
+  String get songbookOpen => 'Mở sách bài hát';
+
+  @override
+  String get songbookSignInToGet => 'Đăng nhập để mua sách bài hát này.';
+
+  @override
+  String songbookGetForPrice(String price) {
+    return 'Mua sách · $price';
+  }
+
+  @override
+  String get songbookOtherAccount =>
+      'Giao dịch này đã liên kết với một tài khoản iLearnIt khác.';
 }

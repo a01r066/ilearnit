@@ -98,7 +98,10 @@ notifier only.
   `repositories/auth_repository_impl.dart` — `updateProfile`
   implementation (Firestore merge + mirror displayName to FirebaseAuth).
 - `lib/core/notifications/data/fcm_service.dart` — exposed a public
-  `requestPermission()` distinct from `init()`.
+  `requestPermission()` distinct from `init()`. `init()` itself only
+  *reads* the current status (`getNotificationSettings`) and never
+  prompts, so this step is the only place the mobile app shows the OS
+  dialog.
 - `lib/core/routing/route_names.dart` + `app_router.dart` — new
   `/onboarding` route registered above the shell, redirect gates the
   shell behind `prefs.onboardingDone`.

@@ -83,7 +83,7 @@ The admin portal lets staff manage courses, instructor profiles, songbooks, lear
 | Firebase | `firebase_core/auth/firestore/storage/messaging/crashlytics/performance/analytics/functions` | First-party SDKs |
 | Video | Cloudflare Stream HLS + `video_player` | Server-resolved playback URLs; HLS native on iOS, ExoPlayer on Android |
 | Audio | `just_audio` + `audioplayers` | Lecture playback + metronome ticks |
-| IAP | `in_app_purchase` 3.x | One stream, both stores |
+| IAP | `in_app_purchase` 3.x (+ server verification) | One stream, both stores; entitlements minted by Cloud Functions |
 | Local notifications | `flutter_local_notifications` 17.x | Foreground display + tap routing |
 | In-app review | `in_app_review` 2.x | OS-native rating sheet |
 | Secure storage | `flutter_secure_storage` 10.x | Tokens + downloads manifest |
@@ -98,6 +98,7 @@ The admin portal lets staff manage courses, instructor profiles, songbooks, lear
 | Shimmer | `shimmer` 3.x | Skeleton placeholders |
 | Cached images | `cached_network_image` 3.x | Thumbnails + covers |
 | Cloud Functions runtime | Node.js 20 + TypeScript + `firebase-functions` v6 | Trigger + callable handlers |
+| Store verification | `@apple/app-store-server-library` + Play Developer API (REST) | App Store Server API + JWS verification; Play purchases / subscriptionsv2 |
 
 ### Why these choices
 
@@ -124,6 +125,7 @@ ilearnit/
 │   ├── audio/         Metronome click_high.wav + click_low.wav
 │   └── images/        Logos, etc.
 ├── firestore.rules    Security rules (single file)
+├── storage.rules      Storage rules (course-owner writes, private lecture files)
 ├── firestore.indexes.json
 ├── firebase.json      Firestore + Functions + Hosting + Flutter platforms
 ├── pubspec.yaml
@@ -136,7 +138,8 @@ ilearnit/
     ├── firebase_options_{dev,prod}.dart
     │
     ├── app/                         Consumer MaterialApp.router shell
-    │   └── app.dart
+    │   ├── app.dart                 (+ L10n.update in builder)
+    │   └── session_cleanup.dart     Wipes per-user local state on sign-out
     │
     ├── core/                        Cross-cutting infrastructure
     │   ├── constants/               api_endpoints.dart (collection names), app_constants.dart
@@ -145,7 +148,8 @@ ilearnit/
     │   ├── notifications/           FCM + flutter_local_notifications + inbox + topic-prefs
     │   ├── observability/           Crashlytics, Performance, Analytics services + providers + bootstrap
     │   ├── routing/                 app_router.dart, route_names.dart, shell_scaffold.dart
-    │   ├── storage/                 prefs_service.dart, secure_storage_service.dart
+    │   ├── session/                 before_sign_out_hooks.dart
+    │   ├── storage/                 prefs_service.dart, secure_storage_service.dart, offline_storage.dart
     │   ├── theme/                   app_theme.dart, theme_palette.dart, app_colors.dart, app_text_styles.dart
     │   ├── typedefs/                ResultFuture<T> = Future<Either<Failure, T>>
     │   ├── utils/                   extensions.dart, validators.dart
@@ -154,7 +158,7 @@ ilearnit/
     ├── features/                    Consumer-facing feature modules
     │   ├── app_rating/              OS-native rating sheet trigger
     │   ├── auth/                    Email/pw + Google + Apple sign-in + reauth + deleteAccount
-    │   ├── courses/                 List, detail, sections/lectures, reviews, Cloudflare resolver
+    │   ├── courses/                 List, detail, sections/lectures, reviews, Cloudflare + Storage media resolvers
     │   ├── downloads/               Offline lecture downloads (encrypted manifest)
     │   ├── home/                    Welcome + Featured + Continue Learning + Learning Paths rail + Popular-by-instrument
     │   ├── instructors/             List grid + detail page with social links
@@ -162,10 +166,10 @@ ilearnit/
     │   ├── legal/                   Bundled privacy + terms renderer
     │   ├── notes/                   Per-lecture personal notes (with optional timestamp)
     │   ├── onboarding/              3-screen first-run flow
-    │   ├── practice/                Metronome + Tuner (Profile entry)
+    │   ├── practice/                Metronome (+ Tuner behind kTunerEnabled) (Profile entry)
     │   ├── profile/                 Profile + Settings + theme/language/observability pickers
     │   ├── progress/                Lecture-progress tracking + rollup
-    │   ├── purchases/               Per-course IAP (PriceTier)
+    │   ├── purchases/               Per-course IAP (consumable PriceTier) + server verification client
     │   ├── qa/                      Course Q&A (per-lecture threads + verified-instructor replies)
     │   ├── search/                  Suggestions + results + filters
     │   ├── songbooks/               5th nav tab — sheet music catalogue
@@ -190,6 +194,7 @@ ilearnit/
     ├── l10n/
     │   ├── app_en.arb               English source of truth
     │   ├── app_vi.arb               Vietnamese
+    │   ├── l10n.dart                context.l10n + L10n.current
     │   └── generated/               flutter gen-l10n output (committed)
     │
     └── shared/
@@ -273,25 +278,25 @@ This avoids hanging on captive-portal Wi-Fi and gives the UI a deterministic off
 | Instructors | `/instructors`, `/instructors/:id` | `/admin/instructors`, `/admin/instructor-profiles`, `/admin/instructor-profiles/:id` | `instructors`, `users` (where role=instructor) | — |
 | Songbooks (deep-link only — **not in bottom nav**) | `/songbooks`, `/songbooks/:id` (pushed above the shell) | `/admin/songbooks`, `/admin/songbooks/:id` | `songbooks`, `songbooks/{id}/reviews` | `songbooks/{id}/…` |
 | Learning paths | `/learning-paths/:id` | `/admin/learning-paths`, `/admin/learning-paths/:id` | `learning_paths/{id}` | `learning_paths/{id}/cover/…` |
-| Lecture player | `/courses/:id/lectures/:lectureId?at=N` | — | `courses/{id}/sections/{sid}/lectures/{lid}`, `users/{uid}/courseProgress`, `users/{uid}/notes`, `…/questions` | Cloudflare HLS, local downloads |
+| Lecture player | `/courses/:id/lectures/:lectureId?at=N` | — | `courses/{id}/sections/{sid}/lectures/{lid}`, `users/{uid}/courseProgress`, `users/{uid}/notes`, `…/questions` | Signed Cloudflare HLS, signed Storage URLs, local downloads |
 | Notes | `/profile/notes` | — | `users/{uid}/notes/{noteId}` | — |
 | Q&A | `/courses/:id/lectures/:lectureId/qa/:questionId` | — | `…/questions/{qid}`, `…/questions/{qid}/replies/{rid}` | — |
-| Purchases (per-course) | (in-app sheet) | — | `enrollments/{id}` (via IAP listener) | App Store / Play |
+| Purchases (per-course) | (in-app sheet) | — | `users/{uid}/purchases/{courseId}`, `enrollments/{uid}_{courseId}`, `transactions` (all written by `verifyPurchase`) | App Store / Play |
 | Subscriptions | `/profile/subscription`, `/profile/subscription/checkout` | `/admin/subscriptions` | `users/{uid}.subscription` (embedded map) | App Store / Play |
 | Wishlist | `/profile/wishlist` | — | `users/{uid}/wishlist/{courseId}` | — |
-| Downloads | `/profile/downloads` | — | — | Local Documents dir + secure-storage manifest |
-| Practice | `/profile/practice` | — | — | Bundled audio assets + mic |
+| Downloads | `/profile/downloads` | — | — | Application Support dir (backup-excluded) + secure-storage manifest |
+| Practice | `/profile/practice` | — | — | Bundled audio assets (tuner/mic disabled) |
 | Notifications | `/notifications`, `/profile/settings/notifications` | `/admin/notifications` | `users/{uid}/notifications/{id}`, `users/{uid}.subscribedTopics`, `notification_broadcasts/{id}` | FCM |
 | Search | `/search` | — | `courses` (top 200) | SharedPreferences (MRU) |
 | Profile + Settings | `/profile`, `/profile/settings`, `/profile/settings/notifications`, `/profile/delete-account` | — | `users/{uid}` | — |
-| Reviews | (mounted in course detail) | — | `courses/{id}/reviews/{userId}` | — |
+| Reviews | (mounted in course detail) | — | `courses/{id}/reviews/{userId}` (buyers/subscribers only; aggregate by `onCourseReviewWritten`) | — |
 | Legal | `/legal/:slug` | — | — | Bundled MD assets |
 | My learning | `/profile/my-learning` | — | `users/{uid}/courseProgress` (rollup reuse) | — |
 | Analytics | — | `/admin/analytics` | `users`, `enrollments`, `courses` (admin-scoped reads) | — |
 | Landing-page CMS | — | `/admin/landing-page` | `site_content/landing` | — |
 | Instructor revenue | — | `/my-revenue`, `/my-students` | `transactions` (own), `enrollments` (own course), `users/{uid}/courseProgress` | — |
 | Admin revenue | — | `/admin/transactions`, `/admin/payouts` | `transactions`, `payouts` | — |
-| Cloud Functions | — | — | reads/writes across the above | FCM, Cloudflare API |
+| Cloud Functions | — | — | reads/writes across the above | FCM, Cloudflare API, App Store Server API, Play Developer API |
 
 ---
 
@@ -301,6 +306,7 @@ Top-level collections (single source of truth: `lib/core/constants/api_endpoints
 
 ```
 users/{uid}                                          User profile + role + embedded subscription + fcmTokens + subscribedTopics
+  purchases/{courseId}                               Owned course (server-written by verifyPurchase)
   notifications/{id}                                 In-app inbox mirror of 1:1 pushes
   wishlist/{courseId}                                Bookmarks
   notes/{noteId}                                     Private lecture notes
@@ -317,7 +323,13 @@ courses/{id}                                         Course doc
 songbooks/{id}                                       Sheet-music book
   reviews/{reviewId}                                 Songbook reviews
 learning_paths/{pathId}                              Editorial multi-course sequence
-enrollments/{id}                                     User-bought course (one per (user, course))
+enrollments/{uid}_{courseId}                         User-bought course (server-written)
+transactions/{id}                                    Purchase ledger (server-written; refunds via processRefund / store notifications)
+payouts/{id}                                         Instructor payouts (admin)
+reports/{id}                                         UGC reports (moderation)
+purchase_intents/{uid}_{productId}                   Course a tier purchase is for (server-only)
+_iap_transactions/{hash}                             One per store transaction — idempotency + uid binding (server-only)
+_iap_subscriptions/{hash}                            Store subscription → uid binding (server-only)
 notification_broadcasts/{id}                         Admin-queued FCM broadcasts
 site_content/{slug}                                  Landing-page CMS (slug = "landing" for the marketing site)
 ```
@@ -349,7 +361,8 @@ site_content/{slug}                                  Landing-page CMS (slug = "l
     "autoRenew": true,
     "canceledAt": null,
     "platform": "ios",
-    "originalTransactionId": "…"
+    "originalTransactionId": "…",
+    "verifiedAt": "…"            // written by verifySubscription / store notifications
   }
 }
 ```
@@ -372,10 +385,13 @@ site_content/{slug}                                  Landing-page CMS (slug = "l
   "durationMinutes": 410,
   "isFeatured": true,
   "tags": ["bach", "fingerstyle"],
-  "priceTier": "standard",         // basic | standard | premium
+  "priceTier": "standard",         // basic | standard | premium → consumable course_tier_* product
+  "status": "published",           // draft | submitted | under_review | approved | changes_requested | published | unpublished | archived
   "publishedAt": "2025-…"
 }
 ```
+
+Only `published` courses are publicly readable; list queries must filter on `status`.
 
 **`courses/{id}/sections/{sid}/lectures/{lid}`** — lectures live as **individual Firestore docs in a subcollection** under each section, NOT as an embedded array on the section doc. The consumer's `CoursesRemoteDataSource.fetchSections` fetches the lectures subcollection per section in parallel (`Future.wait`) and hydrates the `lectures` field on each `CourseSectionModel` via `copyWith`. The admin writer and the Q&A / progress / notes / Cloudflare resolver all assume per-lecture docs.
 
@@ -384,12 +400,17 @@ site_content/{slug}                                  Landing-page CMS (slug = "l
 {
   "id": "lec_001",
   "title": "Prelude",
-  "type": "video",                 // video | audio | document
+  "type": "video",                 // video | audio | pdf | doc
+  "isPreview": false,              // true → free for everyone
   "durationSec": 360,
-  "mediaUrl": "https://…",         // legacy Firebase Storage URL
-  "cloudflareVideoId": "bf53017eb20e5db311c21d30ffb5a075"  // ← 32-hex UID for Cloudflare Stream
+  "mediaUrl": "gs://<bucket>/courses/…/media/file.m4a",   // private Storage ref (signed via resolveLectureMedia)
+  "cloudflareVideoId": "bf53017eb20e5db311c21d30ffb5a075", // 32-hex UID (signed via resolveStreamPlayback)
+  "resources": [ { "name": "Score", "url": "gs://…/resources/score.pdf", "format": "pdf", "sizeBytes": 12345 } ]
 }
 ```
+
+Lecture docs are public (curriculum browsing) but hold no shareable media
+links — `gs://` refs and Cloudflare UIDs are useless without a signed URL.
 
 **`courses/{id}/reviews/{userId}`**
 ```jsonc
@@ -420,9 +441,9 @@ site_content/{slug}                                  Landing-page CMS (slug = "l
 
 ### Aggregates
 
-- `courses/{id}.rating` and `.reviewCount` — recomputed by `CourseReviewsDataSource._recomputeAggregate` after every review write. For large N (>5k per course), swap for a Cloud Function counter (P1-7).
+- `courses/{id}.rating` and `.reviewCount` — recomputed server-side by the `onCourseReviewWritten` trigger (Firestore aggregate query: average + count). Clients can't write them.
 - `users/{uid}/courseProgress/{cid}.completedCount` — only incremented on the non-completed → completed edge. The notifier reads the prior `completed` value before the batch write to guarantee idempotency.
-- `users/{uid}.subscription` — written client-side after a successful IAP. A server-side verifier (P0-1, future) would replace this with receipt validation.
+- `users/{uid}.subscription` — written only by `verifySubscription` and the store notification handlers after store-side verification.
 - Question `replyCount` + `isInstructorAnswered` use `FieldValue.increment(1)` in the same batch as the reply write.
 
 ---
@@ -433,8 +454,8 @@ site_content/{slug}                                  Landing-page CMS (slug = "l
 courses/{courseId}/
   thumbnail/{filename}                                Course thumbnail
   sections/{sectionId}/lectures/{lectureId}/
-    media/{filename}                                  Legacy video/audio/PDF (Cloudflare for new)
-    resources/{filename}                              Sheet music PDF, exercises
+    media/{filename}                                  Audio / PDF / DOCX / legacy video — PRIVATE
+    resources/{filename}                              Sheet music PDF, exercises — PRIVATE
 
 songbooks/{songbookId}/
   cover/{filename}                                    Portrait 3:4
@@ -446,7 +467,9 @@ learning_paths/{pathId}/
 
 Uploads go through `AdminStorageService`, which wraps `firebase_storage.putData` and emits a `Stream<UploadProgress>` for lecture media (so editor UIs can show a `LinearProgressIndicator`). Learning-path covers use a one-shot `uploadLearningPathCover` returning `Future<String>` — a path cover is a single JPEG; a progress bar is overkill.
 
-Storage security rules mirror Firestore — public read of `courses/*` and `songbooks/*`, writes restricted to admin or owning instructor via a `firestore.get` cross-reference. See `docs/admin_portal.md` §Storage rules.
+Lecture media/resources uploads store `gs://bucket/path` (not a download URL); `onLectureObjectFinalized` strips download tokens; students get 4-hour V4 signed URLs from `resolveLectureMedia` after an entitlement check.
+
+Storage rules: thumbnails / songbook / learning-path covers are public read; lecture `media/` + `resources/` are readable directly only by the course owner and admins; writes are restricted to the owning instructor or admin via `canManageCourse` (a `firestore.get` cross-reference). See `storage.rules` and `docs/admin_portal.md` §Storage rules.
 
 ---
 
@@ -593,7 +616,11 @@ A `_GoRouterRefreshStream` `ChangeNotifier` listens to `authNotifierProvider` an
 - Google Sign-In: native plugin on mobile; `FirebaseAuth.signInWithPopup` on web.
 - Sign in with Apple: native plugin on iOS/macOS with nonce + sha256; `signInWithPopup` on web. See `docs/social_auth_setup.md` for Service ID + APNs setup.
 
-All three flows funnel through `AuthRepository.{login, signup, signInWithGoogle, signInWithApple}` → `Either<Failure, UserEntity>`. The notifier maps `Failure.auth(code: 'cancelled')` to a silent return (no error snackbar when the user dismisses the picker). On first social sign-in, `_upsertSocialUser` creates `users/{uid}` with `role: 'student'`.
+All three flows funnel through `AuthRepository.{login, signup, signInWithGoogle, signInWithApple}` → `Either<Failure, UserEntity>`. The notifier maps `Failure.auth(code: 'cancelled')` to a silent return (no error snackbar when the user dismisses the picker). On first sign-in, `users/{uid}` is created with `role: 'student'` — the rules reject any other role, `isSuspended: true`, or a `subscription` on create.
+
+On iOS, Google Sign-In takes its OAuth client from the flavor's Firebase options (`auth.app.options.iosClientId`); the URL scheme comes from `GOOGLE_REVERSED_CLIENT_ID` in the flavor xcconfig. No `GoogleService-Info.plist` is bundled.
+
+**Sign-out** (`AuthNotifier.logout`) first runs `BeforeSignOutHooks` (removes this device's FCM token while still authenticated), then signs out. `sessionCleanupProvider` reacts to any authenticated → unauthenticated transition (logout, account deletion, revoked session): stops the mini player, wipes offline downloads + saved resources, clears cached signed media URLs.
 
 ### Roles
 
@@ -601,9 +628,10 @@ All three flows funnel through `AuthRepository.{login, signup, signInWithGoogle,
 |---|---|---|
 | `student` | Mobile app only | Default for every new user |
 | `instructor` | Mobile app + admin portal (My Courses) | Approved instructor application via admin portal |
+| `moderator` | Mobile app + moderation queue | Admin sets `role` |
 | `admin` | Mobile app + admin portal (everything) | Manual Firestore edit (one-time bootstrap), then admin-portal promotion |
 
-`isSuspended: true` revokes admin portal access entirely.
+`isSuspended: true` revokes admin portal access entirely and denies paid-content access server-side. Users can never change their own `role` / `isSuspended` (rules).
 
 ### Re-auth + account deletion
 
@@ -611,23 +639,25 @@ Firebase rejects `deleteUser()` if the token is older than ~5 min, so `DeleteAcc
 
 ### Token persistence
 
-Firebase ID tokens are written to `flutter_secure_storage` after each successful sign-in, so non-Firebase Dio calls can attach `Authorization: Bearer` via interceptors.
+Firebase ID tokens are written to `flutter_secure_storage` after each successful sign-in for the (currently unused) custom-API Dio client. All live backend calls go through Firebase SDKs / callable functions, which manage tokens themselves. Media downloads use `mediaDownloadDioProvider`, which never attaches a bearer token.
 
 ---
 
 ## 11. In-app purchases & subscriptions
 
-Two coexisting flows over **one** `purchaseStream`. `PurchasesNotifier` filters to per-course `PriceTier` products; `SubscriptionNotifier` filters to subscription products. Both write to Firestore on success.
+Two coexisting flows over **one** `purchaseStream`. `PurchasesRepositoryImpl` handles course-tier products; `SubscriptionNotifier` handles subscription products. **Neither writes entitlements** — both send the store transaction to a Cloud Function and only finish the store transaction after the server answers. Full model: `docs/security_model.md`.
 
 ### Per-course (`PriceTier`)
 
 | Tier | Product ID | USD (fallback) | VND (fallback) |
 |---|---|---|---|
-| basic | `info.ilearnit.tier_basic` | $9.99 | ₫199.000 |
-| standard | `info.ilearnit.tier_standard` | $19.99 | ₫399.000 |
-| premium | `info.ilearnit.tier_premium` | $39.99 | ₫799.000 |
+| basic | `info.ilearnit.course_tier_basic` | $9.99 | ₫199.000 |
+| standard | `info.ilearnit.course_tier_standard` | $19.99 | ₫399.000 |
+| premium | `info.ilearnit.course_tier_premium` | $39.99 | ₫799.000 |
 
-Non-consumable. Restore-purchases supported via `Profile → Restore purchases`.
+**Consumable** — one tier product serves many courses, and a non-consumable can be bought only once per store account. Ownership lives on the account (`users/{uid}/purchases/{courseId}`), not in the store.
+
+Flow: `createPurchaseIntent(courseId)` → `buyConsumable(autoConsume: false)` → `verifyPurchase` (App Store Server API / Play `purchases.products`; idempotent per store transaction; checks paid tier == course tier; writes purchase + `enrollments/{uid}_{courseId}` + `transactions`; consumes the Play token) → `completePurchase`. Pending (Ask to Buy) stays pending; errored/cancelled transactions are finished; retryable server errors leave the transaction open so it replays. On Android, `PurchasesNotifier` queries past purchases at start-up to recover purchases interrupted by an app kill.
 
 ### Personal Plan (`SubscriptionPlan`)
 
@@ -636,15 +666,15 @@ Non-consumable. Restore-purchases supported via `Profile → Restore purchases`.
 | Monthly | `info.ilearnit.personal_monthly` | $9.99 | ₫800.000 |
 | Yearly | `info.ilearnit.personal_yearly` | $79.99 | ₫3.000.000 |
 
-Both auto-renewing on the same subscription group. Trial flag (7-day free) is pending (P1-2).
+Both auto-renewing on the same subscription group. `verifySubscription` (App Store Server API *Get All Subscription Statuses* / Play `subscriptionsv2`) binds the store subscription to one uid and writes `users/{uid}.subscription`. Trial flag (7-day free) is pending (P1-2). "Cancel" opens the store's subscription page (`openManageSubscription`).
 
 ### Course access gate
 
-`hasUnlockedAccessProvider(courseId)` returns `true` when either `isCoursePurchasedProvider(courseId)` is true OR `hasActiveSubscriptionProvider` is true. `BuyCourseButton` reads it and swaps the "Unlock for ₫…" CTA for "Continue course" with an "Included in your Personal Plan" caption when subscribed. The reviews "Write a review" CTA uses the same gate.
+`hasUnlockedAccessProvider(courseId)` returns `true` when either `isCoursePurchasedProvider(courseId)` is true OR `hasActiveSubscriptionProvider` is true. `BuyCourseButton` reads it and swaps the "Unlock for ₫…" CTA for "Continue course" with an "Included in your Personal Plan" caption when subscribed. This is UX only — the server enforces the same rule in `hasCourseAccess` (playback, signed media URLs) and in the reviews rule.
 
 ### Trust model
 
-**Client writes the entitlement after a successful purchase.** Firestore rules let users write their own `subscription` map (carved out from the general user write). A server-side verifier (P0-1) is on the roadmap — see `docs/go_live_roadmap.md`.
+Server-authoritative. Firestore rules deny client writes to `users/{uid}/purchases`, `users/{uid}.subscription`, `enrollments`, `transactions` and the `_iap_*` / `purchase_intents` bookkeeping. Renewals, cancellations, refunds and revocations arrive via `appStoreNotifications` (ASSN v2, JWS-verified) and `playRtdn` (Pub/Sub). A refunded course purchase flips to `status: 'refunded'` and loses access. Setup: `docs/iap_setup.md`, `docs/subscriptions.md`.
 
 ### Locale-aware pricing
 
@@ -682,9 +712,8 @@ All 1:1 triggers use a shared `notifyUser(uid, notification, data)` helper that 
 
 `bootstrap.dart` + `bootstrap_admin.dart` both register `firebaseMessagingBackgroundHandler` and eagerly create `notificationBootstrapProvider`. The bootstrap:
 
-- Initializes `LocalNotificationsService` + `FcmService`.
-- Requests permission (Android 13+ runtime; iOS APNs).
-- Binds the token to `users/{uid}.fcmTokens` (arrayUnion).
+- Initializes `LocalNotificationsService` + `FcmService` (reads the permission status — **never prompts**; the onboarding step prompts on mobile, the `NotificationPermissionBanner` on web).
+- Binds the token to `users/{uid}.fcmTokens` (arrayUnion) on sign-in; before sign-out removes it (`BeforeSignOutHooks`), and after any session end deletes the device token so stale copies stop delivering.
 - Forwards foreground messages to `LocalNotificationsService.show()`.
 - Surfaces taps via `notificationTapsProvider`; the consumer app's `App._handleTap` routes by `payload.type` (`enrollment_created`, `application_approved`, `broadcast`, `price_drop`, `question_created`).
 
@@ -725,15 +754,16 @@ Firestore rules: owner-only, no admin override. Aggregate "how many students fin
 
 Subscribers + course owners can download lecture media to view offline. `docs/offline_downloads.md` carries the full design; condensed:
 
-- **Media bytes** live in app-private Documents at `downloads/{lectureId}.{mp4|m4a|pdf}`. Removed on uninstall.
+- **Media bytes** live in Application Support at `downloads/{lectureId}.{mp4|m4a|pdf}` (`OfflineStorage`), excluded from iCloud / Android backups. Removed on uninstall and wiped on sign-out.
 - **Manifest** sits in `flutter_secure_storage` (Keychain on iOS / EncryptedSharedPrefs on Android) under key `downloads_manifest_v1` — encrypted-at-rest per P1-8 acceptance criteria.
 - Engine is Dio + `CancelToken` per `lectureId`. Status machine: `none → queued → downloading → completed | failed | paused`. Resume is a fresh `enqueue` (no `Range:` resume in v1 — filed as future work).
 - A broadcast `Stream<DownloadProgressEvent>` drives both the per-lecture `LectureDownloadButton` and the `/profile/downloads` page so the two surfaces never diverge.
 - Manifest writes throttled to every ~256 KB to avoid hammering EncryptedSharedPrefs (which re-encrypts the whole blob on every write on Android).
 - The lecture player swaps in `Uri.file(localPath).toString()` when the download is complete; the network swap is transparent to `video_player` / `just_audio`.
-- No native permissions needed — `getApplicationDocumentsDirectory()` writes inside the app sandbox on both platforms.
+- Paid Storage files are downloaded via a fresh signed URL per transfer (manifest stores a `lecture-media:` reference, `LectureMediaService.resolveRef`).
+- No native permissions needed — `getApplicationSupportDirectory()` writes inside the app sandbox on both platforms.
 
-Note: download support currently caches **legacy Firebase Storage URLs only**. Offline playback of Cloudflare HLS streams requires the Cloudflare Stream offline-DRM SDK (Mux-style) and is filed as future work.
+Note: download support covers **Firebase Storage–hosted lectures only**. Offline playback of Cloudflare HLS streams requires the Cloudflare Stream offline-DRM SDK (Mux-style) and is filed as future work.
 
 ---
 
@@ -818,7 +848,7 @@ Profile → Practice tools (`/profile/practice`). Reachable from Profile instead
 - **Metronome** — `just_audio` `AudioPlayer` × 2 (accent + regular) driven by a BPM-derived `Timer.periodic`. WAV assets at `assets/audio/click_high.wav` and `click_low.wav`. Tap-tempo uses the median of the last 5 inter-tap intervals (cleared after 3s pause). BPM clamped to 40..240. Visual heartbeat pulses even when audio is muted.
 - **Tuner** — pitch math is pure Dart (`PitchMath.fromHz` → note + cents). Mic capture is **pluggable** via the `TunerEngine` interface; default is `StubTunerEngine` that emits `PitchReading.none`. Wire a real engine (e.g. `flutter_audio_capture` + `pitch_detector_dart`) at app boot by overriding `tunerEngineProvider`. Native permission boilerplate (`NSMicrophoneUsageDescription`, `RECORD_AUDIO`) documented in the same doc.
 
-Both tabs share nothing except a `DefaultTabController`.
+Both tabs share nothing except a `DefaultTabController`. **The Tuner is hidden** (`kTunerEnabled = false` in `practice_page.dart`) until a real engine ships — a dead tuner is an App Review 2.1 risk; the page then shows the Metronome only.
 
 ---
 
@@ -891,17 +921,20 @@ iOS Crashlytics needs the Run Script Phase (`"$PODS_ROOT/FirebaseCrashlytics/run
 
 - ARB sources: `lib/l10n/app_en.arb` (source of truth) and `lib/l10n/app_vi.arb`.
 - `l10n.yaml`: `synthetic-package: false` (output at `lib/l10n/generated/`), `nullable-getter: false` (so `AppLocalizations.of(context)` returns non-null).
-- `pubspec.yaml` has `generate: true` — `flutter pub get` auto-runs `flutter gen-l10n`.
+- `pubspec.yaml` has `generate: true` — `flutter pub get` auto-runs `flutter gen-l10n`. Generated files are committed; regenerate after editing ARBs.
+- `lib/l10n/l10n.dart`: `context.l10n` in widgets; `L10n.current` for code without a context (errors, validators, enum labels). `MaterialApp.builder` keeps `L10n.current` and `Intl.defaultLocale` in sync with the selected language.
+- iOS declares `CFBundleLocalizations` = `en`, `vi`.
 
 ### What's localized
 
-Navigation, Home headings + popular sections, Settings (themes + language + observability + notifications), Auth labels + social-button copy + legal footer, common actions, purchases, lecture lock messages, subscription + checkout, search chrome, songbook chrome, instructor detail chrome, learning paths, downloads, wishlist, notifications inbox + topic toggles, Q&A, notes, onboarding, practice tools chrome, delete account.
+Every user-facing string in the mobile app (~515 keys): all screens, snackbars, dialogs, validators, data-layer and purchase error messages, enum labels (`InstrumentCategory`, `CourseLevel`, `LectureType`, `ReportReason`, `ReportContentType` — stable English kept as `englishLabel`), accessibility tooltips, relative times, and the Android notification channel.
 
 ### What stays English for v1
 
 - Admin portal chrome (internal staff tool).
-- Filter sheet internal labels (Instrument, Level, etc.).
-- Legal document bodies (titles localized, body markdown EN-only — `_vi.md` variants are a documented extension).
+- Legal document bodies: Vietnamese **drafts** in `assets/legal/*_vi.md` (loaded for `vi`, English fallback; English prevails) — need legal review.
+- Search suggestions (must match English course titles).
+- Vietnamese copy from the localization pass is a draft pending native review.
 
 Migration recipe per page in `docs/localization.md`.
 
@@ -943,7 +976,7 @@ For catalogues over a few hundred courses, the documented swap path is Typesense
 
 ## 25. Video pipeline: Cloudflare Stream
 
-Lectures stream via **Cloudflare Stream HLS**. The Flutter client carries only the 32-hex video UID (`lecture.cloudflareVideoId`); the Cloud Function holds the API token and returns playback URLs on demand. See `docs/cloudflare_stream.md`.
+Lectures stream via **Cloudflare Stream HLS** with **signed URLs**. Lecture docs carry only the 32-hex video UID (`lecture.cloudflareVideoId`); the Cloud Function checks entitlement, holds the API token, and returns token-signed playback URLs. See `docs/cloudflare_stream.md`.
 
 ### Token hygiene
 
@@ -954,25 +987,26 @@ firebase functions:secrets:set CLOUDFLARE_API_TOKEN
 firebase functions:secrets:set CLOUDFLARE_ACCOUNT_ID
 ```
 
-If the token ever leaks (chat history, screenshot, repo), rotate immediately at Cloudflare dashboard → My Profile → API Tokens. Use the "Read Stream and Stream Videos" template — read-only is enough for playback resolution.
+The token needs **Stream: Edit** (uploads, signed tokens, `requireSignedURLs`, deletes). If it ever leaks (chat history, screenshot, repo), rotate immediately at Cloudflare dashboard → My Profile → API Tokens.
 
 ### Data flow
 
 ```
-admin editor ─► cloudflareVideoId on the lecture doc
+admin editor ─► createCloudflareUpload (requireSignedURLs: true) ─► cloudflareVideoId on the lecture doc
                        │
                        ▼ (consumer)
-              ref.watch(cloudflareStreamPlaybackProvider(uid))
+              ref.watch(cloudflareStreamPlaybackProvider(
+                  StreamPlaybackRequest(courseId, sectionId, lectureId)))
                        │
                        ▼ httpsCallable
-                resolveStreamPlayback  ← Cloud Function (secrets injected)
-                       │
-                       ▼ GET /accounts/{id}/stream/{uid}
+                resolveStreamPlayback  ← reads the UID from the lecture doc;
+                       │                  non-preview → auth + hasCourseAccess
+                       ▼ GET /stream/{uid} + POST /stream/{uid}/token (4 h)
                 Cloudflare Stream API
                        │
-                       ▼ {hlsUrl, dashUrl, thumbnailUrl, durationSec, readyToStream}
+                       ▼ {hlsUrl, dashUrl, thumbnailUrl, durationSec, readyToStream}  (UID → token in path)
                        ▼
-            video_player plays the HLS URL
+            video_player plays the signed HLS URL
 ```
 
 ### Playback resolution order
@@ -981,28 +1015,25 @@ admin editor ─► cloudflareVideoId on the lecture doc
 
 1. **Local downloaded file** (`file://…`) — if `localMediaPathForLectureProvider` is set.
 2. **Cloudflare Stream HLS** — when `lecture.cloudflareVideoId` is set.
-3. **Legacy Firebase Storage `mediaUrl`** — for pre-migration lectures.
+3. **Firebase Storage `mediaUrl`** (`gs://` ref) — signed URL from `resolveLectureMedia`.
 
-This makes the migration safe: existing lectures keep working, new lectures use Cloudflare, and migration can be per-section.
+Locked lectures show "Purchase this course to watch this lecture." (`permission-denied` / `unauthenticated` from the callable).
 
 ### Caching
 
-`CloudflareStreamService` keeps in-memory resolutions for **50 minutes** (Cloudflare's signed-URL default TTL is 60). Cache is bound to the Riverpod container — killed on app cold start, Riverpod container recreation, and sign-out.
+Signed tokens live **4 hours**; `CloudflareStreamService` caches resolutions for **50 minutes**, keyed by `StreamPlaybackRequest`. The cache is cleared on sign-out (`sessionCleanupProvider`).
 
 Manual invalidation (after the admin replaces a video):
 
 ```dart
-ref.read(cloudflareStreamServiceProvider).invalidate(videoId);
-ref.invalidate(cloudflareStreamPlaybackProvider(videoId));
+final req = StreamPlaybackRequest(courseId: c, sectionId: s, lectureId: l);
+ref.read(cloudflareStreamServiceProvider).invalidate(req);
+ref.invalidate(cloudflareStreamPlaybackProvider(req));
 ```
 
-### Auth gate
+### Paywall
 
-The callable requires `request.auth` — anonymous scrapers cannot enumerate UIDs. If a paywall is added later (e.g. "this lecture requires enrollment"), the check goes inside `resolveStreamPlayback` before the fetch.
-
-### Signed URLs (future)
-
-If "Require signed URLs" is toggled on a Cloudflare video, mint a signed JWT in `resolveStreamPlayback` (`jsonwebtoken` npm + Firebase Secret `CLOUDFLARE_STREAM_SIGNING_KEY`). Code skeleton in `docs/cloudflare_stream.md`.
+Server-side: preview lectures are open to everyone; others need sign-in and `hasCourseAccess` (purchase, active subscription, course instructor, or admin; never suspended). Videos uploaded before signed URLs were enforced are migrated with the admin-only `enableSignedStreamUrls` callable.
 
 ### HLS support per platform
 
@@ -1012,7 +1043,7 @@ If "Require signed URLs" is toggled on a Cloudflare video, mint a signed JWT in 
 
 ### Admin editor
 
-`lib/admin/courses/presentation/course_editor_page.dart` exposes a "Cloudflare Stream video UID" TextField on the lecture dialog — paste the 32-hex UID from the Cloudflare dashboard URL.
+`lib/admin/courses/presentation/course_editor_page.dart` uploads directly to Cloudflare (`createCloudflareUpload`) or accepts a pasted 32-hex UID. Deleting a lecture deletes its video through `deleteCloudflareVideo`, which only allows admins or the instructor who owns every course using that UID.
 
 ---
 
@@ -1144,18 +1175,34 @@ Sets the full doc to the defaults baked into the static fallback HTML so the liv
 
 ## 28. Cloud Functions
 
-Located at `functions/`. TypeScript, Node 20, deployed via `firebase deploy --only functions`. Initialised with the Admin SDK so they bypass Firestore rules.
+Located at `functions/`. TypeScript, Node 20, deployed via `firebase deploy --only functions`. Initialised with the Admin SDK so they bypass Firestore rules. Source files: `index.ts` (most triggers/callables), `iap.ts` (purchases + entitlement helpers), `media.ts` (paid Storage files), `storeNotifications.ts`, `store/apple.ts`, `store/google.ts`.
 
 | Function | Type | Trigger / signature | Purpose |
 |---|---|---|---|
 | `onApplicationDecision` | Firestore | `onDocumentUpdated('instructor_applications/{uid}')` | DM applicant on approve/reject + write inbox row |
-| `onEnrollmentCreated` | Firestore | `onDocumentCreated('enrollments/{id}')` | DM buyer with deep-link + inbox row |
+| `onEnrollmentCreated` | Firestore | `onDocumentCreated('enrollments/{id}')` | DM buyer with deep-link + inbox row (enrollments are created by `verifyPurchase`) |
 | `onNotificationBroadcast` | Firestore | `onDocumentCreated('notification_broadcasts/{id}')` | Fan out to FCM topic + flip status |
 | `onCoursePriceDrop` | Firestore | `onDocumentUpdated('courses/{id}')` | Notify wishlisters when `priceTier` rank drops |
 | `onCourseQuestionCreated` | Firestore | `onDocumentCreated('courses/{cid}/sections/{sid}/lectures/{lid}/questions/{qid}')` | DM the course instructor |
 | `deleteAccount` | Callable | `onCall` | Cascade-delete user's data + Auth record (see [§33](#33-account-deletion--legal-docs)) |
-| `resolveStreamPlayback` | Callable | `onCall({secrets: [CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID]})` | Resolve a Cloudflare Stream video UID to HLS + DASH URLs. **No auth required** in v1 (guest-browse mode for preview lectures); paywall enforcement is client-side via `BuyCourseButton` + `isAccessible` on the lecture tile |
-| `createCloudflareUpload` | Callable | `onCall({secrets: [CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID]})` | Instructor/admin only. Mints a one-time Cloudflare Stream Direct-Creator-Upload URL + UID. The admin course editor uses it to upload video files straight to Cloudflare — the API token never leaves the server. See [§25](#25-video-pipeline-cloudflare-stream) |
+| `resolveStreamPlayback` | Callable | `onCall({secrets: [CLOUDFLARE_*]})`, data `{courseId, sectionId, lectureId}` | Reads the lecture's UID; preview → anyone, else auth + `hasCourseAccess`. Returns **signed** (4 h) HLS / DASH / thumbnail URLs |
+| `enableSignedStreamUrls` | Callable | admin | One-off: set `requireSignedURLs: true` on every lecture video |
+| `createCloudflareUpload` | Callable | `onCall({secrets: [CLOUDFLARE_*]})` | Instructor/admin only. One-time Direct-Creator-Upload URL + UID, `requireSignedURLs: true`, `meta.uploadedByUid`. See [§25](#25-video-pipeline-cloudflare-stream) |
+| `deleteCloudflareVideo` | Callable | instructor/admin | Deletes a Stream video; instructors only for UIDs used solely by their own courses (or unattached uploads they made) |
+| `onLectureDeleted` | Firestore | `onDocumentDeleted('courses/{cid}/sections/{sid}/lectures/{lid}')` | Backstop cascade: Q&A, per-user lecture progress, notes, reports |
+| `onCourseReviewWritten` | Firestore | `onDocumentWritten('courses/{cid}/reviews/{uid}')` | Recompute `rating` + `reviewCount` (aggregate query) |
+| `createPurchaseIntent` | Callable | auth | Record which course a tier purchase is for; returns the tier product id |
+| `verifyPurchase` | Callable | auth, secrets Apple + Play | Verify a course-tier transaction, grant purchase + enrollment + ledger atomically, consume Play token |
+| `verifySubscription` | Callable | auth, secrets Apple + Play | Verify a Personal Plan subscription, bind it to the uid, write `users/{uid}.subscription` |
+| `verifySongbookPurchase` | Callable | auth, secrets Apple + Play | Verify a non-consumable songbook purchase / restore, write `users/{uid}/songbooks/{id}` + ledger |
+| `resolveSongbookContent` | Callable | auth | Owner / subscriber / admin → 4 h signed URL for the songbook PDF |
+| `appStoreNotifications` | HTTPS | App Store Server Notifications v2 | JWS-verified; renewals, cancels, refunds, revokes |
+| `playRtdn` | Pub/Sub | topic `play-billing` | Play RTDN; subscription state + voided purchases |
+| `resolveLectureMedia` | Callable | `{courseId, sectionId, lectureId, resourceIndex?}` | Entitlement check → 4 h V4 signed Storage URL |
+| `onLectureObjectFinalized` | Storage | `onObjectFinalized` | Strip download tokens from lecture media / resources |
+| `migrateLectureMediaToPrivate` | Callable | admin | One-off: legacy download URLs → `gs://` refs, revoke tokens |
+| `onReportCreated` / `onReportResolved` | Firestore | `reports/{id}` | Moderation counters |
+| `onUserRoleChanged` | Firestore | `users/{uid}` update | Maintain `instructors/{uid}` |
 | `processRefund` | Callable | `onCall` (admin role required) | Flip `transactions/{id}.status = 'refunded'`, cancel the matching enrollment, notify the student via inbox + push. v1 is bookkeeping-only — no storefront refund integration. See `docs/instructor_revenue.md` |
 | `markPayoutPaid` | Callable | `onCall` (admin role required) | Flip `payouts/{id}.status = 'paid'`, stamp `paidAt` + `paidByUid` + `payoutMethod`. v1 bookkeeping-only — process the actual transfer out-of-band |
 | `instructorBroadcast` | Callable | `onCall` (instructor or admin) | Fan out a push + inbox row to every student enrolled in the caller's course. Server-side cross-check that the caller owns the course; admin bypasses ownership. Powers the "Message students" button on `/my-students` |
@@ -1165,14 +1212,17 @@ Located at `functions/`. TypeScript, Node 20, deployed via `firebase deploy --on
 - `notifyUser(uid, notification, data)` — fires FCM push and writes `users/{uid}/notifications/{id}` in parallel (`Promise.all`).
 - `writeInbox(uid, …)` — server-side inbox mirror (creates are server-only by rule).
 - `deleteSubcollection(path)` — batched 200-doc deletes; used by `deleteAccount` to clear `notes`, `wishlist`, `courseProgress`, etc.
+- `hasCourseAccess(uid, courseId)` (`iap.ts`) — single server-side entitlement check used by both media resolvers.
+- `applySubscription`, `revokeCoursePurchase`, `uidForSubscription` (`iap.ts`) — shared by the verifiers and the store notification handlers.
 
 ### Deployment quirks
 
 The `firebase.json` `functions` block has **no `predeploy`** array — the TypeScript build is manual:
 
 ```
-cd /Users/thanhminh/Documents/Claude/Projects/ilearnit/ilearnit/functions
-npm run build      # compiles src/index.ts → lib/index.js
+cd functions
+npm install        # includes @apple/app-store-server-library
+npm run build      # compiles src/*.ts → lib/
 cd ..
 firebase deploy --only functions:resolveStreamPlayback --project ilearnit-dev
 ```
@@ -1183,7 +1233,7 @@ For local testing, the Firebase Functions shell skips the deploy round-trip:
 
 ```
 firebase functions:shell --project ilearnit-dev
-> resolveStreamPlayback({videoId: 'bf53017eb20e5db311c21d30ffb5a075'}, {auth: {uid: 'test'}})
+> resolveStreamPlayback({courseId: 'c1', sectionId: 's1', lectureId: 'l1'}, {auth: {uid: '<buyer uid>'}})
 ```
 
 ---
@@ -1195,12 +1245,14 @@ firebase functions:shell --project ilearnit-dev
 `flutter_flavorizr` ships `dev` and `prod`. Each flavor maps to its own Firebase project (`ilearnit-dev` / `ilearnit-31f41`).
 
 ```bash
-flutter run --flavor dev -t lib/main_dev.dart                            # mobile dev
-flutter run --flavor prod -t lib/main_prod.dart                          # mobile prod
+flutter run --flavor dev                            # mobile dev
+flutter run --flavor prod                          # mobile prod
 flutter run -d chrome -t lib/main_admin.dart --dart-define=FLAVOR=dev    # admin web dev
 ```
 
 > Flutter web doesn't propagate `--flavor` through to `appFlavor` like mobile, so the admin web entry reads `FLAVOR` via `--dart-define`.
+
+`bootstrap.dart` initializes the **default** Firebase app from `firebase_options_{dev,prod}.dart`. Android also has per-flavor `google-services.json` (same project); iOS bundles no `GoogleService-Info.plist` — the Google Sign-In URL scheme comes from `GOOGLE_REVERSED_CLIENT_ID` in `ios/Flutter/{dev,prod}*.xcconfig`.
 
 ### Codegen
 
@@ -1218,9 +1270,9 @@ Run after editing any `@freezed` or `@JsonSerializable` class. Generates `*.free
 ### Production builds
 
 ```bash
-flutter build apk --flavor prod -t lib/main_prod.dart --release
-flutter build appbundle --flavor prod -t lib/main_prod.dart --release
-flutter build ipa --flavor prod -t lib/main_prod.dart --release --export-options-plist=ios/ExportOptions-AppStore.plist
+flutter build apk --flavor prod -t lib/main.dart --release
+flutter build appbundle --flavor prod -t lib/main.dart --release
+flutter build ipa --flavor prod -t lib/main.dart --release --export-options-plist=ios/ExportOptions-AppStore.plist
 flutter build web -t lib/main_admin.dart --dart-define=FLAVOR=prod --release
 ```
 
@@ -1307,42 +1359,53 @@ node sample_data/seed_site_content.js       # landing-page CMS defaults
 
 ## 31. Security model
 
+Full write-up: **`docs/security_model.md`**. Summary:
+
 ### Firestore rules
 
-Consolidated at `firestore.rules` (~311 lines). Helpers: `isSignedIn()`, `uid()`, `userDoc()`, `role()`, `isSuspended()`, `isAdmin()`, `isInstructor()`.
+Consolidated at `firestore.rules`. Helpers: `isSignedIn()`, `uid()`, `userDoc()`, `role()`, `isSuspended()`, `isAdmin()`, `isInstructor()`, `isModerator()`.
 
 Read access:
 
-- **Public**: `courses`, `courses/*/sections`, `…/lectures`, `…/reviews`, `…/questions`, `…/questions/{qid}/replies`, `instructors`, `songbooks`, `songbooks/*/reviews`, `learning_paths`, `site_content/{slug}`.
-- **Owner only**: `users/{userId}/{notifications,wishlist,notes,courseProgress,…}`.
-- **Owner, owning-instructor, or admin**: `enrollments/{id}` (instructor branch uses a `get(courses/{courseId})` cross-reference).
-- **Owner or admin**: `users/{userId}`, `instructor_applications/{userId}`.
-- **Owning student, owning instructor, or admin**: `transactions/{txnId}` — reads gated by `studentUid == uid || instructorId == uid || isAdmin()`. Writes are server-only (all mutations funnel through `processRefund` callable for audit trail).
-- **Owning instructor or admin**: `payouts/{payoutId}` — reads gated by `instructorUid == uid || isAdmin()`. Writes admin-only.
+- **Public**: published `courses` (get + list with `status == 'published'`), `courses/*/sections`, `…/lectures` (no usable media links inside), `…/reviews`, `…/questions`, `…/replies`, `instructors`, `songbooks`, `songbooks/*/reviews`, `learning_paths`, `site_content/{slug}`.
+- **Unpublished courses**: the course instructor, admins, moderators, and buyers (`get`); instructors can list their own (`instructorId == uid`).
+- **Owner only**: `users/{userId}/{notifications,wishlist,notes,courseProgress,blocks,…}`.
+- **Owner or admin**: `users/{userId}`, `users/{userId}/purchases/*`, `instructor_applications/{userId}`.
+- **Owner, owning-instructor, or admin**: `enrollments/{id}`.
+- **Owning student, owning instructor, or admin**: `transactions/{txnId}`.
+- **Owning instructor or admin**: `payouts/{payoutId}`.
+- **Moderator / admin**: `reports`.
 - **Admin only**: `notification_broadcasts`.
+- **Nobody (server-only)**: `_iap_transactions`, `_iap_subscriptions`, `purchase_intents`.
 
 Write access:
 
-- **Owner with field constraints**: `users/{userId}` (carve out `role` + `isSuspended` + `subscription`), `instructor_applications/{userId}` (status must be `pending`), `courses/{id}/reviews/{userId}` (`rating ∈ 1..5`), `notification_broadcasts/{id}` (`createdBy == uid`, `status == 'pending'`), `users/{uid}/notifications/{id}` (`readAt`-only updates; creates server-only).
-- **Owner-only writes** (no admin override): `users/{uid}/notes`, `users/{uid}/wishlist`, `users/{uid}/courseProgress`.
-- **Instructor (owner of resource)**: `courses/{id}` and nested sections + lectures + questions + replies (Q&A replies enforce the `isInstructor: true` carve-out via course `instructorId` cross-ref).
-- **Admin**: everything.
+- **Server-only (Cloud Functions)**: `users/{uid}/purchases/*`, `users/{uid}.subscription`, `enrollments` (create), `transactions`, `courses/*.rating|reviewCount`, `_iap_*`, `purchase_intents`.
+- **Owner with field constraints**: `users/{userId}` — create only as a non-suspended `student` without `subscription`; updates may never touch `role`, `isSuspended`, `subscription`. `instructor_applications/{userId}` (status must be `pending`), `courses/{id}/reviews/{userId}` (`rating ∈ 1..5`, author must own the course or have an active subscription), `notification_broadcasts/{id}` (`createdBy == uid`, `status == 'pending'`), `users/{uid}/notifications/{id}` (`readAt`-only updates; creates server-only).
+- **Owner-only writes** (no admin override): `users/{uid}/notes`, `users/{uid}/wishlist`, `users/{uid}/courseProgress`, `users/{uid}/blocks`.
+- **Instructor (owner of resource)**: own `courses/{id}` (draft-only create, no admin-only fields, only `draft | changes_requested → submitted`, delete only drafts) and nested sections + lectures + questions + replies.
+- **Admin**: everything (except server-only collections).
 
 ### Storage rules
 
-Mirror Firestore — public read of `courses/*`, `songbooks/*`, `learning_paths/*`; writes restricted to admin or owning instructor via `firestore.get` cross-reference.
+`storage.rules` — public read of course thumbnails, songbook and learning-path covers. Lecture `media/` + `resources/` are **not** publicly readable: only the course owner and admins read directly; students get signed URLs from `resolveLectureMedia`. Writes require `canManageCourse(courseId)` (admin or owning instructor) with MIME + size guards.
+
+### Server-side entitlement
+
+`hasCourseAccess(uid, courseId)` in `functions/src/iap.ts` gates `resolveStreamPlayback` and `resolveLectureMedia` (preview lectures are open). Purchases/subscriptions are verified with Apple / Google before anything is granted.
 
 ### Client-side gates (UX, not security)
 
-- `hasUnlockedAccessProvider(courseId)`: gates "Continue course" CTA + "Write a review" CTA.
+- `hasUnlockedAccessProvider(courseId)`: gates "Continue course" CTA + "Write a review" CTA (mirrors the server rules).
 - `hasActiveSubscriptionProvider`: gates the trial banner on the Songbooks tab.
 - `currentRoleProvider` in admin portal: gates nav items.
 - `wishlistToggleNotifier` optimistic overlay: heart icon UX.
 
 ### Secret material
 
-- API keys / config in `firebase_options_{dev,prod}.dart` — committed; designed to be public per Firebase guidance.
-- IAP signing keys, APNs `.p8`, Google Service Account JSON, Cloudflare API token — **never** committed. Cloudflare lives in Firebase Secrets (see [§25](#25-video-pipeline-cloudflare-stream)). The Cloud Functions runtime reads everything else from Application Default Credentials.
+- API keys / config in `firebase_options_{dev,prod}.dart` — public by design per Firebase guidance (not secrets), but gitignored here.
+- App Store Server API key (`.p8`), APNs `.p8`, Play service-account JSON, Cloudflare API token — **never** committed. They live in Firebase Secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `APPLE_IAP_KEY_ID`, `APPLE_IAP_ISSUER_ID`, `APPLE_IAP_PRIVATE_KEY`, `GOOGLE_PLAY_SERVICE_ACCOUNT`. Non-secret params (`ANDROID_PACKAGE_NAME`, `APPLE_BUNDLE_ID`, `APPLE_APP_ID`) are in `functions/.env.{dev,prod}`; Apple root certs in `functions/certs/`.
+- `firebase_options_*.dart` are gitignored in this repo (CI must provide them); the seeding service-account key in `sample_data/` is gitignored.
 - `android/key.properties` and `*.jks` are gitignored — verify with `git check-ignore -v android/key.properties` before any commit.
 
 ---
@@ -1412,8 +1475,9 @@ Track changes in `docs/go_live_roadmap.md`. Snapshot:
 |---|---|---|
 | Baseline | Auth (email/pw + Google + Apple) | `social_auth_setup.md` |
 | Baseline | Course catalogue + detail + lectures | — |
-| Baseline | Per-course IAP (PriceTier) | `iap_setup.md` |
-| Baseline | Personal Plan subscription (client-trust) | `subscriptions.md` |
+| Baseline | Per-course IAP (consumable PriceTier) | `iap_setup.md` |
+| Baseline | Personal Plan subscription | `subscriptions.md` |
+| P0-1 | Server-side IAP verification (App Store Server API + Play Developer API), store notifications, refunds | `iap_setup.md`, `security_model.md` |
 | Baseline | Search (in-memory) | — |
 | Baseline | Songbooks tab + detail | `songbooks.md` |
 | Baseline | Instructors list + detail | — |
@@ -1437,7 +1501,7 @@ Track changes in `docs/go_live_roadmap.md`. Snapshot:
 | P2-3 | Course Q&A | `qa.md` |
 | P2-4 | Lecture notes | `notes.md` |
 | P2-5 | Learning paths | `learning_paths.md` |
-| P2-6 | Practice tools (metronome + tuner) | `practice_tools.md` |
+| P2-6 | Practice tools (metronome; tuner hidden until a real engine ships) | `practice_tools.md` |
 | P2-9 | Revenue + cohort dashboard | `analytics.md` |
 | Extra | Dynamic landing-page CMS (now 12 sections incl. Become-an-instructor + Featured courses live query) | `site_content_cms.md` |
 | Extra | Admin instructor profile CRUD | — |
@@ -1446,23 +1510,31 @@ Track changes in `docs/go_live_roadmap.md`. Snapshot:
 | Extra | Guest-browse mode — Splash → Onboarding → Login (skippable, with close-X) → Home. Per-user routes gated via `_requiresAuth`. Action-level guest gates on BuyCourse, Bookmark, Reviews, Q&A, Notes. Preview lectures playable for guests | — |
 | Extra | "My learning" page — list every course with progress | — |
 | Extra | Songbooks moved out of bottom nav (still deep-linkable) | — |
-| Push | 3 → 5 → **11** Cloud Functions; inbox mirror; price-drop; Q&A; refund; broadcast; mark-paid; Cloudflare upload | `push_notifications.md` |
+| Push | Cloud Functions now ~27 (notifications, moderation, Cloudflare, IAP, store notifications, media signing, reviews aggregate) | `push_notifications.md` |
+| Security | Server-authoritative entitlements, role-escalation fix, signed video + Storage URLs, ownership checks on uploads/deletes, published-only catalogue reads | `security_model.md` |
+| Extra | Per-flavor iOS Firebase config (no bundled plist) | `social_auth_setup.md` |
+| Extra | Sign-out hygiene: FCM token removal, local data wipe | `push_notifications.md`, `offline_downloads.md` |
+| P0-10 (part) | Apple privacy manifest (`PrivacyInfo.xcprivacy`) | `production_migration.md` §5.3 |
+| P0-5 | Forgot-password (reset email from the login page) | — |
+| P1-7 | Server-side review aggregator (`onCourseReviewWritten`) | — |
+| P1-11 (part) | Accessibility: labelled icon buttons, semantics on custom taps | — |
+| P1-14 | Localization completeness sweep (mobile) + VI legal drafts | `localization.md` |
+| P1-13 | Force-update gate (Remote Config) | `production_migration.md` §2.8b |
+| Security | App Check (client + `requireAppCheck` on client callables) | `production_migration.md` §2.8 |
+| Extra | Songbook purchases (non-consumable, server-verified, private PDF) | `songbooks.md` |
 
 ### Not yet shipped (key gaps)
 
-- **P0-1** Server-side IAP receipt verification (`verifyPurchase` callable). Highest fraud-risk gap.
 - **P0-4** Email-verification gate.
-- **P0-5** Forgot-password flow.
 - **P0-9** Final app icons / splash / store assets.
-- **P0-10** ATT prompt + Apple Privacy Manifest.
+- **P0-10** ATT prompt (not needed while the app does no tracking — the manifest declares `NSPrivacyTracking: false`).
+- **App Check enforcement** — integrated in monitor mode; enable `ENFORCE_APP_CHECK` + console enforcement after metrics are clean.
 - **P1-2** 7-day free trial on subscription SKUs.
 - **P1-3** Restore Purchases UX polish.
 - **P1-5** Reviews moderation (profanity filter + reports).
 - **P1-6** Suspension UI in admin.
-- **P1-7** Server-side review aggregator (move off client-side rescan).
-- **P1-11** Accessibility pass (contrast, semantics, text scaler).
-- **P1-13** Force-update gate via Remote Config.
-- **P1-14** Localization completeness sweep.
+- **P1-11** Accessibility (rest): contrast + text-scaler audit.
+- Legal review of the Vietnamese legal drafts; native review of `app_vi.arb`.
 - **P1-16** Admin auth hardening (MFA, IP allowlist).
 - **P2-1** Quizzes + certificates.
 - **P2-7** Referrals; **P2-8** coupons; **P2-10** audit log; **P2-11** support entry point; **P2-12** live classes.
@@ -1476,29 +1548,31 @@ Per-feature deep-dives:
 
 | Doc | Covers |
 |---|---|
-| [`admin_portal.md`](admin_portal.md) | Admin portal architecture, Firestore + Storage rules, build/deploy, first-admin bootstrap |
+| [`security_model.md`](security_model.md) | Roles, entitlements, rules, signed media, secrets — read before touching rules or IAP |
+| [`production_migration.md`](production_migration.md) | Go-live runbook incl. security rollout order (Appendix D) |
+| [`admin_portal.md`](admin_portal.md) | Admin portal architecture, rules summary, build/deploy, first-admin bootstrap |
 | [`analytics.md`](analytics.md) | Revenue + cohort dashboard data flow, valuation, scaling escape hatch |
 | [`cloudflare_stream.md`](cloudflare_stream.md) | Cloudflare Stream integration, token hygiene, signed URLs, direct-creator-upload via `createCloudflareUpload` |
 | [`instructor_revenue.md`](instructor_revenue.md) | Udemy-style instructor revenue + student management — `transactions`, `payouts`, `processRefund`, `instructorBroadcast`, `markPayoutPaid` |
 | [`account_deletion_and_legal.md`](account_deletion_and_legal.md) | P0-2 + P0-3 — deletion cascade, legal renderer |
 | [`app_rating_prompt.md`](app_rating_prompt.md) | P1-12 rating-sheet gating |
-| [`iap_setup.md`](iap_setup.md) | Per-course IAP store setup |
+| [`iap_setup.md`](iap_setup.md) | Course-tier store setup, server verification, secrets, store notifications |
 | [`learning_paths.md`](learning_paths.md) | Editorial multi-course sequences |
 | [`lecture_progress.md`](lecture_progress.md) | Progress tracking, throttling, rollup |
 | [`localization.md`](localization.md) | i18n architecture, add a string, add a language |
 | [`notes.md`](notes.md) | Per-lecture personal notes + playback position bus |
 | [`notifications_inbox.md`](notifications_inbox.md) | Inbox + topic preferences |
 | [`observability.md`](observability.md) | Crashlytics + Performance + Analytics wiring |
-| [`offline_downloads.md`](offline_downloads.md) | Encrypted manifest + Dio downloader |
+| [`offline_downloads.md`](offline_downloads.md) | Encrypted manifest + Dio downloader, backup exclusion, paid Storage files |
 | [`onboarding.md`](onboarding.md) | 3-screen first-run flow |
 | [`pagination.md`](pagination.md) | Cursor + skeleton + inline retry |
-| [`practice_tools.md`](practice_tools.md) | Metronome + pluggable tuner engine |
+| [`practice_tools.md`](practice_tools.md) | Metronome + pluggable tuner engine (tuner hidden) |
 | [`push_notifications.md`](push_notifications.md) | FCM + local + Cloud Functions + APNs + POST_NOTIFICATIONS |
 | [`qa.md`](qa.md) | Course Q&A threads + verified-instructor badge |
 | [`signing_and_publishing.md`](signing_and_publishing.md) | Android signing, iOS signing, store submission |
 | [`site_content_cms.md`](site_content_cms.md) | Landing-page CMS data model, hydration, admin editor |
 | [`skeletons_and_refresh.md`](skeletons_and_refresh.md) | Skeleton primitives + RefreshIndicator wiring |
-| [`social_auth_setup.md`](social_auth_setup.md) | Google + Apple Sign-In for iOS, Android, web |
+| [`social_auth_setup.md`](social_auth_setup.md) | Google + Apple Sign-In for iOS, Android, web; per-flavor iOS Firebase config |
 | [`songbooks.md`](songbooks.md) | Songbooks tab + detail + admin CRUD |
 | [`subscriptions.md`](subscriptions.md) | Personal Plan IAP setup + schema |
 | [`wishlist.md`](wishlist.md) | Bookmarks + price-drop fan-out |

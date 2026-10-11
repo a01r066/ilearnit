@@ -58,32 +58,54 @@ In **Firebase Console → Project Settings → General → Your apps → Android
 
 No code changes — `flutter_flavorizr` already maps each flavor to its own `google-services.json`.
 
-## 3. iOS — URL scheme for Google Sign-In
+## 3. iOS — per-flavor Firebase config + Google Sign-In URL scheme
 
-Google Sign-In on iOS needs the **reversed client ID** registered as a URL scheme. The value lives in your `GoogleService-Info.plist` under `REVERSED_CLIENT_ID` and looks like:
+**No `GoogleService-Info.plist` is bundled in the iOS app.** Firebase is
+initialized from Dart (`lib/bootstrap.dart`):
 
+```dart
+await Firebase.initializeApp(options: _firebaseOptions()); // DEFAULT app
 ```
-com.googleusercontent.apps.123456789012-abcdef…
+
+`_firebaseOptions()` returns `firebase_options_dev.dart` or
+`firebase_options_prod.dart` for the running flavor. A bundled plist used
+to configure the default app natively for *both* flavors (pointing iOS
+dev builds at production), so it was removed from the Runner target's
+Copy Bundle Resources. Keep `ios/Runner/GoogleService-Info.plist` out of
+the target if you regenerate config with `flutterfire configure`.
+
+Google Sign-In therefore gets its OAuth client from the same options
+(`AuthRemoteDataSourceImpl`):
+
+```dart
+GoogleSignIn(
+  clientId: !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS
+      ? auth.app.options.iosClientId
+      : null,
+)
 ```
 
-Open `ios/Runner/Info.plist` and add (per flavor — see below for the flavorized variant):
+The callback URL scheme (the **reversed** iOS client id) is set per
+flavor through Xcode build settings. `ios/Runner/Info.plist`:
 
 ```xml
-<key>CFBundleURLTypes</key>
+<key>CFBundleURLSchemes</key>
 <array>
-  <dict>
-    <key>CFBundleTypeRole</key>
-    <string>Editor</string>
-    <key>CFBundleURLSchemes</key>
-    <array>
-      <!-- PASTE the REVERSED_CLIENT_ID from your GoogleService-Info.plist here -->
-      <string>com.googleusercontent.apps.XXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXXXXXXX</string>
-    </array>
-  </dict>
+  <string>$(GOOGLE_REVERSED_CLIENT_ID)</string>
 </array>
 ```
 
-> Because we ship two flavors (`dev`, `prod`), each has its own `GoogleService-Info.plist` and therefore its own reversed client ID. If you use a single `Info.plist`, list **both** schemes inside the same `CFBundleURLSchemes` array — iOS will match the right one at runtime. If you ship two `Info-Dev.plist` / `Info-Prod.plist`, paste the per-flavor value into each.
+and each `ios/Flutter/{dev,prod}{Debug,Profile,Release}.xcconfig` defines
+it (plain `Debug`/`Release` use the dev value):
+
+```
+GOOGLE_REVERSED_CLIENT_ID=com.googleusercontent.apps.<numbers>-<hash>
+```
+
+The value is `iosClientId` from the matching `firebase_options_*.dart`,
+with the dotted parts reversed (`<id>.apps.googleusercontent.com` →
+`com.googleusercontent.apps.<id>`). If you rotate an iOS OAuth client,
+update both the options file and the three xcconfigs of that flavor.
 
 ## 4. iOS — Sign in with Apple capability
 
@@ -164,7 +186,7 @@ flutter run -d chrome -t lib/main_admin.dart --dart-define=FLAVOR=dev
 ## 7. Verifying (mobile)
 
 1. `flutter pub get` (pulls `google_sign_in`, `sign_in_with_apple`, `crypto`).
-2. Run `flutter run --flavor dev -t lib/main_dev.dart`.
+2. Run `flutter run --flavor dev`.
 3. **Google**: tap "Continue with Google" → native picker → account chosen → land on Home, signed in.
 4. **Apple** (iOS only): tap "Continue with Apple" → Face/Touch ID prompt → land on Home.
 5. **Firestore**: a new `users/{uid}` doc should exist with `email`, `displayName`, `photoUrl`, `createdAt` populated.
@@ -175,7 +197,8 @@ flutter run -d chrome -t lib/main_admin.dart --dart-define=FLAVOR=dev
 | Symptom | Cause | Fix |
 |---|---|---|
 | `signIn()` returns `null` instantly on Android | SHA-1 missing in Firebase Console | Add debug+release SHA-1, re-download `google-services.json` |
-| iOS Google picker shows "redirect URI mismatch" | URL scheme missing in `Info.plist` | Paste the `REVERSED_CLIENT_ID` value from `GoogleService-Info.plist` |
+| iOS Google picker shows "redirect URI mismatch" / returns silently | `GOOGLE_REVERSED_CLIENT_ID` in the flavor's xcconfig doesn't match `iosClientId` | Fix the xcconfig (§3), clean build |
+| iOS dev build writes to the prod project | A `GoogleService-Info.plist` was re-added to Copy Bundle Resources | Remove it from the Runner target (§3) |
 | Apple button hangs after Face ID | Capability missing in App ID | Enable Sign in with Apple in Apple Developer Console + Xcode |
 | First Apple login returns no name on second login | Apple only returns name on first authorization | We persist `displayName` to Firestore on first sign-in (see `_upsertSocialUser`) — re-test after deleting the Firebase user |
 | `invalid-credential` from Apple | Stale nonce | Don't reuse credentials; each `signInWithApple()` generates a fresh nonce |

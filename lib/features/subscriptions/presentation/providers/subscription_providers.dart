@@ -22,6 +22,7 @@ final subscriptionNotifierProvider =
   return SubscriptionNotifier(
     iap: ref.watch(iapRemoteDataSourceProvider),
     firestore: ref.watch(subscriptionFirestoreDataSourceProvider),
+    verifier: ref.watch(purchaseVerificationDataSourceProvider),
     user: ref.watch(currentUserProvider),
   );
 });

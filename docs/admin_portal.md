@@ -41,8 +41,9 @@ lib/
 │   │       └── admin_instructors_page.dart    ← admin manage active instructors
 │   └── courses/
 │       ├── data/
-│       │   ├── admin_courses_datasource.dart  ← CRUD on courses/sections/lectures
-│       │   └── admin_storage_service.dart     ← uploads w/ progress
+│       │   ├── admin_courses_datasource.dart  ← CRUD + cascade deletes
+│       │   ├── admin_storage_service.dart     ← uploads w/ progress (gs:// for paid files)
+│       │   └── cloudflare_upload_service.dart ← Stream direct upload / delete
 │       └── presentation/
 │           ├── instructor_my_courses_page.dart
 │           ├── course_editor_page.dart         ← metadata + curriculum (incl. media upload)
@@ -64,120 +65,57 @@ Subsequent admins can be promoted by an existing admin via the **Instructors** p
 
 ## Firestore security rules
 
-Add these to `firestore.rules`. They enforce role and ownership checks server-side so the rules are the source of truth, not the UI.
+The source of truth is `firestore.rules` at the repo root — don't copy
+snippets from docs. The parts that shape the portal:
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
+- **users** — owners can't create themselves as anything but a
+  non-suspended `student`, and can never change `role`, `isSuspended` or
+  `subscription`. Only admins (the portal's Instructors / role tools)
+  change roles.
+- **courses** — `get`: published for everyone; any status for the
+  course's instructor, admins, moderators, and buyers. `list`: queries
+  must filter `status == 'published'` or `instructorId == <me>` (the
+  portal's "My courses" query does; "All courses" runs as admin).
+  Instructors create only `draft` courses for themselves, edit only their
+  own (no admin-only fields), may only move `draft | changes_requested →
+  submitted`, and may delete only drafts. `rating` / `reviewCount` are
+  server-maintained.
+- **sections / lectures** — public read; writes by the course's
+  instructor or admins.
+- **enrollments / transactions / purchases** — never written by the
+  portal client; created by Cloud Functions (`verifyPurchase`,
+  `processRefund`).
 
-    // ---------- helpers ----------
-    function isSignedIn() { return request.auth != null; }
-    function uid() { return request.auth.uid; }
-
-    function userDoc() {
-      return get(/databases/$(database)/documents/users/$(uid())).data;
-    }
-    function role() {
-      return userDoc().role;
-    }
-    function isAdmin() {
-      return isSignedIn() && role() == 'admin' && userDoc().isSuspended != true;
-    }
-    function isInstructor() {
-      return isSignedIn() && (role() == 'instructor' || role() == 'admin')
-             && userDoc().isSuspended != true;
-    }
-
-    // ---------- users ----------
-    match /users/{userId} {
-      // Anyone signed-in can read their own doc; admins can read all.
-      allow read: if isSignedIn() && (uid() == userId || isAdmin());
-      // Users can write their own profile fields except role + isSuspended.
-      allow create: if isSignedIn() && uid() == userId;
-      allow update: if isSignedIn()
-        && uid() == userId
-        && !(request.resource.data.diff(resource.data).affectedKeys()
-              .hasAny(['role', 'isSuspended']));
-      // Admins can update anything on any user (including role + suspend).
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
-    }
-
-    // ---------- instructor applications ----------
-    match /instructor_applications/{userId} {
-      allow read: if isSignedIn() && (uid() == userId || isAdmin());
-      // Applicant can create / overwrite (re-apply) their own pending app.
-      allow create, update: if isSignedIn() && uid() == userId
-        && request.resource.data.status == 'pending';
-      // Only admins can mark approved / rejected.
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
-    }
-
-    // ---------- courses ----------
-    match /courses/{courseId} {
-      // Anyone (signed in or not) can read published courses.
-      allow read: if true;
-      // Instructors create their own; admins create on behalf of anyone.
-      allow create: if isInstructor()
-        && (isAdmin() || request.resource.data.instructorId == uid());
-      // Owner or admin can update / delete.
-      allow update, delete: if isAdmin()
-        || (isInstructor() && resource.data.instructorId == uid());
-
-      match /sections/{sectionId} {
-        allow read: if true;
-        allow write: if isAdmin()
-          || (isInstructor()
-              && get(/databases/$(database)/documents/courses/$(courseId))
-                   .data.instructorId == uid());
-
-        match /lectures/{lectureId} {
-          allow read: if true;
-          allow write: if isAdmin()
-            || (isInstructor()
-                && get(/databases/$(database)/documents/courses/$(courseId))
-                     .data.instructorId == uid());
-        }
-      }
-    }
-  }
-}
-```
+See `docs/security_model.md` for the full model.
 
 ## Firebase Storage rules
 
-```javascript
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
+Source of truth: `storage.rules`. Course files are authorized with
+`canManageCourse(courseId)` = admin, or an instructor who owns
+`courses/{courseId}` (or the course doc doesn't exist yet, so a new
+course can upload its thumbnail before the first save).
 
-    function isSignedIn() { return request.auth != null; }
-    function uid() { return request.auth.uid; }
-    function userDoc() {
-      return firestore.get(/databases/(default)/documents/users/$(uid())).data;
-    }
-    function isAdmin() {
-      return isSignedIn() && userDoc().role == 'admin'
-             && userDoc().isSuspended != true;
-    }
-    function ownsCourse(courseId) {
-      return isAdmin() || firestore.get(
-        /databases/(default)/documents/courses/$(courseId)
-      ).data.instructorId == uid();
-    }
+| Path | Read | Write |
+|---|---|---|
+| `courses/{c}/thumbnail/*` | public | `canManageCourse` + image ≤ 8 MB |
+| `courses/{c}/sections/*/lectures/*/media/*` | `canManageCourse` only | `canManageCourse` + audio/video/PDF/DOC ≤ 2 GB |
+| `courses/{c}/sections/*/lectures/*/resources/*` | `canManageCourse` only | `canManageCourse` + PDF/DOC/image/audio/video ≤ 200 MB |
+| `songbooks/*`, `learning_paths/*` covers | public | admin |
 
-    // Course thumbnails + lecture media.
-    match /courses/{courseId}/{allPaths=**} {
-      allow read: if true; // public — adjust if courses should be gated
-      allow write: if ownsCourse(courseId);
-    }
-  }
-}
-```
+Lecture media and resources are **paid content**: the editor stores a
+`gs://bucket/path` reference (not a download URL), the
+`onLectureObjectFinalized` function strips the download token, and
+students receive short-lived signed URLs from `resolveLectureMedia`
+(`docs/offline_downloads.md` §11). The `firestore.get(...)` in
+`canManageCourse` costs one extra read per Storage write.
 
-> The Storage rule uses `firestore.get(...)` to cross-reference the user role. This costs an extra Firestore read per write but is the standard pattern for role-based Storage gating. If you need higher throughput, encode `instructorId` into the path (e.g. `courses/{instructorId}/{courseId}/...`) and authorize by uid match alone — but you'll have to rename the buckets if a course changes owners.
+## Notifications in the portal
+
+Browsers only show the notification prompt after a user gesture, so the
+portal never prompts at startup. `NotificationPermissionBanner` (in the
+admin scaffold) offers **Enable** until the admin decides; granting binds
+the browser's FCM token to the signed-in user
+(`NotificationBootstrap.requestPermissionAndBind`).
 
 ## Build & run
 
@@ -231,17 +169,18 @@ For a custom domain (e.g. `admin.ilearnit.app`):
 - [x] Admin reviews + approves/rejects applications.
 - [x] Approval atomically promotes `users/{uid}.role = 'instructor'`.
 - [x] Instructor: list, create, edit own courses.
-- [x] Instructor: edit sections + lectures + upload media to Firebase Storage with progress.
+- [x] Instructor: edit sections + lectures + upload media (Cloudflare Stream direct upload, or private Firebase Storage objects) with progress.
+- [x] Course review workflow (draft → submitted → under review → approved / changes requested → published / unpublished / archived).
 - [x] Admin: list, edit, delete every course; feature/unfeature.
 - [x] Admin: list active instructors, suspend/restore, revoke role.
 - [x] Role-based redirects (`admin_router.dart`).
 - [x] Responsive side-nav (drawer on narrow screens).
-- [x] Firestore + Storage security rule samples.
+- [x] Firestore + Storage rules enforce ownership + workflow (see `docs/security_model.md`).
 
 ## Things deferred (post-v1)
 
 - Rich text editor for course summary / lecture descriptions.
-- Drag-to-reorder sections + lectures (UI sketched, mutation TBD).
+- Drag-to-reorder (lectures can be moved up/down today).
 - Resumable / chunked uploads for very large video files.
 - Course preview as students see it (today, instructors open the mobile app to QA).
 - Analytics (enrollments / watch-time charts on the dashboard).

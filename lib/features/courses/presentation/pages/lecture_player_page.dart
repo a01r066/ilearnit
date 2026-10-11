@@ -18,6 +18,8 @@ import '../../../progress/presentation/providers/progress_providers.dart';
 import '../../../notes/presentation/providers/notes_providers.dart';
 import '../../../notes/presentation/widgets/lecture_notes_section.dart';
 import '../../../qa/presentation/widgets/lecture_qa_section.dart';
+import '../../data/datasources/cloudflare_stream_service.dart';
+import '../../data/datasources/lecture_media_service.dart';
 import '../../domain/entities/course_section_entity.dart';
 import '../../domain/entities/lecture_entity.dart';
 import '../../domain/entities/lecture_type.dart';
@@ -25,6 +27,7 @@ import '../providers/courses_providers.dart';
 import '../widgets/audio_lecture_player.dart';
 import '../widgets/document_lecture_view.dart';
 import '../widgets/video_lecture_player.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Single page that handles all four lecture types (video / audio / pdf / doc).
 ///
@@ -77,7 +80,7 @@ class LecturePlayerPage extends ConsumerWidget {
         if (lecture == null) {
           return Scaffold(
             appBar: AppBar(),
-            body: const Center(child: Text('Lecture not found.')),
+            body: Center(child: Text(context.l10n.lectureNotFound)),
           );
         }
         final sectionId = _findSectionId(sections, lectureId);
@@ -224,7 +227,7 @@ class _LecturePlayerScaffoldState
         // the route — the mini-player above the bottom nav takes over
         // via the singleton MiniPlayerService.
         leading: IconButton(
-          tooltip: 'Minimize',
+          tooltip: context.l10n.lectureMinimize,
           icon: const Icon(Icons.keyboard_arrow_down),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
@@ -257,7 +260,11 @@ class _LecturePlayerScaffoldState
         );
       case LectureType.pdf:
       case LectureType.doc:
-        return DocumentLectureView(lecture: widget.lecture);
+        return DocumentLectureView(
+          courseId: widget.courseId,
+          sectionId: widget.sectionId,
+          lecture: widget.lecture,
+        );
     }
   }
 }
@@ -283,7 +290,7 @@ class _VideoBody extends ConsumerWidget {
     final hasMedia = (lecture.mediaUrl?.isNotEmpty ?? false) ||
         (lecture.cloudflareVideoId?.isNotEmpty ?? false);
     if (!hasMedia) {
-      return const Center(child: Text('Video unavailable.'));
+      return Center(child: Text(context.l10n.lectureVideoMissing));
     }
     final key =
         LectureProgressKey(courseId: courseId, lectureId: lecture.id);
@@ -340,8 +347,15 @@ class _VideoBody extends ConsumerWidget {
       videoSlot = buildPlayer(Uri.file(localPath).toString());
     } else if (cfId != null && cfId.isNotEmpty) {
       // Cloudflare Stream — resolve via Cloud Function, then play HLS.
-      final playbackAsync =
-          ref.watch(cloudflareStreamPlaybackProvider(cfId));
+      final playbackAsync = ref.watch(
+        cloudflareStreamPlaybackProvider(
+          StreamPlaybackRequest(
+            courseId: courseId,
+            sectionId: sectionId,
+            lectureId: lecture.id,
+          ),
+        ),
+      );
       videoSlot = playbackAsync.when(
         loading: () => const AspectRatio(
           aspectRatio: 16 / 9,
@@ -355,7 +369,11 @@ class _VideoBody extends ConsumerWidget {
             color: Colors.black,
             child: Center(
               child: Text(
-                'Video unavailable: $e',
+                e is CloudflareStreamException &&
+                        (e.code == 'permission-denied' ||
+                            e.code == 'unauthenticated')
+                    ? context.l10n.lecturePurchaseToWatch
+                    : context.l10n.videoUnavailable,
                 style: const TextStyle(color: Colors.white),
                 textAlign: TextAlign.center,
               ),
@@ -365,14 +383,15 @@ class _VideoBody extends ConsumerWidget {
         data: (p) {
           final url = p.bestUrl;
           if (url == null || !p.readyToStream) {
-            return const AspectRatio(
+            return AspectRatio(
               aspectRatio: 16 / 9,
               child: ColoredBox(
                 color: Colors.black,
                 child: Center(
                   child: Text(
-                    'Video still encoding — try again in a minute.',
-                    style: TextStyle(color: Colors.white),
+                    context.l10n.lectureEncoding,
+                    style: const TextStyle(color: Colors.white),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
@@ -381,8 +400,32 @@ class _VideoBody extends ConsumerWidget {
           return buildPlayer(url);
         },
       );
+    } else if (LectureMediaService.needsResolution(lecture.mediaUrl)) {
+      // Storage-hosted file — signed URL after a server entitlement check.
+      videoSlot = ref
+          .watch(lectureMediaUrlProvider(LectureMediaRequest(
+            courseId: courseId,
+            sectionId: sectionId,
+            lectureId: lecture.id,
+          )))
+          .when(
+            loading: () => const AspectRatio(
+              aspectRatio: 16 / 9,
+              child: ColoredBox(
+                color: Colors.black,
+                child: Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
+              ),
+            ),
+            error: (e, _) => AspectRatio(
+              aspectRatio: 16 / 9,
+              child: _MediaErrorView(error: e),
+            ),
+            data: buildPlayer,
+          );
     } else {
-      // Legacy Firebase Storage URL.
+      // External https URL.
       videoSlot = buildPlayer(lecture.mediaUrl!);
     }
 
@@ -422,7 +465,7 @@ class _AudioBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (lecture.mediaUrl == null || lecture.mediaUrl!.isEmpty) {
-      return const Center(child: Text('Audio unavailable.'));
+      return Center(child: Text(context.l10n.lectureAudioMissing));
     }
     final key =
         LectureProgressKey(courseId: courseId, lectureId: lecture.id);
@@ -433,9 +476,25 @@ class _AudioBody extends ConsumerWidget {
 
     final localPath =
         ref.watch(localMediaPathForLectureProvider(lecture.id));
-    final url = localPath != null
-        ? Uri.file(localPath).toString()
-        : lecture.mediaUrl!;
+    final String url;
+    if (localPath != null) {
+      url = Uri.file(localPath).toString();
+    } else if (LectureMediaService.needsResolution(lecture.mediaUrl)) {
+      final resolved = ref.watch(lectureMediaUrlProvider(LectureMediaRequest(
+        courseId: courseId,
+        sectionId: sectionId,
+        lectureId: lecture.id,
+      )));
+      final signed = resolved.value;
+      if (signed == null) {
+        return resolved.hasError
+            ? _MediaErrorView(error: resolved.error!)
+            : const Center(child: CircularProgressIndicator());
+      }
+      url = signed;
+    } else {
+      url = lecture.mediaUrl!;
+    }
 
     final positions = ref.read(playbackPositionRegistryProvider);
 
@@ -536,7 +595,15 @@ class _LectureBody extends ConsumerWidget {
             courseTitle: courseTitle,
             lectureId: lecture.id,
             lectureTitle: lecture.title,
-            mediaUrl: lecture.mediaUrl!,
+            // Paid Storage files: persist a stable reference; the
+            // downloads service resolves a fresh signed URL per transfer.
+            mediaUrl: LectureMediaService.needsResolution(lecture.mediaUrl)
+                ? LectureMediaRequest(
+                    courseId: courseId,
+                    sectionId: sectionId,
+                    lectureId: lecture.id,
+                  ).toRef()
+                : lecture.mediaUrl!,
           ),
         if (lecture.description != null && lecture.description!.isNotEmpty) ...[
           const SizedBox(height: 16),
@@ -544,10 +611,21 @@ class _LectureBody extends ConsumerWidget {
         ],
         if (lecture.hasResources) ...[
           const SizedBox(height: 24),
-          Text('Resources', style: context.textTheme.titleMedium),
+          Text(
+            context.l10n.lectureResources,
+            style: context.textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
-          for (final r in lecture.resources)
-            DocumentLectureResourceTile(resource: r),
+          for (final (i, r) in lecture.resources.indexed)
+            DocumentLectureResourceTile(
+              resource: r,
+              source: LectureMediaRequest(
+                courseId: courseId,
+                sectionId: sectionId,
+                lectureId: lecture.id,
+                resourceIndex: i,
+              ),
+            ),
         ],
         // ---- Notes ----------------------------------------------------
         // Embedded above the Q&A section so the user's own thoughts are
@@ -587,6 +665,34 @@ class _LectureBody extends ConsumerWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Shown when a paid file can't be resolved — locked (not purchased /
+/// signed out) or a transient failure.
+class _MediaErrorView extends StatelessWidget {
+  const _MediaErrorView({required this.error});
+  final Object error;
+
+  @override
+  Widget build(BuildContext context) {
+    final locked = error is LectureMediaException &&
+        (error as LectureMediaException).isLocked;
+    return ColoredBox(
+      color: Colors.black,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text(
+            locked
+                ? context.l10n.lecturePurchaseToOpen
+                : context.l10n.lectureLoadFailed,
+            style: const TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
     );
   }
 }

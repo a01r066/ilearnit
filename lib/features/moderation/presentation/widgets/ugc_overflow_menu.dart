@@ -8,6 +8,7 @@ import '../../domain/entities/report_content_type.dart';
 import '../providers/moderation_providers.dart';
 import 'block_user_dialog.dart';
 import 'report_content_sheet.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Three-dots overflow menu rendered next to a UGC item (review,
 /// question, answer, note). Shows:
@@ -58,17 +59,17 @@ class UgcOverflowMenu extends ConsumerWidget {
     final isBlocked = blockedIds.contains(authorId);
 
     return PopupMenuButton<_UgcAction>(
-      tooltip: 'More',
+      tooltip: context.l10n.commonMore,
       icon: Icon(Icons.more_vert, color: iconColor),
       onSelected: (action) => _handle(context, ref, action),
       itemBuilder: (_) => [
-        const PopupMenuItem(
+        PopupMenuItem(
           value: _UgcAction.report,
           child: ListTile(
             dense: true,
             contentPadding: EdgeInsets.zero,
-            leading: Icon(Icons.flag_outlined),
-            title: Text('Report'),
+            leading: const Icon(Icons.flag_outlined),
+            title: Text(context.l10n.ugcReport),
           ),
         ),
         PopupMenuItem(
@@ -81,8 +82,8 @@ class UgcOverflowMenu extends ConsumerWidget {
             ),
             title: Text(
               isBlocked
-                  ? 'Unblock ${_displayName()}'
-                  : 'Block ${_displayName()}',
+                  ? context.l10n.ugcUnblockName(_displayName(context))
+                  : context.l10n.ugcBlockName(_displayName(context)),
             ),
           ),
         ),
@@ -90,7 +91,8 @@ class UgcOverflowMenu extends ConsumerWidget {
     );
   }
 
-  String _displayName() => authorName.isEmpty ? 'user' : authorName;
+  String _displayName(BuildContext context) =>
+      authorName.isEmpty ? context.l10n.ugcUserFallback : authorName;
 
   Future<void> _handle(
     BuildContext context,

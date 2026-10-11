@@ -54,6 +54,18 @@ service firebase.storage {
         && !isSuspended();
     }
 
+    // Admin, or the instructor who owns courses/{courseId}. A course doc
+    // that doesn't exist yet is writable by any instructor so the editor
+    // can upload a thumbnail before the first save; once the doc exists,
+    // only its owner can touch its files.
+    function canManageCourse(courseId) {
+      let path = /databases/(default)/documents/courses/$(courseId);
+      return isAdmin()
+        || (isInstructor()
+            && (!firestore.exists(path)
+                || firestore.get(path).data.instructorId == request.auth.uid));
+    }
+
     // Mime-type / size limits applied to every upload. Keeps a bad
     // SDK from uploading a 4 GB binary into the course thumbnail path
     // and rinsing the bandwidth bill.
@@ -80,38 +92,35 @@ service firebase.storage {
 
     match /courses/{courseId}/thumbnail/{filename} {
       allow read: if true;
-      allow write: if isInstructor() && isImage() && underMb(8);
-      allow delete: if isInstructor();
+      allow write: if canManageCourse(courseId) && isImage() && underMb(8);
+      allow delete: if canManageCourse(courseId);
     }
 
     match /courses/{courseId}/sections/{sectionId}/lectures/{lectureId}/media/{filename} {
-      // Consumer app only fetches via the resolved download URL — but
-      // we leave direct read open in case the player ever falls back
-      // to a raw GCS path (the video_player package occasionally does
-      // when an HLS playlist references an unsigned media URL).
-      allow read: if true;
-      // Cloudflare Stream is the canonical upload path. This Storage
-      // path is the legacy fallback for instructors who upload via
-      // the admin portal's older flow — kept enabled at 2 GB to allow
-      // mid-quality lecture videos.
-      allow write: if isInstructor() && isAudioOrVideo() && underMb(2048);
-      allow delete: if isInstructor();
+      // Paid content. Students get short-lived V4 signed URLs from the
+      // `resolveLectureMedia` Cloud Function after an entitlement check
+      // (signed URLs bypass these rules). Direct SDK reads are limited to
+      // the course's instructor + admins, and download tokens are stripped
+      // on upload by `onLectureObjectFinalized`.
+      allow read: if canManageCourse(courseId);
+      // Cloudflare Stream is the canonical video path; this is the legacy
+      // fallback for audio / PDF / DOCX lectures and older videos.
+      // PDF / DOCX lectures also upload their primary file here.
+      allow write: if canManageCourse(courseId)
+        && (isAudioOrVideo() || isPdfOrDoc())
+        && underMb(2048);
+      allow delete: if canManageCourse(courseId);
     }
 
     match /courses/{courseId}/sections/{sectionId}/lectures/{lectureId}/resources/{filename} {
-      // Downloadable resources (PDFs, scores, MP3 backing tracks, etc.)
-      // are visible only to enrolled users in the consumer app — but
-      // the Storage layer can't cheaply check enrollment without an
-      // extra Firestore read per file. The download URL itself is
-      // token-bearing, so we keep the rules permissive (read=true)
-      // and rely on the consumer UI to gate visibility. If you ever
-      // need to lock this down, add a `enrollments/{courseId}/{uid}`
-      // existence check here.
-      allow read: if true;
-      allow write: if isInstructor()
+      // Downloadable resources (PDFs, scores, backing tracks). Same model
+      // as lecture media: signed URLs via `resolveLectureMedia` for
+      // students, direct reads only for the course owner + admins.
+      allow read: if canManageCourse(courseId);
+      allow write: if canManageCourse(courseId)
         && (isPdfOrDoc() || isImage() || isAudioOrVideo())
         && underMb(200);
-      allow delete: if isInstructor();
+      allow delete: if canManageCourse(courseId);
     }
 
     // -------- Songbooks (admin-curated content) --------
@@ -119,6 +128,15 @@ service firebase.storage {
     match /songbooks/{songbookId}/cover/{filename} {
       allow read: if true;
       allow write: if isAdmin() && isImage() && underMb(8);
+      allow delete: if isAdmin();
+    }
+
+    // Paid songbook PDF. Readers get a signed URL from the
+    // `resolveSongbookContent` function (owners + Personal Plan);
+    // download tokens are stripped on upload.
+    match /songbooks/{songbookId}/content/{filename} {
+      allow read: if isAdmin();
+      allow write: if isAdmin() && isPdfOrDoc() && underMb(200);
       allow delete: if isAdmin();
     }
 

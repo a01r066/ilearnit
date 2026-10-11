@@ -11,6 +11,7 @@ import '../providers/notes_keys.dart';
 import '../providers/notes_providers.dart';
 import 'note_tile.dart';
 import 'write_note_sheet.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Compact "My notes for this lecture" panel embedded in the lecture
 /// body. Shows up to [maxPreview] timestamped notes plus an
@@ -79,7 +80,7 @@ class LectureNotesSection extends ConsumerWidget {
               label: Text(t.notesAddCta),
               onPressed: () async {
                 if (user == null) {
-                  context.showSnack('Sign in to save notes.');
+                  context.showSnack(context.l10n.notesSignInSnack);
                   context.goNamed(RouteNames.login);
                   return;
                 }

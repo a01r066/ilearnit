@@ -1,0 +1,126 @@
+rules_version = '2';
+
+// Template — adapt collection names. Server-owned data is written by Cloud
+// Functions (Admin SDK bypasses these rules); every such path below denies
+// client writes.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Helpers ----------
+    function isSignedIn() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+    function userDoc() { return get(/databases/$(database)/documents/users/$(uid())).data; }
+    function role() { return userDoc().get('role', 'user'); }
+    function isSuspended() { return userDoc().get('isSuspended', false) == true; }
+    function isAdmin() { return isSignedIn() && role() == 'admin' && !isSuspended(); }
+    function isModerator() {
+      return isSignedIn() && (role() == 'moderator' || role() == 'admin') && !isSuspended();
+    }
+    function hasActiveSubscription() {
+      return userDoc().get('subscription', {}).get('expiresAt', timestamp.value(0)) > request.time;
+    }
+    function owns(itemId) {
+      return exists(/databases/$(database)/documents/users/$(uid())/purchases/$(itemId))
+        && get(/databases/$(database)/documents/users/$(uid())/purchases/$(itemId)).data.status == 'purchased';
+    }
+    // Fields only Cloud Functions / admins may set on users/{uid}.
+    function serverUserFields() { return ['role', 'isSuspended', 'subscription', 'fcmTokensServer']; }
+
+    // ---------- users ----------
+    match /users/{userId} {
+      allow read: if isSignedIn() && (uid() == userId || isAdmin());
+
+      // A new account may only be a plain, non-suspended user with no
+      // server-owned fields. Pinning this is what stops self-promotion
+      // to admin via the Auth REST API.
+      allow create: if isSignedIn() && uid() == userId
+        && request.resource.data.get('role', 'user') == 'user'
+        && request.resource.data.get('isSuspended', false) == false
+        && !request.resource.data.keys().hasAny(['subscription']);
+
+      allow update: if isSignedIn() && uid() == userId
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(serverUserFields());
+      allow update, delete: if isAdmin();
+
+      // Entitlements — server-only.
+      match /purchases/{itemId} {
+        allow read: if isSignedIn() && (uid() == userId || isAdmin());
+        allow write: if false;
+      }
+
+      // Inbox: server creates; owner reads, marks read, deletes.
+      match /notifications/{id} {
+        allow read, delete: if isSignedIn() && uid() == userId;
+        allow update: if isSignedIn() && uid() == userId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt']);
+        allow create: if false;
+      }
+
+      // Private per-user data. List each subcollection explicitly: a
+      // recursive wildcard (/{doc=**}) would ALSO match /purchases and
+      // /notifications, and rules are OR-ed — it would re-open
+      // client writes to entitlements.
+      match /progress/{id} {
+        allow read, write: if isSignedIn() && uid() == userId && !isSuspended();
+      }
+      match /saved/{id} {
+        allow read, write: if isSignedIn() && uid() == userId && !isSuspended();
+      }
+      match /blocks/{id} {
+        allow read, write: if isSignedIn() && uid() == userId;
+      }
+    }
+
+    // ---------- catalogue ----------
+    match /items/{itemId} {
+      // get: published for everyone; drafts for owner/admin; buyers keep
+      // access to archived items.
+      allow get: if resource.data.status == 'published'
+        || (isSignedIn() && (resource.data.ownerId == uid() || isModerator() || owns(itemId)));
+
+      // list: the QUERY must carry the same filter, or it is rejected.
+      allow list: if resource.data.status == 'published'
+        || (isSignedIn() && resource.data.ownerId == uid())
+        || isModerator();
+
+      // Creators edit their own drafts; never server fields.
+      allow create: if isSignedIn() && request.resource.data.ownerId == uid()
+        && request.resource.data.status == 'draft'
+        && !request.resource.data.keys().hasAny(['rating', 'reviewCount', 'salesCount']);
+      allow update: if isSignedIn() && resource.data.ownerId == uid()
+        && request.resource.data.ownerId == uid()
+        && !request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny(['rating', 'reviewCount', 'salesCount', 'featured'])
+        // creators may only submit; publishing is a moderator action
+        && request.resource.data.status in ['draft', 'submitted'];
+      allow update, delete: if isAdmin();
+
+      // Reviews: one per user (doc id = uid), only for owners/subscribers.
+      // rating/reviewCount on the parent are maintained by a trigger.
+      match /reviews/{reviewerId} {
+        allow read: if true;
+        allow create, update: if isSignedIn() && reviewerId == uid() && !isSuspended()
+          && request.resource.data.authorId == uid()
+          && request.resource.data.rating is int
+          && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+          && (owns(itemId) || hasActiveSubscription());
+        allow delete: if isSignedIn() && (reviewerId == uid() || isModerator());
+      }
+    }
+
+    // ---------- reports (UGC moderation) ----------
+    match /reports/{id} {
+      allow create: if isSignedIn() && request.resource.data.reporterId == uid();
+      allow read, update: if isModerator();
+    }
+
+    // ---------- server-only ----------
+    match /transactions/{id} {
+      allow read: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
+      allow write: if false;
+    }
+    match /_iap_transactions/{id} { allow read, write: if false; }
+    match /_iap_subscriptions/{id} { allow read, write: if false; }
+    match /purchase_intents/{id} { allow read, write: if false; }
+  }
+}

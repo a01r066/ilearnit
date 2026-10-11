@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/extensions.dart';
 import '../providers/purchases_providers.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Drop-in ListTile for the Profile / Settings screen.
 ///
@@ -25,19 +26,15 @@ class _RestorePurchasesTileState
     await ref.read(purchasesNotifierProvider.notifier).restorePurchases();
     if (!mounted) return;
     setState(() => _busy = false);
-    context.showSnack(
-      'Restore complete. Owned courses will appear shortly.',
-    );
+    context.showSnack(context.l10n.purchaseRestoreDone);
   }
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.restore_rounded),
-      title: const Text('Restore purchases'),
-      subtitle: const Text(
-        'Re-download courses you bought on another device.',
-      ),
+      title: Text(context.l10n.purchaseRestore),
+      subtitle: Text(context.l10n.purchaseRestoreSubtitle),
       trailing: _busy
           ? const SizedBox(
               width: 20,

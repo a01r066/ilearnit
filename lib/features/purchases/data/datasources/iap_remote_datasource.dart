@@ -5,6 +5,7 @@ import 'package:in_app_purchase/in_app_purchase.dart' as iap;
 import '../../../../core/error/exceptions.dart';
 import '../../domain/entities/product_price_entity.dart';
 import '../../domain/entities/purchase_status.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Thin wrapper over the `in_app_purchase` plugin so the repository never
 /// references the platform types directly. All conversions to domain
@@ -20,6 +21,15 @@ abstract interface class IapRemoteDataSource {
   /// Begins the purchase flow for a non-consumable. Result is delivered
   /// asynchronously through [purchaseStream].
   Future<void> buyNonConsumable({
+    required String productId,
+    String? applicationUserName,
+  });
+
+  /// Begins the purchase flow for a consumable (course tiers). We pass
+  /// `autoConsume: false`: the Play token is consumed server-side by
+  /// `verifyPurchase` AFTER the course is granted, so a crash between
+  /// payment and grant never loses the purchase.
+  Future<void> buyConsumable({
     required String productId,
     String? applicationUserName,
   });
@@ -79,7 +89,7 @@ class IapRemoteDataSourceImpl implements IapRemoteDataSource {
     final response = await _platform.queryProductDetails({productId});
     if (response.productDetails.isEmpty) {
       throw ServerException(
-        message: 'Product "$productId" is not available in the store.',
+        message: L10n.current.purchaseProductUnavailable,
       );
     }
     final params = iap.PurchaseParam(
@@ -89,7 +99,33 @@ class IapRemoteDataSourceImpl implements IapRemoteDataSource {
     final accepted = await _platform.buyNonConsumable(purchaseParam: params);
     if (!accepted) {
       throw ServerException(
-        message: 'The store declined to start the purchase flow.',
+        message: L10n.current.purchaseStoreDeclined,
+      );
+    }
+  }
+
+  @override
+  Future<void> buyConsumable({
+    required String productId,
+    String? applicationUserName,
+  }) async {
+    final response = await _platform.queryProductDetails({productId});
+    if (response.productDetails.isEmpty) {
+      throw ServerException(
+        message: L10n.current.purchaseProductUnavailable,
+      );
+    }
+    final params = iap.PurchaseParam(
+      productDetails: response.productDetails.first,
+      applicationUserName: applicationUserName,
+    );
+    final accepted = await _platform.buyConsumable(
+      purchaseParam: params,
+      autoConsume: false,
+    );
+    if (!accepted) {
+      throw ServerException(
+        message: L10n.current.purchaseStoreDeclined,
       );
     }
   }

@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'lecture_entity.dart';
+import '../../../../l10n/l10n.dart';
 
 part 'course_section_entity.freezed.dart';
 
@@ -23,8 +24,9 @@ abstract class CourseSectionEntity with _$CourseSectionEntity {
   String get formattedTotalDuration {
     final h = totalDurationSeconds ~/ 3600;
     final m = (totalDurationSeconds % 3600) ~/ 60;
-    if (h > 0) return '${h}h ${m}min';
-    if (m > 0) return '${m}min';
-    return '${totalDurationSeconds}s';
+    final t = L10n.current;
+    if (h > 0) return t.durationHM('$h', '$m');
+    if (m > 0) return t.durationM('$m');
+    return t.durationS('$totalDurationSeconds');
   }
 }

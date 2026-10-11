@@ -129,22 +129,47 @@ The Admin SDK respects `FIRESTORE_EMULATOR_HOST` — no code change needed.
   isFeatured: boolean,
   tags: string[],
   priceTier: 'basic' | 'standard' | 'premium',
+  status: 'draft' | 'submitted' | 'under_review' | 'approved'
+        | 'changes_requested' | 'published' | 'unpublished' | 'archived',
   publishedAt: Timestamp,
 }
 ```
 
+> Seed courses must have `status: 'published'` to appear in the app —
+> rules only allow public reads / list queries of published courses.
+
 ### `users/{uid}/purchases/{courseId}`
-Written by the app after the platform purchase stream confirms a transaction.
-The doc id is the courseId so a single `.exists` read tells the UI whether the
-user owns the course.
+Written **only by the `verifyPurchase` Cloud Function** (Admin SDK) after the
+store transaction is verified — clients can't write it. Seed it with the Admin
+SDK if you need owned courses for test accounts. The doc id is the courseId so
+a single `.exists` read tells the UI whether the user owns the course.
 ```ts
 {
   courseId: string,
-  productId: string,                    // info.ilearnit.tier_basic | _standard | _premium
-  status: 'pending' | 'purchased' | 'restored' | 'failed',
-  transactionId: string | null,
-  originalTransactionId: string | null, // iOS — for restore correlation
-  source: 'purchase' | 'restore' | 'admin',
+  productId: string,                    // info.ilearnit.course_tier_basic | _standard | _premium
+  status: 'purchased' | 'refunded',     // refunded = access removed
+  transactionId: string | null,         // iOS transaction id / Play order id
+  originalTransactionId: string | null,
+  source: 'purchase' | 'admin',
+  purchasedAt: Timestamp,
+  refundedAt?: Timestamp,
+}
+```
+
+Matching docs: `enrollments/{uid}_{courseId}` and a `transactions/{id}` ledger
+row (both server-written).
+
+### `users/{uid}/songbooks/{songbookId}`
+Written only by `verifySongbookPurchase` (server). Songbook docs may also
+carry `pdfPath: 'gs://<bucket>/songbooks/<id>/content/<file>.pdf'` and
+`priceUsd: number` — set from the admin editor (not in `songbooks.json`);
+without `pdfPath` the app hides "Get Songbook".
+```ts
+{
+  songbookId: string,
+  productId: string,                    // info.ilearnit.songbook.<slug>
+  status: 'purchased' | 'refunded',
+  platform: 'ios' | 'android',
   purchasedAt: Timestamp,
 }
 ```
@@ -188,8 +213,10 @@ courses/{courseId}                                 (top-level doc)
   durationSeconds: number,
   order: number,
   isPreview: boolean,                   // free outside enrollment
-  mediaUrl: string | null,              // legacy Firebase Storage URL
-  cloudflareVideoId: string | null,     // 32-hex Cloudflare Stream UID (preferred)
+  mediaUrl: string | null,              // private Storage ref: 'gs://<bucket>/courses/…/media/<file>'
+                                        //   (legacy https download URLs are converted by
+                                        //   migrateLectureMediaToPrivate)
+  cloudflareVideoId: string | null,     // 32-hex Cloudflare Stream UID (preferred for video)
   thumbnailUrl: string | null,
   description: string,
   fileSizeBytes: number,

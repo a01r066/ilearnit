@@ -4,6 +4,7 @@ import '../../../../core/error/failure.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 import '../../data/datasources/course_qa_datasource.dart';
 import 'qa_form_state.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Drives the "Write a question" sheet. Lives per-lecture so a draft
 /// doesn't leak between lectures.
@@ -51,7 +52,7 @@ class QuestionFormNotifier extends StateNotifier<QAFormState> {
       state = state.copyWith(
         isSubmitting: false,
         lastFailure: Failure.unexpected(
-          message: 'Could not post your question.',
+          message: L10n.current.qaPostQuestionFailed,
           error: e,
         ),
       );

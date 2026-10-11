@@ -37,6 +37,7 @@ import '../../shared/providers/storage_providers.dart';
 import '../observability/observability_providers.dart';
 import 'route_names.dart';
 import 'shell_scaffold.dart';
+import '../../l10n/l10n.dart';
 
 final _rootKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final _homeKey = GlobalKey<NavigatorState>(debugLabel: 'home');
@@ -400,8 +401,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
     ],
-    errorBuilder: (_, state) => Scaffold(
-      body: Center(child: Text('Route not found: ${state.uri}')),
+    errorBuilder: (context, state) => Scaffold(
+      body: Center(child: Text(context.l10n.routeNotFound)),
     ),
   );
 });

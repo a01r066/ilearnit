@@ -4,22 +4,28 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:in_app_purchase/in_app_purchase.dart' as iap;
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/error/error_mapper.dart';
+import '../../../../core/error/failure.dart';
+import '../../../../flavors.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 import '../../data/datasources/subscription_firestore_datasource.dart';
 import '../../../purchases/data/datasources/iap_remote_datasource.dart';
+import '../../../purchases/data/datasources/purchase_verification_datasource.dart';
 import '../../domain/entities/subscription_plan.dart';
 import '../../domain/entities/subscription_status.dart';
 import 'subscription_state.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Owns the subscription lifecycle on the client.
 ///
 /// Wiring:
 ///   1. On construction, fetches store ProductDetails for both plans.
 ///   2. Listens to the IAP `purchaseStream` and filters by subscription
-///      product ids — when one fires `purchased | restored`, writes the
-///      entitlement to `users/{uid}.subscription` and completes the txn.
+///      product ids — when one fires `purchased | restored`, sends the
+///      receipt to the `verifySubscription` Cloud Function (which writes
+///      `users/{uid}.subscription`) and only then completes the txn.
 ///   3. Subscribes to Firestore so the UI always reflects authoritative
 ///      state, not optimistic state.
 ///
@@ -29,9 +35,11 @@ class SubscriptionNotifier extends StateNotifier<SubscriptionState> {
   SubscriptionNotifier({
     required IapRemoteDataSource iap,
     required SubscriptionFirestoreDataSource firestore,
+    required PurchaseVerificationDataSource verifier,
     required UserEntity? user,
   })  : _iap = iap,
         _firestore = firestore,
+        _verifier = verifier,
         _user = user,
         super(const SubscriptionState()) {
     _init();
@@ -39,6 +47,7 @@ class SubscriptionNotifier extends StateNotifier<SubscriptionState> {
 
   final IapRemoteDataSource _iap;
   final SubscriptionFirestoreDataSource _firestore;
+  final PurchaseVerificationDataSource _verifier;
   final UserEntity? _user;
 
   StreamSubscription<List<iap.PurchaseDetails>>? _iapSub;
@@ -105,17 +114,16 @@ class SubscriptionNotifier extends StateNotifier<SubscriptionState> {
     }
   }
 
-  /// "Cancel" in-app just means turning auto-renew off in Firestore for
-  /// the UI hint. The user still has to cancel in the OS settings (App
-  /// Store / Play Store) — we surface that link in the docs.
-  Future<void> markAutoRenewOff() async {
-    final uid = _user?.id;
-    if (uid == null) return;
-    try {
-      await _firestore.markAutoRenewOff(uid);
-    } catch (e, st) {
-      state = state.copyWith(lastFailure: mapToFailure(e, st));
-    }
+  /// Opens the platform's subscription-management page. Cancellation
+  /// happens in the store; the server picks up `autoRenew == false` the
+  /// next time the subscription is verified. (Clients can no longer
+  /// write `users/{uid}.subscription` — see firestore.rules.)
+  Future<void> openManageSubscription() async {
+    final uri = !kIsWeb && Platform.isAndroid
+        ? Uri.parse('https://play.google.com/store/account/subscriptions'
+            '?package=${F.androidPackageName}')
+        : Uri.parse('https://apps.apple.com/account/subscriptions');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   void clearFailure() {
@@ -143,9 +151,9 @@ class SubscriptionNotifier extends StateNotifier<SubscriptionState> {
           break;
         case iap.PurchaseStatus.purchased:
         case iap.PurchaseStatus.restored:
-          await _persistEntitlement(plan, p);
+          final finish = await _verifyEntitlement(p);
           state = state.copyWith(purchaseInFlight: false);
-          if (p.pendingCompletePurchase) {
+          if (finish && p.pendingCompletePurchase) {
             await _iap.completePurchase(p);
           }
           break;
@@ -153,37 +161,35 @@ class SubscriptionNotifier extends StateNotifier<SubscriptionState> {
     }
   }
 
-  Future<void> _persistEntitlement(
-    SubscriptionPlan plan,
-    iap.PurchaseDetails p,
-  ) async {
-    final uid = _user?.id;
-    if (uid == null) {
-      // No user — can't persist. Log and skip; the next restore will
-      // re-emit when the user signs in.
-      if (kDebugMode) {
-        debugPrint('[subscription] purchase for ${plan.id} received but no '
-            'signed-in user — skipping Firestore write.');
-      }
-      return;
+  /// Sends the receipt to `verifySubscription`; the server validates it
+  /// with Apple / Google and writes `users/{uid}.subscription`. The
+  /// Firestore listener in [_init] then picks up the new status.
+  ///
+  /// Returns whether the store transaction may be finished.
+  Future<bool> _verifyEntitlement(iap.PurchaseDetails p) async {
+    if (_user == null) {
+      // Leave the transaction open — it is re-delivered after sign-in.
+      return false;
     }
-
-    String? platform;
-    if (!kIsWeb) {
-      if (Platform.isIOS || Platform.isMacOS) platform = 'ios';
-      if (Platform.isAndroid) platform = 'android';
-    }
-
     try {
-      await _firestore.recordPurchase(
-        uid: uid,
-        plan: plan,
-        platform: platform ?? 'unknown',
-        originalTransactionId:
-            p.purchaseID ?? p.verificationData.serverVerificationData,
+      await _verifier.verifySubscription(p);
+      return true;
+    } on PurchaseVerificationException catch (e) {
+      state = state.copyWith(
+        lastFailure: Failure.server(
+          message: e.code == 'permission-denied' &&
+                  e.message.contains('another account')
+              ? L10n.current.subscriptionOtherAccount
+              : L10n.current.subscriptionVerifyFailed,
+        ),
       );
+      // Retryable → keep open so it replays. Rejected → finish on iOS so
+      // it doesn't loop; on Android leave unacknowledged (auto-refund).
+      return !e.retryable && PurchaseVerificationDataSource.platform == 'ios';
     } catch (e, st) {
+      // Unknown failure — treat as retryable, keep the transaction open.
       state = state.copyWith(lastFailure: mapToFailure(e, st));
+      return false;
     }
   }
 

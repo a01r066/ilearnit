@@ -26,6 +26,9 @@ class SearchRemoteDataSource {
   /// memory — fast enough for hundreds of courses.
   Future<List<CourseModel>> fetchAllCourses({int limit = 200}) async {
     final snap = await _courses
+        // Published only — also required by firestore.rules for list
+        // queries (drafts / archived courses are not public).
+        .where('status', isEqualTo: 'published')
         .orderBy('publishedAt', descending: true)
         .limit(limit)
         .get();

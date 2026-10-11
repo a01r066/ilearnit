@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:path_provider/path_provider.dart';
 
+import '../../../../core/storage/offline_storage.dart';
 import '../../domain/entities/download_entity.dart';
 import 'downloads_manifest_store.dart';
 
@@ -25,12 +25,21 @@ class DownloadProgressEvent {
 ///   • Progress is broadcast through a single [Stream] so all UI surfaces
 ///     (button + downloads page) read from the same source of truth.
 class DownloadsService {
-  DownloadsService({required DownloadsManifestStore manifest, Dio? dio})
-      : _manifest = manifest,
-        _dio = dio ?? Dio();
+  DownloadsService({
+    required DownloadsManifestStore manifest,
+    Dio? dio,
+    Future<String> Function(String mediaRef)? resolveUrl,
+  })  : _manifest = manifest,
+        _dio = dio ?? Dio(),
+        _resolveUrl = resolveUrl;
 
   final DownloadsManifestStore _manifest;
   final Dio _dio;
+
+  /// Turns the persisted media reference (`lecture-media:…` pseudo-URL
+  /// for paid Storage files) into a fresh signed URL right before each
+  /// transfer. Signed URLs expire, so the manifest never stores them.
+  final Future<String> Function(String mediaRef)? _resolveUrl;
 
   final _controller = StreamController<DownloadProgressEvent>.broadcast();
   final Map<String, CancelToken> _inFlight = {};
@@ -61,8 +70,28 @@ class DownloadsService {
       if (existing.isInFlight) return existing;
     }
 
+    // Resolve the signed URL first (entitlement is checked server-side).
+    final String source;
+    try {
+      source = await (_resolveUrl?.call(mediaUrl) ?? Future.value(mediaUrl));
+    } catch (e) {
+      final failed = (existing ??
+              DownloadEntity(
+                lectureId: lectureId,
+                courseId: courseId,
+                courseTitle: courseTitle,
+                lectureTitle: lectureTitle,
+                mediaUrl: mediaUrl,
+                localPath: '',
+              ))
+          .copyWith(status: DownloadStatus.failed, lastError: e.toString());
+      await _manifest.upsert(failed);
+      _controller.add(DownloadProgressEvent(failed));
+      return failed;
+    }
+
     final dir = await _downloadsDir();
-    final filename = _filenameFor(lectureId, mediaUrl);
+    final filename = _filenameFor(lectureId, source);
     final localPath = '${dir.path}${Platform.pathSeparator}$filename';
 
     final initial = (existing ?? DownloadEntity(
@@ -74,6 +103,11 @@ class DownloadsService {
       localPath: localPath,
     ))
         .copyWith(
+      // Keep the stable reference (not the signed URL) for resumes.
+      mediaUrl: mediaUrl,
+      localPath: existing?.localPath.isNotEmpty == true
+          ? existing!.localPath
+          : localPath,
       status: DownloadStatus.downloading,
       lastError: null,
     );
@@ -82,18 +116,18 @@ class DownloadsService {
     _controller.add(DownloadProgressEvent(initial));
 
     // Fire-and-forget — caller subscribes to [events] for progress.
-    unawaited(_run(initial));
+    unawaited(_run(initial, source));
     return initial;
   }
 
-  Future<void> _run(DownloadEntity initial) async {
+  Future<void> _run(DownloadEntity initial, String sourceUrl) async {
     final token = CancelToken();
     _inFlight[initial.lectureId] = token;
 
     try {
       // Dio's `download` writes to disk in chunks and reports progress.
       await _dio.download(
-        initial.mediaUrl,
+        sourceUrl,
         initial.localPath,
         cancelToken: token,
         // Keep the body buffer small so video files don't OOM low-end
@@ -171,10 +205,14 @@ class DownloadsService {
     for (final id in [..._inFlight.keys]) {
       _inFlight[id]?.cancel('wipe');
     }
-    final dir = await _downloadsDir();
-    try {
-      if (await dir.exists()) await dir.delete(recursive: true);
-    } catch (_) {}
+    for (final dir in [
+      await _downloadsDir(),
+      await OfflineStorage.legacyDir('downloads'),
+    ]) {
+      try {
+        if (await dir.exists()) await dir.delete(recursive: true);
+      } catch (_) {}
+    }
     await _manifest.clearAll();
   }
 
@@ -188,14 +226,10 @@ class DownloadsService {
 
   // ---------- Local paths --------------------------------------------------
 
-  Future<Directory> _downloadsDir() async {
-    final root = await getApplicationDocumentsDirectory();
-    final dir = Directory(
-      '${root.path}${Platform.pathSeparator}downloads',
-    );
-    if (!await dir.exists()) await dir.create(recursive: true);
-    return dir;
-  }
+  /// Application Support (not Documents) + excluded from backups —
+  /// see [OfflineStorage]. Entries written by older builds keep their
+  /// absolute Documents path in the manifest and still play.
+  Future<Directory> _downloadsDir() => OfflineStorage.dir('downloads');
 
   /// Filename is `{lectureId}{ext}` so a re-download of the same lecture
   /// reuses the same file, and the extension lets the OS pick the right

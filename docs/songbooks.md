@@ -64,7 +64,7 @@ The Songbooks queries fail with `PERMISSION_DENIED` until these rules are deploy
 ```javascript
 // ---------- songbooks ----------
 match /songbooks/{songbookId} {
-  // Catalogue is public — same model as courses.
+  // Catalogue is public (courses are additionally gated on status == published).
   allow read: if true;
   // Only admins can publish / edit songbooks.
   allow write: if isAdmin();
@@ -226,18 +226,62 @@ for (const r of reviews) {
 
 ## In-app purchases
 
-Each songbook carries a `productId` (e.g. `info.ilearnit.songbook.first50_popular_piano`). The current UI shows the **Get Songbook** CTA as a placeholder — wiring it up is a follow-up that reuses the existing IAP infrastructure (`PurchasesNotifier` + `IapRemoteDataSource`). The sample SKUs all start with `info.ilearnit.songbook.` so a single regex pattern can route songbook purchases to the right notifier.
+**Model.** Each songbook is one **non-consumable** product
+(`songbooks/{id}.productId`, prefix `info.ilearnit.songbook.`). Owners
+and active **Personal Plan** subscribers can open the full PDF; everyone
+can browse the free sample pages (`samplePages` image URLs).
 
-For App Store Connect + Play Console:
-- Each songbook = one **Non-Consumable** product (not auto-renewing).
-- Bundle them under the same App ID as courses.
-- Add the product ids to a `SongbookPurchases` registry mirroring `PriceTier` in `lib/features/purchases/domain/entities/price_tier.dart`.
+**Admin** (`SongbookEditorPage` → *Paid content*):
+- **Upload PDF** → private object at `songbooks/{id}/content/<file>`;
+  the doc stores `pdfPath: 'gs://…'` (tokens are stripped by
+  `onLectureObjectFinalized`).
+- **List price (USD)** → `priceUsd`, used only for the revenue ledger
+  (the store charges its own regional price).
+- Until a PDF is uploaded the app hides the CTA, so incomplete songbooks
+  can't be bought.
+
+**App flow** (`songbook_detail_page.dart` → `_GetSongbookButton`):
+
+```
+no PDF        → CTA hidden
+owner / sub   → "Open songbook" → resolveSongbookContent → signed URL
+                → cached in OfflineStorage('songbooks') → OpenFilex
+not owned     → "Get Songbook · <store price>"
+                → SongbookPurchasesNotifier.buy(productId)  (buyNonConsumable)
+                → purchaseStream → verifySongbookPurchase → completePurchase
+                → users/{uid}/songbooks/{id} appears → CTA flips to "Open"
+guest         → sign-in prompt
+```
+
+Access is re-checked on every open (the cached PDF is only used after
+the server confirms access), and the cache is wiped on sign-out.
+
+**Server** (`functions/src/iap.ts`, `media.ts`):
+- `verifySongbookPurchase` — App Store Server API / Play
+  `purchases.products`; keys the transaction by iOS
+  `originalTransactionId` / Play token (stable across restores), binds it
+  to one uid, writes ownership + a `transactions` row
+  (`kind: 'songbook'`). Idempotent → Restore purchases just re-confirms.
+- `resolveSongbookContent` — `hasSongbookAccess` → 4-hour signed URL.
+- Refunds (ASSN v2 / Play voided purchases / admin `processRefund`) set
+  ownership to `refunded`.
+
+**Rules**: `users/{uid}/songbooks/*` owner-read, server-write;
+`songbooks/{id}/content/*` admin-only Storage access.
+
+**Store setup**: App Store Connect → In-App Purchases → **Non-Consumable**
+per songbook; Play Console → In-app product per songbook (acknowledged by
+the app after verification). Product ids must equal `productId` on the
+songbook doc.
+
+**Still open**: songbook reviews aren't gated on ownership; the Save /
+favorite toggles on the detail page are local-only (not persisted).
 
 ## Smoke testing
 
 1. **Deploy the rules** (snippet above) to your dev project.
 2. **Seed the catalogue**: `node sample_data/seed_firestore.js`.
-3. **Run the app**: `flutter run --flavor dev -t lib/main_dev.dart`.
+3. **Run the app**: `flutter run --flavor dev`.
 4. Tap the **Songbooks** tab (5th nav slot, between Instructors and Profile).
 5. Verify:
    - The "Start 7-day free trial" banner shows (assuming you don't have an active subscription).

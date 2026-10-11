@@ -7,6 +7,7 @@ import '../../domain/repositories/courses_repository.dart';
 import '../models/course_model.dart';
 import '../models/course_section_model.dart';
 import '../models/lecture_model.dart';
+import '../../../../l10n/l10n.dart';
 
 abstract interface class CoursesRemoteDataSource {
   Future<CoursesPageDto> fetchCourses({
@@ -88,7 +89,7 @@ class CoursesRemoteDataSourceImpl implements CoursesRemoteDataSource {
       );
     } on FirebaseException catch (e) {
       throw ServerException(
-        message: e.message ?? 'Failed to load courses.',
+        message: L10n.current.errLoadFailed,
         statusCode: 0,
       );
     }
@@ -99,11 +100,14 @@ class CoursesRemoteDataSourceImpl implements CoursesRemoteDataSource {
     try {
       final doc = await _courses.doc(id).get();
       if (!doc.exists) {
-        throw ServerException(message: 'Course not found.', statusCode: 404);
+        throw ServerException(
+          message: L10n.current.courseNotFound,
+          statusCode: 404,
+        );
       }
       return CourseModel.fromDoc(doc);
     } on FirebaseException catch (e) {
-      throw ServerException(message: e.message ?? 'Fetch failed.');
+      throw ServerException(message: L10n.current.errLoadFailed);
     }
   }
 
@@ -118,7 +122,7 @@ class CoursesRemoteDataSourceImpl implements CoursesRemoteDataSource {
           .get();
       return snap.docs.map(CourseModel.fromDoc).toList();
     } on FirebaseException catch (e) {
-      throw ServerException(message: e.message ?? 'Fetch failed.');
+      throw ServerException(message: L10n.current.errLoadFailed);
     }
   }
 
@@ -164,7 +168,7 @@ class CoursesRemoteDataSourceImpl implements CoursesRemoteDataSource {
       );
     } on FirebaseException catch (e) {
       throw ServerException(
-        message: e.message ?? 'Failed to load curriculum.',
+        message: L10n.current.errLoadFailed,
       );
     }
   }

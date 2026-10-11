@@ -19,8 +19,9 @@ What's already built and shipping today:
 |---|---|
 | Auth (email/pw, Google, Apple) | Done |
 | Course catalog + detail + lectures (metadata only) | Done |
-| Per-course IAP (`PriceTier`) | Done |
-| Personal Plan subscription (monthly / yearly) | Done (client-trust) |
+| Per-course IAP (`PriceTier`, consumable) | Done — server-verified |
+| Personal Plan subscription (monthly / yearly) | Done — server-verified + store notifications |
+| Security hardening (roles, entitlements, signed media, ownership checks) | Done — see [security_model.md](security_model.md) |
 | Search (in-memory, ranked) | Done |
 | Songbooks tab + detail | Done |
 | Instructors list + detail | Done |
@@ -30,7 +31,9 @@ What's already built and shipping today:
 | i18n (EN + VI) | Done |
 | Themes (vibrant, professional, system) | Done |
 | Firestore + Storage rules | Done |
-| Cloud Functions (3 triggers) | Done |
+| Cloud Functions | Done (~27: notifications, moderation, Cloudflare, IAP, media, reviews) |
+| Privacy manifest, Android backup rules, notification icon | Done |
+| Localization sweep (mobile, EN + VI) | Done — VI copy pending native review |
 
 What's missing — see the rest of this doc.
 
@@ -40,7 +43,16 @@ What's missing — see the rest of this doc.
 
 ### P0-1. Server-side IAP receipt verification
 
-Today `SubscriptionNotifier` writes `users/{uid}.subscription` directly from the client after a `PurchaseStatus.purchased` event. A jailbroken / Frida-hooked client can forge it. **This is a fraud open door** and must be closed before any marketing dollar is spent.
+> **✅ Shipped (Oct 2026), with a different design than sketched below:**
+> App Store Server API (not `/verifyReceipt`) via `@apple/app-store-server-library`;
+> callables `createPurchaseIntent`, `verifyPurchase` (course tiers, now
+> consumable) and `verifySubscription`; store notifications
+> `appStoreNotifications` (ASSN v2) and `playRtdn` (Pub/Sub). Rules lock
+> purchases, subscriptions, enrollments and transactions to the server.
+> See `iap_setup.md`, `subscriptions.md`, `security_model.md`. The text
+> below is the original ticket.
+
+Originally, `SubscriptionNotifier` wrote `users/{uid}.subscription` directly from the client after a `PurchaseStatus.purchased` event. A jailbroken / Frida-hooked client can forge it. **This is a fraud open door** and must be closed before any marketing dollar is spent.
 
 **Acceptance criteria**
 - New callable Cloud Function `verifyPurchase(serverVerificationData, productId, source: 'apple' | 'google')`.
@@ -119,7 +131,11 @@ App Store Connect requires a privacy policy URL; Play Console requires the same 
 
 ### P0-5. Forgot password flow
 
-Strings exist (`authForgotPassword`) but the screen and call don't.
+> **Partly shipped:** "Forgot password?" on `LoginPage` sends
+> `sendPasswordResetEmail` for the email typed above (no separate page).
+> Email-template customization is still open.
+
+Originally: strings existed (`authForgotPassword`) but the screen and call didn't.
 
 **Acceptance criteria**
 - `ForgotPasswordPage` with email field → `firebaseAuth.sendPasswordResetEmail(email)`.
@@ -196,6 +212,11 @@ No `enrollments/{id}/progress` collection today. Without it: no "Continue learni
 
 ### P0-10. ATT prompt + Apple Privacy Manifest
 
+> **Manifest shipped:** `ios/Runner/PrivacyInfo.xcprivacy` (no tracking;
+> UserDefaults CA92.1, FileTimestamp C617.1; collected data types listed).
+> ATT is not needed while nothing tracks; Android `AD_ID` permission is
+> removed from the merged manifest.
+
 iOS 17+ requires `PrivacyInfo.xcprivacy` declaring tracking domains and required-reason APIs. Firebase SDK 10.21+ ships its own, but you need yours.
 
 **Acceptance criteria**
@@ -237,6 +258,11 @@ The songbooks tab banner advertises "Start 7-day free trial" but the IAP product
 ---
 
 ### P1-3. Restore purchases UX
+
+> **Status:** course ownership is now tied to the iLearnIt account
+> (server-side), so reinstalling + signing in restores courses without a
+> tap. "Restore purchases" (Profile) re-syncs store transactions and the
+> subscription; Android also re-queries unfinished purchases at start-up.
 
 `purchaseRestore` strings exist; verify the wire-up end-to-end.
 
@@ -284,7 +310,12 @@ Anyone with access can post abusive content.
 
 ### P1-7. Server-side aggregate counters
 
-`CourseReviewsDataSource._recomputeAggregate` re-scans the whole subcollection on every write. At 5k+ reviews per course this becomes a 100KB read per write.
+> **✅ Shipped for course reviews:** `onCourseReviewWritten` recomputes
+> `rating` + `reviewCount` with a Firestore aggregate query; the client
+> recompute was removed and clients can't write those fields. Songbook
+> reviews still pending.
+
+Originally, `CourseReviewsDataSource._recomputeAggregate` re-scans the whole subcollection on every write. At 5k+ reviews per course this becomes a 100KB read per write.
 
 **Acceptance criteria**
 - Cloud Function trigger on `courses/{cid}/reviews/{uid}` create / update / delete uses `FieldValue.increment` to update `reviewCount` + a tracked `ratingSum` field. Compute `rating = ratingSum / reviewCount`.
@@ -331,6 +362,12 @@ Verify `CoursesPage.cursor` is wired through to `ListView` and not just defined.
 
 ### P1-11. Accessibility pass
 
+> **Partly shipped:** every icon-only `IconButton` in the mobile app has a
+> localized tooltip; star picker items are labelled ("Rate n out of 5
+> stars"); custom `GestureDetector` taps are wrapped in `Semantics`
+> (button / link); dead controls removed. Contrast + text-scaler audits
+> are still open.
+
 **Acceptance criteria**
 - Run Flutter `flutter_test`'s `meetsGuideline(textContrastGuideline)` audit. Fix all failures.
 - Star pickers and rating widgets wrapped in `Semantics(label: '$rating of 5 stars')`.
@@ -351,6 +388,11 @@ Verify `CoursesPage.cursor` is wired through to `ListView` and not just defined.
 
 ### P1-13. Force-update gate
 
+> **✅ Shipped:** Remote Config `min_build_*` / `recommended_build_*` /
+> `store_url_*` (`lib/core/update/`, `production_migration.md` §2.8b).
+> Raise `min_build_*` once the security-rollout build is live — old builds
+> can't buy courses or play paid lectures.
+
 A critical bug ships and you have no way to push users off the broken version.
 
 **Acceptance criteria**
@@ -361,6 +403,12 @@ A critical bug ships and you have no way to push users off the broken version.
 ---
 
 ### P1-14. Localization completeness
+
+> **✅ Shipped for the mobile app** (~515 keys, `L10n.current` for
+> context-free code, `Intl.defaultLocale` synced, `CFBundleLocalizations`).
+> VI legal docs are drafted (`assets/legal/*_vi.md`, English prevails;
+> need legal review). Remaining: native review of Vietnamese copy, CI check for
+> ARB key parity. See `localization.md`.
 
 **Acceptance criteria**
 - Inventory non-localized strings: `grep -rn "Text\('" lib/ | grep -v generated | grep -v "//"` and prioritize the consumer-facing ones.
@@ -453,6 +501,10 @@ Cheap to build, big retention impact.
 ---
 
 ### P2-6. Practice tools (metronome + tuner)
+
+> **Status:** metronome shipped (Profile → Practice tools). The tuner UI
+> exists but is hidden (`kTunerEnabled = false`) until a real mic engine
+> ships — see `practice_tools.md`.
 
 Make users open the app daily even when not consuming content.
 

@@ -309,6 +309,8 @@ class _FormState extends ConsumerState<_Form> {
                 ),
               ],
             ),
+            const SizedBox(height: 24),
+            _CommerceBlock(songbookId: widget.book.id),
             const SizedBox(height: 32),
             // Bounded SizedBox so the Column stretch can't propagate
             // infinity into the M3 button's intrinsic-width pass.
@@ -397,3 +399,151 @@ class _ImageBlock extends StatelessWidget {
     );
   }
 }
+
+/// Paid content: the songbook PDF (private) + list price for the ledger.
+/// Saved immediately (independent of "Save changes").
+class _CommerceBlock extends ConsumerStatefulWidget {
+  const _CommerceBlock({required this.songbookId});
+  final String songbookId;
+
+  @override
+  ConsumerState<_CommerceBlock> createState() => _CommerceBlockState();
+}
+
+class _CommerceBlockState extends ConsumerState<_CommerceBlock> {
+  final _price = TextEditingController();
+  UploadProgress? _progress;
+  bool _priceLoaded = false;
+  late final Stream<({String? pdfPath, double? priceUsd})> _commerce = ref
+      .read(adminSongbooksDataSourceProvider)
+      .watchCommerce(widget.songbookId);
+
+  @override
+  void dispose() {
+    _price.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickPdf() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const ['pdf'],
+      withData: true,
+    );
+    final file = result?.files.firstOrNull;
+    final bytes = file?.bytes;
+    if (file == null || bytes == null) return;
+    final ds = ref.read(adminSongbooksDataSourceProvider);
+    ref
+        .read(adminStorageServiceProvider)
+        .uploadSongbookContent(
+          songbookId: widget.songbookId,
+          filename: file.name,
+          bytes: bytes,
+          contentType: 'application/pdf',
+        )
+        .listen((p) async {
+      if (!mounted) return;
+      setState(() => _progress = p);
+      if (p.phase == UploadPhase.completed && p.downloadUrl != null) {
+        // downloadUrl is the private gs:// reference.
+        await ds.setCommerce(widget.songbookId, pdfPath: p.downloadUrl);
+      }
+    });
+  }
+
+  Future<void> _savePrice() async {
+    final v = double.tryParse(_price.text.trim());
+    if (v == null) return;
+    await ref
+        .read(adminSongbooksDataSourceProvider)
+        .setCommerce(widget.songbookId, priceUsd: v);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Price saved.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return StreamBuilder<({String? pdfPath, double? priceUsd})>(
+      stream: _commerce,
+      builder: (context, snap) {
+        final c = snap.data;
+        if (c != null && !_priceLoaded) {
+          _priceLoaded = true;
+          _price.text = c.priceUsd?.toStringAsFixed(2) ?? '';
+        }
+        final hasPdf = (c?.pdfPath ?? '').isNotEmpty;
+        final running =
+            _progress != null && _progress!.phase == UploadPhase.running;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Paid content', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text(
+              'Buyers (IAP product above) and Personal Plan subscribers '
+              'can open this PDF. It is private — never shared as a public link.',
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              hasPdf
+                  ? 'PDF uploaded · ${c!.pdfPath!.split('/').last}'
+                  : 'No PDF uploaded yet — "Get Songbook" stays hidden in the app.',
+              style: TextStyle(
+                color: hasPdf ? Colors.green : theme.colorScheme.error,
+              ),
+            ),
+            if (running)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: SizedBox(
+                  width: 320,
+                  child: LinearProgressIndicator(value: _progress!.fraction),
+                ),
+              ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: 200,
+              child: OutlinedButton.icon(
+                onPressed: running ? null : _pickPdf,
+                icon: const Icon(Icons.picture_as_pdf_outlined),
+                label: Text(hasPdf ? 'Replace PDF' : 'Upload PDF'),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                SizedBox(
+                  width: 200,
+                  child: TextField(
+                    controller: _price,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      labelText: 'List price (USD)',
+                      helperText: 'For revenue reports only',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 120,
+                  child: OutlinedButton(
+                    onPressed: _savePrice,
+                    child: const Text('Save price'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+

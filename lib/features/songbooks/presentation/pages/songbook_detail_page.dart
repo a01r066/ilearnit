@@ -12,6 +12,10 @@ import '../../data/models/songbook_model.dart';
 import '../../data/models/songbook_review_model.dart';
 import '../providers/songbook_providers.dart';
 import '../widgets/songbook_card.dart';
+import '../widgets/songbook_reader.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../purchases/presentation/providers/purchases_providers.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Detail page for a single songbook. Pushes to recent-viewed MRU on
 /// mount so the Songbooks tab carousel reflects the visit.
@@ -47,10 +51,10 @@ class _SongbookDetailPageState extends ConsumerState<SongbookDetailPage> {
     return Scaffold(
       body: book.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('$e')),
+        error: (e, _) => Center(child: Text(context.l10n.songbookLoadFailed)),
         data: (b) {
           if (b == null) {
-            return const Center(child: Text('Songbook not found.'));
+            return Center(child: Text(context.l10n.songbookNotFound));
           }
           return _Body(
             book: b,
@@ -104,15 +108,12 @@ class _Body extends ConsumerWidget {
           pinned: false,
           floating: true,
           leading: IconButton(
+            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
             icon: const Icon(Icons.chevron_left),
             onPressed: () => context.pop(),
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.person_outline),
-              onPressed: () {},
-            ),
-          ],
+          // (Placeholder profile button with no action removed — a dead
+          // control is an App Review 2.1 risk.)
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
@@ -143,42 +144,19 @@ class _Body extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            // Primary CTA
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size.fromHeight(56),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                  ),
-                  onPressed: () {
-                    // TODO: wire to IAP/subscription flow.
-                  },
-                  child: const Text(
-                    'Get Songbook',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            // Primary CTA — Get / Open (hidden until the admin uploads
+            // the PDF; see _GetSongbookButton).
+            _GetSongbookButton(book: book),
             const SizedBox(height: 12),
             // Action row
             _ActionRow(
               saved: saved,
               favorite: favorite,
               onSaveTap: onToggleSaved,
-              onSampleTap: () {},
+              onSampleTap: book.samplePages.isEmpty
+                  ? null
+                  : () => showSongbookSample(context, book.samplePages),
               onFavoriteTap: onToggleFavorite,
-              onShareTap: () {},
             ),
             const SizedBox(height: 24),
             _RatingRow(book: book),
@@ -216,6 +194,124 @@ class _Body extends ConsumerWidget {
   }
 }
 
+// ---------- Get / Open CTA -----------------------------------------------
+
+class _GetSongbookButton extends ConsumerStatefulWidget {
+  const _GetSongbookButton({required this.book});
+  final SongbookModel book;
+
+  @override
+  ConsumerState<_GetSongbookButton> createState() => _GetSongbookButtonState();
+}
+
+class _GetSongbookButtonState extends ConsumerState<_GetSongbookButton> {
+  bool _opening = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.book.productId.isNotEmpty) {
+      Future.microtask(() => ref
+          .read(songbookPurchasesNotifierProvider.notifier)
+          .loadPrice(widget.book.productId));
+    }
+  }
+
+  Future<void> _open() async {
+    setState(() => _opening = true);
+    await openSongbook(context, ref, widget.book.id);
+    if (mounted) setState(() => _opening = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.l10n;
+    final book = widget.book;
+
+    ref.listen<String?>(
+      songbookPurchasesNotifierProvider.select((s) => s.lastError),
+      (_, err) {
+        if (err == null) return;
+        context.showSnack(err);
+        ref.read(songbookPurchasesNotifierProvider.notifier).clearError();
+      },
+    );
+
+    final hasContent =
+        ref.watch(songbookHasContentProvider(book.id)).value ?? false;
+    if (!hasContent) return const SizedBox.shrink();
+
+    final hasAccess = ref.watch(hasSongbookAccessProvider(book.id));
+    final purchases = ref.watch(songbookPurchasesNotifierProvider);
+    final user = ref.watch(currentUserProvider);
+    final storeAvailable = ref.watch(purchasesNotifierProvider).isAvailable;
+
+    VoidCallback? onPressed;
+    Widget label;
+    if (hasAccess) {
+      onPressed = _opening ? null : _open;
+      label = _opening
+          ? const _ButtonSpinner()
+          : Text(t.songbookOpen, style: _ctaStyle);
+    } else {
+      if (book.productId.isEmpty || !storeAvailable) {
+        return const SizedBox.shrink();
+      }
+      final buying = purchases.isBuying(book.productId);
+      final price = purchases.priceByProductId[book.productId];
+      onPressed = buying
+          ? null
+          : () {
+              if (user == null) {
+                context.showSnack(t.songbookSignInToGet);
+                context.goNamed(RouteNames.login);
+                return;
+              }
+              ref
+                  .read(songbookPurchasesNotifierProvider.notifier)
+                  .buy(book.productId);
+            };
+      label = buying
+          ? const _ButtonSpinner()
+          : Text(
+              price == null ? t.songbookGet : t.songbookGetForPrice(price),
+              style: _ctaStyle,
+            );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: SizedBox(
+        width: double.infinity,
+        child: FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            minimumSize: const Size.fromHeight(56),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
+          ),
+          onPressed: onPressed,
+          child: label,
+        ),
+      ),
+    );
+  }
+
+  static const _ctaStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.w700);
+}
+
+class _ButtonSpinner extends StatelessWidget {
+  const _ButtonSpinner();
+  @override
+  Widget build(BuildContext context) => const SizedBox(
+        height: 20,
+        width: 20,
+        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+      );
+}
+
 // ---------- Action row ----------------------------------------------------
 
 class _ActionRow extends StatelessWidget {
@@ -225,14 +321,14 @@ class _ActionRow extends StatelessWidget {
     required this.onSaveTap,
     required this.onSampleTap,
     required this.onFavoriteTap,
-    required this.onShareTap,
   });
   final bool saved;
   final bool favorite;
   final VoidCallback onSaveTap;
-  final VoidCallback onSampleTap;
+
+  /// Null when the songbook has no sample pages — the pill is hidden.
+  final VoidCallback? onSampleTap;
   final VoidCallback onFavoriteTap;
-  final VoidCallback onShareTap;
 
   @override
   Widget build(BuildContext context) {
@@ -243,25 +339,26 @@ class _ActionRow extends StatelessWidget {
           Expanded(
             child: _PillButton(
               icon: saved ? Icons.favorite : Icons.favorite_outline,
-              label: 'Save',
+              label: context.l10n.songbookSave,
               onTap: onSaveTap,
             ),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _PillButton(
-              icon: Icons.description_outlined,
-              label: 'Sample',
-              onTap: onSampleTap,
+          if (onSampleTap != null) ...[
+            const SizedBox(width: 8),
+            Expanded(
+              child: _PillButton(
+                icon: Icons.description_outlined,
+                label: context.l10n.songbookSample,
+                onTap: onSampleTap!,
+              ),
             ),
-          ),
+          ],
           const SizedBox(width: 8),
           _IconPill(
             icon: favorite ? Icons.star : Icons.star_outline,
             onTap: onFavoriteTap,
           ),
-          const SizedBox(width: 8),
-          _IconPill(icon: Icons.ios_share, onTap: onShareTap),
+          // (Share pill removed until sharing is implemented.)
         ],
       ),
     );
@@ -382,12 +479,15 @@ class _Description extends StatelessWidget {
               WidgetSpan(
                 alignment: PlaceholderAlignment.baseline,
                 baseline: TextBaseline.alphabetic,
-                child: GestureDetector(
-                  onTap: onExpand,
-                  child: Text(
-                    ' view all',
-                    style: context.textTheme.bodyLarge?.copyWith(
-                      color: AppColors.primary,
+                child: Semantics(
+                  button: true,
+                  child: GestureDetector(
+                    onTap: onExpand,
+                    child: Text(
+                      ' ${context.l10n.songbookViewAll}',
+                      style: context.textTheme.bodyLarge?.copyWith(
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                 ),
@@ -421,7 +521,7 @@ class _Includes extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Includes',
+          Text(context.l10n.songbookIncludes,
               style: context.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w800,
               )),
@@ -435,12 +535,15 @@ class _Includes extends StatelessWidget {
                   WidgetSpan(
                     alignment: PlaceholderAlignment.baseline,
                     baseline: TextBaseline.alphabetic,
-                    child: GestureDetector(
-                      onTap: onExpand,
-                      child: Text(
-                        ' view all',
-                        style: context.textTheme.bodyLarge?.copyWith(
-                          color: AppColors.primary,
+                    child: Semantics(
+                      button: true,
+                      child: GestureDetector(
+                        onTap: onExpand,
+                        child: Text(
+                          ' ${context.l10n.songbookViewAll}',
+                          style: context.textTheme.bodyLarge?.copyWith(
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
                     ),
@@ -467,19 +570,19 @@ class _MetadataRow extends StatelessWidget {
         children: [
           Expanded(
             child: _MetaCol(
-              label: 'INSTRUMENT',
+              label: context.l10n.songbookInstrument,
               value: book.instrument,
             ),
           ),
           Expanded(
             child: _MetaCol(
-              label: 'TOPICS',
+              label: context.l10n.songbookTopics,
               value: book.topics.isEmpty ? '—' : book.topics.first,
             ),
           ),
           Expanded(
             child: _MetaCol(
-              label: 'PUBLISHER',
+              label: context.l10n.songbookPublisher,
               value: book.publisher,
               align: TextAlign.left,
             ),
@@ -563,15 +666,15 @@ class _ReviewsSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           reviews.when(
-            loading: () => Text('Reviews',
+            loading: () => Text(context.l10n.songbookReviews,
                 style: context.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                 )),
-            error: (_, __) => Text('Reviews —',
+            error: (_, __) => Text('${context.l10n.songbookReviews} —',
                 style: context.textTheme.titleLarge),
             data: (list) => Row(
               children: [
-                Text('Reviews',
+                Text(context.l10n.songbookReviews,
                     style: context.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                     )),
@@ -591,7 +694,7 @@ class _ReviewsSection extends StatelessWidget {
             data: (list) {
               if (list.isEmpty) {
                 return Text(
-                  'No reviews yet.',
+                  context.l10n.songbookNoReviewsYet,
                   style: context.textTheme.bodyMedium?.copyWith(
                     color: context.colors.onSurfaceVariant,
                   ),
@@ -645,7 +748,7 @@ class _SimilarSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
             children: [
-              Text('You might also like',
+              Text(context.l10n.songbookYouMightAlsoLike,
                   style: context.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w900,
                   )),

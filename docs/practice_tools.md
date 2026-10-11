@@ -4,6 +4,15 @@ Implements **P2-6** from `docs/go_live_roadmap.md` — a daily-use feature
 that gets students opening the app even when they aren't watching a
 lecture. Reached from `Profile → Practice tools`.
 
+> **Status: the Tuner tab is hidden** (`kTunerEnabled = false` in
+> `lib/features/practice/presentation/pages/practice_page.dart`). The
+> default `StubTunerEngine` never reacts to sound, and shipping a visibly
+> dead feature risks App Review guideline 2.1. With the flag off,
+> Practice tools shows the Metronome only (no tab bar; tile subtitle
+> still reads "Metronome + tuner" — update `practiceTileSubtitle` if you
+> ship without the tuner). To enable: wire a real engine (§4), add the
+> microphone permission strings (§4), then set `kTunerEnabled = true`.
+
 ---
 
 ## 1. Why "in Profile" instead of a 6th bottom nav
@@ -19,7 +28,8 @@ later if usage data warrants.
 ## 2. Architecture
 
 ```
-PracticePage (DefaultTabController, 2 tabs)
+PracticePage (Metronome only while kTunerEnabled == false;
+              DefaultTabController with 2 tabs when true)
 ├── MetronomeView
 │     ▲
 │     └─ metronomeNotifierProvider ── MetronomeNotifier
@@ -93,8 +103,9 @@ dependencies:
   pitch_detector_dart: ^0.0.4
 ```
 
-Then in `lib/main_dev.dart` / `lib/main_prod.dart`, before the
-`runApp(ProviderScope(child: …))`, swap in a real engine:
+Then override `tunerEngineProvider` in the `ProviderContainer`
+overrides in `lib/bootstrap.dart` (next to `prefsProvider`), and set
+`kTunerEnabled = true` in `practice_page.dart`:
 
 ```dart
 class FlutterAudioCaptureTunerEngine implements TunerEngine {

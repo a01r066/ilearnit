@@ -138,6 +138,11 @@ class MiniPlayerService {
   VideoPlayerController? _video;
   VoidCallback? _videoListener;
 
+  /// Bumped on every [startTrack] / [close]. Async work started for an
+  /// older generation discards its result instead of clobbering the
+  /// newer track (rapid lecture switching).
+  int _generation = 0;
+
   // ── Shared state ────────────────────────────────────────────────
   final _controller = StreamController<MiniPlayerState>.broadcast();
   MiniPlayerState _state = const MiniPlayerState();
@@ -170,23 +175,23 @@ class MiniPlayerService {
   }) async {
     final same = _state.track?.lectureId == track.lectureId &&
         _state.track?.url == track.url &&
-        _state.track?.kind == track.kind;
+        _state.track?.kind == track.kind &&
+        _state.error == null;
     if (same) {
       await play();
       return;
     }
 
-    // Switching kinds → tear down the engine we *aren't* about to use.
-    // Audio engine is permanent (allocated in the ctor); we only stop
-    // it. Video engine is disposed entirely so we don't leak the
-    // platform texture.
-    if (track.kind == MiniPlayerKind.video) {
-      try {
-        await _audio.stop();
-      } catch (_) {}
-    } else {
-      await _disposeVideo();
-    }
+    final gen = ++_generation;
+
+    // Tear down whatever is loaded — including a previous VIDEO when the
+    // next track is also a video. (Only disposing on kind switches
+    // leaked the old controller, which kept streaming/playing audio.)
+    try {
+      await _audio.stop();
+    } catch (_) {}
+    await _disposeVideo();
+    if (gen != _generation) return;
 
     _emit(_state.copyWith(
       track: track,
@@ -198,12 +203,14 @@ class MiniPlayerService {
 
     try {
       if (track.kind == MiniPlayerKind.video) {
-        await _startVideo(track, initialPositionSec);
+        await _startVideo(track, initialPositionSec, gen);
       } else {
         await _startAudio(track, initialPositionSec);
       }
     } catch (e) {
-      _emit(_state.copyWith(error: e));
+      if (gen == _generation) _emit(_state.copyWith(error: e));
+      // Let the page show its error state instead of an endless spinner.
+      rethrow;
     }
   }
 
@@ -256,6 +263,7 @@ class MiniPlayerService {
   /// Stop + clear the loaded track. The mini-player bar will self-hide
   /// on the next state emit.
   Future<void> close() async {
+    _generation++;
     try {
       await _audio.stop();
     } catch (_) {}
@@ -288,22 +296,41 @@ class MiniPlayerService {
 
   // ── Video internals ────────────────────────────────────────────
 
-  Future<void> _startVideo(MiniPlayerTrack track, int startSec) async {
+  Future<void> _startVideo(
+    MiniPlayerTrack track,
+    int startSec,
+    int gen,
+  ) async {
     final uri = Uri.parse(track.url);
     final controller = uri.scheme == 'file'
         ? VideoPlayerController.file(File(uri.toFilePath()))
         : VideoPlayerController.networkUrl(uri);
-    _video = controller;
-    await controller.initialize();
-    if (startSec > 0) {
-      await controller.seekTo(Duration(seconds: startSec));
+    try {
+      await controller.initialize();
+      if (startSec > 0) {
+        await controller.seekTo(Duration(seconds: startSec));
+      }
+    } catch (_) {
+      await controller.dispose();
+      rethrow;
     }
+
+    // A newer track started while we were initializing — drop this one.
+    if (gen != _generation) {
+      await controller.dispose();
+      return;
+    }
+
+    // Publish only an INITIALIZED controller, so widgets never wrap a
+    // half-built one in Chewie (which spins forever).
+    _video = controller;
     void listener() {
       final v = controller.value;
       _emit(_state.copyWith(
         position: v.position,
         duration: v.duration,
         isPlaying: v.isPlaying,
+        error: v.hasError ? v.errorDescription : _state.error,
       ));
     }
     _videoListener = listener;

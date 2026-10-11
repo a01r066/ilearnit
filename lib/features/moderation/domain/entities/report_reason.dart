@@ -1,3 +1,4 @@
+import '../../../../l10n/l10n.dart';
 /// Stable enum stored as `reason` on every `reports/{id}` doc.
 ///
 /// The labels here are user-facing strings shown in the report sheet.
@@ -17,10 +18,26 @@ enum ReportReason {
   intellectualProperty('ip', 'Copyright / IP infringement'),
   other('other', 'Something else');
 
-  const ReportReason(this.id, this.label);
+  const ReportReason(this.id, this.englishLabel);
 
   final String id;
-  final String label;
+  final String englishLabel;
+
+  /// Localized display label (app language).
+  String get label {
+    final t = L10n.current;
+    return switch (this) {
+      ReportReason.spam => t.reasonSpam,
+      ReportReason.harassment => t.reasonHarassment,
+      ReportReason.hateSpeech => t.reasonHate,
+      ReportReason.sexualContent => t.reasonSexual,
+      ReportReason.violence => t.reasonViolence,
+      ReportReason.selfHarm => t.reasonSelfHarm,
+      ReportReason.misinformation => t.reasonMisinformation,
+      ReportReason.intellectualProperty => t.reasonIp,
+      ReportReason.other => t.reasonOther,
+    };
+  }
 
   static ReportReason fromId(String? raw) {
     if (raw == null || raw.isEmpty) return ReportReason.other;

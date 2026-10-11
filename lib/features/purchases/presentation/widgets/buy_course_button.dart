@@ -10,6 +10,7 @@ import '../../../courses/domain/entities/course_entity.dart';
 import '../../../subscriptions/presentation/providers/subscription_providers.dart';
 import '../providers/purchases_providers.dart';
 import '../providers/purchases_state.dart';
+import '../../../../l10n/l10n.dart';
 
 /// The primary call-to-action on the course detail page.
 ///
@@ -60,13 +61,13 @@ class BuyCourseButton extends ConsumerWidget {
           FilledButton.icon(
             onPressed: onStart,
             icon: const Icon(Icons.play_arrow_rounded),
-            label: const Text('Continue course'),
+            label: Text(context.l10n.purchaseContinueCourse),
           ),
           if (hasSubscription && !isOwned) ...[
             const SizedBox(height: 8),
             Center(
               child: Text(
-                'Included in your Personal Plan',
+                context.l10n.purchaseIncludedInPlan,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w600,
@@ -92,7 +93,7 @@ class BuyCourseButton extends ConsumerWidget {
               // on success). Snackbar context explains why so the
               // tap doesn't feel like a dead end.
               if (user == null) {
-                context.showSnack('Sign in to unlock this course.');
+                context.showSnack(context.l10n.purchaseSignInToUnlockCourse);
                 context.goNamed(RouteNames.login);
                 return;
               }
@@ -114,8 +115,8 @@ class BuyCourseButton extends ConsumerWidget {
                 const SizedBox(width: 8),
                 Text(
                   user == null
-                      ? 'Sign in to unlock'
-                      : 'Unlock for $priceLabel',
+                      ? context.l10n.purchaseSignInToUnlock
+                      : context.l10n.purchaseUnlockFor(priceLabel),
                 ),
               ],
             ),
@@ -139,7 +140,7 @@ class _UnavailableNotice extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'In-app purchases aren\'t available on this device.',
+              context.l10n.purchaseUnavailable,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),

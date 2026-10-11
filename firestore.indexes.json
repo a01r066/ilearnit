@@ -160,6 +160,14 @@
   ],
   "fieldOverrides": [
     {
+      "collectionGroup": "lectures",
+      "fieldPath": "cloudflareVideoId",
+      "indexes": [
+        {"queryScope": "COLLECTION", "order": "ASCENDING"},
+        {"queryScope": "COLLECTION_GROUP", "order": "ASCENDING"}
+      ]
+    },
+    {
       "collectionGroup": "notes",
       "fieldPath": "lectureId",
       "indexes": [

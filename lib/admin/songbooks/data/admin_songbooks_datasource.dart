@@ -65,6 +65,29 @@ class AdminSongbooksDataSource {
     await _songbooks.doc(songbookId).delete();
   }
 
+  /// Commerce fields kept outside [SongbookModel] (no codegen needed):
+  /// `pdfPath` — `gs://` ref of the paid PDF; `priceUsd` — list price used
+  /// for the revenue ledger.
+  Stream<({String? pdfPath, double? priceUsd})> watchCommerce(String id) =>
+      _songbooks.doc(id).snapshots().map((doc) {
+        final d = doc.data() ?? const <String, dynamic>{};
+        return (
+          pdfPath: d['pdfPath'] as String?,
+          priceUsd: (d['priceUsd'] as num?)?.toDouble(),
+        );
+      });
+
+  Future<void> setCommerce(
+    String id, {
+    String? pdfPath,
+    double? priceUsd,
+  }) =>
+      _songbooks.doc(id).update({
+        if (pdfPath != null) 'pdfPath': pdfPath,
+        if (priceUsd != null) 'priceUsd': priceUsd,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
   Future<void> setBestseller(String songbookId, bool value) =>
       _songbooks.doc(songbookId).update({'isBestseller': value});
 }

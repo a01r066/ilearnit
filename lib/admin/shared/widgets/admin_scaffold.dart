@@ -7,6 +7,7 @@ import '../../../features/auth/presentation/providers/auth_providers.dart';
 import '../../../features/moderation/presentation/providers/moderation_providers.dart';
 import '../../routing/admin_route_names.dart';
 import '../providers/admin_providers.dart';
+import 'notification_permission_banner.dart';
 
 /// Responsive admin shell: persistent side-nav on wide screens, drawer on
 /// narrow screens. The body is the matched go_router child.
@@ -47,7 +48,7 @@ class AdminScaffold extends ConsumerWidget {
               onLogout: () => _logout(context, ref),
             ),
             const VerticalDivider(width: 1),
-            Expanded(child: child),
+            Expanded(child: _withBanner(child)),
           ],
         ),
       );
@@ -70,9 +71,16 @@ class AdminScaffold extends ConsumerWidget {
           onLogout: () => _logout(context, ref),
         ),
       ),
-      body: child,
+      body: _withBanner(child),
     );
   }
+
+  Widget _withBanner(Widget body) => Column(
+        children: [
+          const NotificationPermissionBanner(),
+          Expanded(child: body),
+        ],
+      );
 
   Future<void> _logout(BuildContext context, WidgetRef ref) async {
     await ref.read(authNotifierProvider.notifier).logout();

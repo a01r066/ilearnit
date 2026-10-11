@@ -188,6 +188,7 @@ Both added to `firestore.indexes.json`. Deploy with
 | Drag a row in the selected list | Order persists on save; consumer rebuilds in numbered order |
 | Toggle "Published" → save | Doc appears on Home rail; toggle off → doc disappears |
 | Delete a course that's part of a path | Detail row renders "(Course no longer available)" fallback |
+| Unpublish / archive a course that's part of a path | Same fallback for users who don't own it — rules only expose published courses (owners still see it) |
 | Empty home rail | LearningPathsRail self-hides — no dead headline |
 | Tap a card from the rail | `pushNamed(learningPathDetail, id)` — modal-style, back returns to Home |
 | Detail page with completed first course | Row 1 shows green checkmark; row 2 highlighted |

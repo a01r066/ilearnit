@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and below. Same exclusions as data_extraction_rules.xml. -->
+<full-backup-content>
+  <exclude domain="file" path="downloads/" />
+  <exclude domain="file" path="resources/" />
+  <exclude domain="file" path="songbooks/" />
+  <exclude domain="root" path="app_flutter/downloads/" />
+  <exclude domain="root" path="app_flutter/ilearnit/" />
+</full-backup-content>

@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -32,6 +35,15 @@ class PurchasesNotifier extends StateNotifier<PurchasesState> {
     // Listen to the platform purchase stream once; emissions are persisted
     // by the repo itself, this notifier only updates UI state.
     _sub = _repo.purchaseUpdates().listen(_onPurchaseUpdate);
+
+    // Android doesn't re-deliver purchases that were paid for but never
+    // verified/consumed (app killed mid-flow). Querying past purchases
+    // pushes them back through the stream so verifyPurchase can grant
+    // them. iOS re-delivers unfinished transactions on its own, and
+    // restoreCompletedTransactions can prompt for the Apple ID, so skip.
+    if (!kIsWeb && Platform.isAndroid) {
+      unawaited(_repo.restorePurchases());
+    }
 
     // Fetch localized prices for all tier products.
     final result = await _repo.fetchProducts(PriceTier.allProductIds);

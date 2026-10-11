@@ -61,7 +61,7 @@ flutter test
 cd functions && npm install && npm run build && cd ..
 
 # 6) Dev flavor smoke test on a physical device
-flutter run --flavor dev -t lib/main_dev.dart
+flutter run --flavor dev
 # Walk: sign up → buy a course → play a lecture → write a review
 #       → check moderator queue → open admin portal in browser
 ```
@@ -107,18 +107,28 @@ For each registered app, download the config:
 
 | Platform | File | Destination |
 |---|---|---|
-| iOS | `GoogleService-Info.plist` | `ios/Runner/Firebase/Prod/GoogleService-Info.plist` (or wherever your `flutter_flavorizr` setup puts the prod variant) |
+| iOS + Android + Web (Dart) | `firebase_options_prod.dart` | `lib/firebase_options_prod.dart` (`flutterfire configure --project=<prod> --out=lib/firebase_options_prod.dart`) |
 | Android | `google-services.json` | `android/app/src/prod/google-services.json` |
-| Web | (config snippet) | Paste into `web/public/assets/js/cms.js` `FIREBASE_CONFIGS.prod` (and `lib/firebase_options.dart` if you use that path) |
+| Web landing | (config snippet) | Paste into `web/public/assets/js/cms.js` `FIREBASE_CONFIGS.prod` |
 
-**Verify** by inspecting the bundled files:
+**iOS does not bundle `GoogleService-Info.plist`.** `bootstrap.dart`
+initializes the default Firebase app from `firebase_options_prod.dart`,
+and the Google Sign-In URL scheme comes from
+`GOOGLE_REVERSED_CLIENT_ID` in `ios/Flutter/prod*.xcconfig` (see
+`docs/social_auth_setup.md` §3). If `flutterfire configure` drops a
+plist into `ios/Runner`, keep it **out of** the Runner target's Copy
+Bundle Resources — a bundled plist silently configures the default app
+for every flavor.
+
+`firebase_options_*.dart`, `google-services.json` and `GoogleService-Info.plist`
+are gitignored; CI must provide them.
+
+**Verify**:
 
 ```bash
-plutil -p ios/Runner/Firebase/Prod/GoogleService-Info.plist | grep PROJECT_ID
-# Expected: "PROJECT_ID" => "ilearnit-prod"
-
+grep projectId lib/firebase_options_prod.dart          # → ilearnit-31f41
+grep GOOGLE_REVERSED_CLIENT_ID ios/Flutter/prodRelease.xcconfig
 jq '.project_info.project_id' android/app/src/prod/google-services.json
-# Expected: "ilearnit-prod"
 ```
 
 If those don't say prod, the next `flutter run --flavor prod` will silently talk to dev. This is the single most common migration footgun.
@@ -178,9 +188,15 @@ The prod Cloudflare credentials are different from dev. Set the secrets before t
 ```bash
 firebase use prod
 
-# Cloudflare Stream — prod token (account-scoped, write permission)
+# Cloudflare Stream — prod token (account-scoped, Stream:Edit)
 firebase functions:secrets:set CLOUDFLARE_API_TOKEN
 firebase functions:secrets:set CLOUDFLARE_ACCOUNT_ID
+
+# In-app purchases (docs/iap_setup.md → Configuration)
+firebase functions:secrets:set APPLE_IAP_KEY_ID
+firebase functions:secrets:set APPLE_IAP_ISSUER_ID
+firebase functions:secrets:set APPLE_IAP_PRIVATE_KEY        # .p8 contents
+firebase functions:secrets:set GOOGLE_PLAY_SERVICE_ACCOUNT  # full JSON key
 
 # If you've added any other secrets (Stripe live keys, SendGrid prod, etc.),
 # set them the same way. Verify what's expected by grepping functions/src:
@@ -188,6 +204,17 @@ grep -rn "defineSecret" functions/src/
 ```
 
 **Rotate the dev token.** The dev Cloudflare token has been pasted into chat logs and shared assets in this project; per the security notes in CLAUDE.md, rotate it before prod. Mint a fresh dev token, set `firebase use dev && firebase functions:secrets:set CLOUDFLARE_API_TOKEN`, then revoke the old one in the Cloudflare dashboard.
+
+**Non-secret params** live in `functions/.env.prod` (loaded for
+`firebase use prod`): `ANDROID_PACKAGE_NAME`, `APPLE_BUNDLE_ID`,
+`APPLE_APP_ID` (numeric Apple ID — **required** in prod to verify
+Production-signed App Store data). Put Apple's root certificates in
+`functions/certs/` (see the README there).
+
+**IAM for signed Storage URLs.** `resolveLectureMedia` signs URLs via
+IAM `signBlob`: grant the functions runtime service account
+(`<project-number>-compute@developer.gserviceaccount.com`) the
+*Service Account Token Creator* role on itself.
 
 **Deploy the functions.**
 
@@ -199,7 +226,7 @@ firebase use prod
 firebase deploy --only functions
 ```
 
-Watch the deploy log. Each of the 14 functions should print `✔ functions[…] Successful upsert`. If any of them errors (typically because a secret isn't set, or quotas haven't been raised), the deploy continues with the others — re-run after fixing.
+Watch the deploy log. Each function (~27 — run `grep -c "^export const\|^export {" functions/src/*.ts` for the current list) should print `✔ functions[…] Successful upsert`. If any of them errors (typically because a secret isn't set, or quotas haven't been raised), the deploy continues with the others — re-run after fixing.
 
 **Function-by-function smoke test.** After the first deploy, exercise each function once from the prod app or admin portal:
 
@@ -212,8 +239,19 @@ Watch the deploy log. Each of the 14 functions should print `✔ functions[…] 
 | `onReportCreated` / `onReportResolved` | Submit a UGC report from mobile | Admin nav badge count ticks up; resolving decrements |
 | `onCourseQuestionCreated` | Ask a question on a lecture | DM lands at the course's instructor |
 | `onCoursePriceDrop` | Admin lowers a course price | Wishlisted users get a push |
-| `resolveStreamPlayback` (callable) | Open a Cloudflare-backed lecture | HLS URL returns + plays |
-| `createCloudflareUpload` (callable) | Admin uploads a video | Returns upload URL + uid |
+| `resolveStreamPlayback` (callable) | Open a Cloudflare-backed lecture as a buyer; then as a non-buyer | Signed HLS URL plays; non-buyer gets "Purchase this course…" |
+| `createCloudflareUpload` (callable) | Admin uploads a video | Returns upload URL + uid; video has `requireSignedURLs` |
+| `deleteCloudflareVideo` (callable) | Delete a lecture; try another instructor's UID | Own: deleted; other's: `permission-denied` |
+| `enableSignedStreamUrls` (callable, admin) | Run once after the app release | `{total, updated, failed: []}` |
+| `resolveLectureMedia` (callable) | Open an audio / PDF lecture as a buyer | Signed Storage URL loads |
+| `onLectureObjectFinalized` (Storage) | Upload a lecture PDF in admin | Object has no `firebaseStorageDownloadTokens` |
+| `migrateLectureMediaToPrivate` (callable, admin) | Run once after the app release | `docsUpdated` / `tokensRevoked` counts |
+| `createPurchaseIntent` + `verifyPurchase` (callables) | Buy a course with a sandbox account | `users/{uid}/purchases/{courseId}`, `enrollments/{uid}_{courseId}`, `transactions/*` appear |
+| `verifySubscription` (callable) | Start a Personal Plan (sandbox) | `users/{uid}.subscription` with `verifiedAt` |
+| `appStoreNotifications` (HTTPS) / `playRtdn` (Pub/Sub) | Refund a sandbox purchase / cancel a sub | Purchase → `refunded`; subscription `autoRenew: false` |
+| `onCourseReviewWritten` | Write a review as a buyer | Course `rating` / `reviewCount` update |
+| `verifySongbookPurchase` (callable) | Buy a songbook (sandbox), then Restore purchases | `users/{uid}/songbooks/{id}` `purchased`; restore is idempotent |
+| `resolveSongbookContent` (callable) | Open an owned songbook | Signed PDF URL; non-owner gets "Get this songbook…" |
 | `processRefund` (callable) | Admin refunds a transaction | Transaction.status flips to `refunded` |
 | `markPayoutPaid` (callable) | Admin marks a payout paid | Payout.status flips |
 | `instructorBroadcast` (callable) | Instructor sends a course-wide message | Enrolled users receive it |
@@ -235,7 +273,13 @@ Inspect what's allowed:
 grep -nE "match /|allow " storage.rules
 ```
 
-If you've added any signed-URL flows (e.g. course PDF downloads), confirm the prod bucket name in the URLs matches the prod project (`ilearnit-prod.appspot.com`). The bucket name is in the storage console under Bucket settings.
+What the rules enforce (see `storage.rules`):
+
+- Course thumbnails: public read; writes by the course's instructor or admins (`canManageCourse`).
+- Lecture `media/` + `resources/`: **no public read**. Students get V4 signed URLs from `resolveLectureMedia`; direct reads are limited to the course owner + admins. Writes by the course owner only, with MIME + size guards (PDF/DOCX allowed in `media/`).
+- Everything else: default deny.
+
+After the first prod release, run `migrateLectureMediaToPrivate` (admin) once to convert any legacy download URLs and revoke their tokens.
 
 ### 2.7 Hosting — landing + admin (two targets)
 
@@ -306,17 +350,49 @@ Firebase Console → App Check:
 3. Android — register the **Play Integrity** provider. Requires the SHA-256 of the upload keystore in the App Check page (separate from the auth SHA registration).
 4. Web (admin portal) — register **reCAPTCHA v3 Enterprise**. Get a site key from Google Cloud → reCAPTCHA Enterprise. Paste into App Check.
 
-Add the App Check init to `main_prod.dart`:
+**Client — integrated.** `lib/core/security/app_check_bootstrap.dart`
+(`activateAppCheck()`, called from `bootstrap.dart` and
+`bootstrap_admin.dart` right after `Firebase.initializeApp`):
 
-```dart
-await FirebaseAppCheck.instance.activate(
-  androidProvider: AndroidProvider.playIntegrity,
-  appleProvider: AppleProvider.appAttest,
-  webProvider: ReCaptchaV3Provider('<your site key>'),
-);
-```
+- prod release builds: Play Integrity (Android), App Attest with
+  DeviceCheck fallback (iOS — `ios/Runner/Runner.entitlements` declares
+  `com.apple.developer.devicecheck.appattest-environment`).
+- dev flavor / debug builds: debug providers. The first run logs a debug
+  token — add it under App Check → Apps → *Manage debug tokens*.
+- admin web: reCAPTCHA v3 when built with
+  `--dart-define=RECAPTCHA_SITE_KEY=<key>` (skipped otherwise).
+
+**Server.** Firestore and Storage enforcement are console toggles.
+Client-facing callables (`resolveStreamPlayback`, `resolveLectureMedia`,
+`resolveSongbookContent`, `createPurchaseIntent`, `verifyPurchase`,
+`verifySongbookPurchase`, `verifySubscription`, `deleteAccount`) call
+`requireAppCheck()` (`functions/src/appCheck.ts`): in monitor mode they
+only log missing tokens; set `ENFORCE_APP_CHECK=true` in
+`functions/.env.<alias>` and redeploy to reject them.
+
+> The `firebase_app_check` 0.4 provider API (`providerAndroid:` /
+> `providerApple:`) is used; if your resolved package version still uses
+> the older `androidProvider:` / `appleProvider:` enums, adapt
+> `app_check_bootstrap.dart`.
 
 Run the prod app, watch the **App Check → Requests** dashboard. After 7 days of monitoring with >98% of requests passing, switch to **enforce**.
+
+### 2.8b Remote Config — force-update gate
+
+`lib/core/update/` (`AppUpdateService` + `AppUpdateGate`, mounted in
+`MaterialApp.builder`). Create these Remote Config parameters in each
+project:
+
+| Key | Type | Meaning |
+|---|---|---|
+| `min_build_ios` / `min_build_android` | number | Builds below are blocked by a full-screen "Update required" page |
+| `recommended_build_ios` / `recommended_build_android` | number | Builds below see a dismissible banner |
+| `store_url_ios` / `store_url_android` | string | Store page (Android defaults to the Play listing; iOS needs `https://apps.apple.com/app/id<APPLE_APP_ID>`) |
+
+Build number = the `+N` in `pubspec.yaml` `version:`. The gate fails open
+(no Remote Config → no gate). **Raise `min_build_*` to the first build
+containing the security rollout** once it's live in both stores — older
+builds can't buy courses or play paid lectures.
 
 ### 2.9 Cloud Messaging (FCM) — APNs cert for iOS
 
@@ -354,7 +430,7 @@ For prod:
 
 5. **Allowed origins** (Cloudflare → Stream → Settings → Allowed Origins). Restrict playback to your prod domains: `https://ilearnit.app, https://admin.ilearnit.app, https://ilearnit-prod.web.app, https://ilearnit-prod.firebaseapp.com`. Plus `null` if you need playback inside the iOS/Android apps (WebView origin). Without this restriction, your video bandwidth bill is exposed to embed abuse.
 
-6. **Watermark + signed URLs.** Optional. Both reduce piracy at non-trivial cost in playback complexity. Defer unless legal team specifically asks.
+6. **Signed URLs — required.** `resolveStreamPlayback` only returns token-signed URLs and new uploads set `requireSignedURLs: true`. Run `enableSignedStreamUrls` once (admin) after the new app is live to lock down older videos. Watermarking remains optional.
 
 ---
 
@@ -410,7 +486,7 @@ Enable on the App ID:
 
 Apple requires every iOS app submitted after May 2024 to declare its data collection + the reason it uses certain "required reason" APIs (`UserDefaults`, `FileManager`, `SystemBootTime`, etc.). The privacy manifest lives at `ios/Runner/PrivacyInfo.xcprivacy`.
 
-If you don't have one yet, create it:
+**It exists** (`ios/Runner/PrivacyInfo.xcprivacy`, added to the Runner target's resources). It declares: no tracking; collected Email, Name, User ID, Purchase History, Other User Content, Product Interaction, Crash Data, Performance Data; required-reason APIs UserDefaults (CA92.1) and FileTimestamp (C617.1). Keep it in sync with the nutrition labels (§5.5). The template below shows the format:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -464,8 +540,9 @@ The prod variant of `Info.plist` is what gets bundled in the App Store build. Co
 
 - `CFBundleIdentifier` = `info.ilearnit.app` (set by build config, not literal).
 - `UIBackgroundModes` contains `audio` (already done — mini-player).
-- `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription`, `NSMicrophoneUsageDescription` — present + meaningful only if you actually use them. **Apple rejects empty or stock usage strings.**
-- `CFBundleURLSchemes` — has BOTH the dev and prod REVERSED_CLIENT_ID? Actually no — the prod build should bundle ONLY the prod scheme. If both are listed, Google sign-in still works but App Store reviewers may ask why.
+- `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription`, `NSMicrophoneUsageDescription` — the mobile app uses none of these today (the tuner is disabled), so they're absent. Add meaningful strings if you enable the tuner (microphone). **Apple rejects empty or stock usage strings.**
+- `CFBundleURLSchemes` — a single `$(GOOGLE_REVERSED_CLIENT_ID)` entry, resolved per flavor from `ios/Flutter/prod*.xcconfig`. The prod archive therefore contains only the prod scheme.
+- `CFBundleLocalizations` — `en`, `vi`.
 - `NSAppTransportSecurity` — no global `NSAllowsArbitraryLoads: true`. If you have it for dev, remove it for prod.
 
 ### 5.5 App Privacy nutrition labels (App Store Connect → App Privacy)
@@ -501,7 +578,7 @@ flutter pub get
 cd ios && pod install && cd ..
 
 # Build the IPA via Xcode (recommended — it handles signing best)
-flutter build ipa --release --flavor prod --target lib/main_prod.dart \
+flutter build ipa --release --flavor prod --target lib/main.dart \
   --export-options-plist=ios/ExportOptions.plist
 # Or open ios/Runner.xcworkspace, switch scheme to Runner-prod, Product → Archive → Distribute App.
 ```
@@ -569,7 +646,7 @@ Play App Signing means Google holds the production signing key. You upload AABs 
 flutter clean
 flutter pub get
 flutter build appbundle --release --flavor prod \
-  --target lib/main_prod.dart \
+  --target lib/main.dart \
   --build-name=1.0.0 --build-number=1
 # Output: build/app/outputs/bundle/prodRelease/app-prod-release.aab
 ```
@@ -611,6 +688,7 @@ For iLearnIt (typical answers):
 | App activity — App interactions | Collected, Encrypted in transit, Optional, Analytics |
 | App info and performance — Crash logs | Collected, Encrypted in transit, Optional, App functionality |
 | App info and performance — Diagnostics | Collected, Encrypted in transit, Optional, App functionality |
+| Device or other IDs → Advertising ID | **Not collected** — `AndroidManifest.xml` removes `AD_ID` / AdServices permissions merged in by firebase_analytics. Answer "No" to advertising ID usage in Play Console → App content. |
 | Is all of the user data collected by your app encrypted in transit? | Yes |
 | Do you provide a way for users to request that their data be deleted? | Yes — link to the in-app account deletion path |
 
@@ -892,3 +970,44 @@ Security incident       : security@ilearnit.app
 ---
 
 **Last updated:** 2026-06-14. Update whenever a new service joins the production stack (Stripe, Sentry, RevenueCat, Apple Search Ads attribution, etc.).
+
+---
+
+## Appendix D — Security hardening rollout (Oct 2026)
+
+Deploy in this order; each step is safe to run on its own.
+
+1. **IAP config** — secrets, params, Apple root certs: see
+   docs/iap_setup.md → "Configuration". Then `cd functions && npm install`
+   (adds `@apple/app-store-server-library`).
+2. **Signed URLs IAM** — `resolveLectureMedia` signs Storage URLs via IAM
+   signBlob. Grant the functions runtime service account (default:
+   `<project-number>-compute@developer.gserviceaccount.com`) the role
+   *Service Account Token Creator* on itself.
+3. **Store products** — consumable `info.ilearnit.course_tier_{basic,standard,premium}`
+   in App Store Connect and Play Console.
+4. **Functions** — `npm run deploy` (new: `createPurchaseIntent`,
+   `verifyPurchase`, `verifySubscription`, `appStoreNotifications`,
+   `playRtdn`, `onCourseReviewWritten`, `resolveLectureMedia`,
+   `onLectureObjectFinalized`, `migrateLectureMediaToPrivate`,
+   `enableSignedStreamUrls`; changed: `resolveStreamPlayback`,
+   `deleteCloudflareVideo`, `createCloudflareUpload`).
+5. **Store notifications** — register the Apple URL + Play RTDN topic
+   (docs/iap_setup.md → "Server notifications").
+5b. **App Check** — register providers in the console (§2.8), keep
+   `ENFORCE_APP_CHECK=false` until metrics are clean.
+5c. **Remote Config** — create the update-gate keys (§2.8b) with
+   `min_build_* = 0`.
+6. **Indexes** — `firebase deploy --only firestore:indexes`.
+7. **Release the app + admin portal**. Old builds can't buy, play paid
+   lectures or open paid files once steps 8–9 land — force-update if you
+   have a gate.
+8. **Rules** — `firebase deploy --only firestore:rules,storage`.
+9. **Migrations (as admin)** — call `enableSignedStreamUrls` and
+   `migrateLectureMediaToPrivate` once each.
+9b. **Force update** — set `min_build_ios` / `min_build_android` to the
+   new build numbers once both store releases are live.
+10. **Data checks**
+    - `users` with `role` ≠ `student` — confirm every admin/instructor/moderator is legitimate.
+    - Buyers from before server verification may lack `users/{uid}/purchases/{courseId}`;
+      backfill from `transactions` / store reports so they keep access and can review.

@@ -1,3 +1,4 @@
+import '../../../../l10n/l10n.dart';
 /// What kind of UGC item a report refers to. Determines:
 ///   • the Firestore path the moderator opens to hide the content,
 ///   • the snapshot fields the report carries (denormalized so the
@@ -27,13 +28,13 @@ enum ReportContentType {
   String get label {
     switch (this) {
       case ReportContentType.review:
-        return 'Review';
+        return L10n.current.ugcReview;
       case ReportContentType.question:
-        return 'Question';
+        return L10n.current.ugcQuestion;
       case ReportContentType.answer:
-        return 'Answer';
+        return L10n.current.ugcAnswer;
       case ReportContentType.note:
-        return 'Note';
+        return L10n.current.ugcNote;
     }
   }
 }

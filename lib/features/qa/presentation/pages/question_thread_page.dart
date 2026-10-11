@@ -19,6 +19,7 @@ import '../providers/qa_form_state.dart';
 import '../providers/qa_keys.dart';
 import '../providers/qa_providers.dart';
 import '../widgets/verified_instructor_badge.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Full-screen thread view for a single question.
 ///
@@ -200,9 +201,9 @@ class _QuestionThreadPageState extends ConsumerState<QuestionThreadPage> {
               padding: const EdgeInsets.all(16),
               child: FilledButton.icon(
                 icon: const Icon(Icons.login),
-                label: const Text('Sign in to reply'),
+                label: Text(context.l10n.qaSignInToReply),
                 onPressed: () {
-                  context.showSnack('Sign in to join the conversation.');
+                  context.showSnack(context.l10n.qaSignInToJoin);
                   context.goNamed(RouteNames.login);
                 },
               ),

@@ -5,8 +5,15 @@
 /// regardless of how big the catalogue grows.
 ///
 /// Stores → console setup:
-///   • App Store Connect → In-App Purchases → Non-Consumable
-///   • Google Play Console → Monetize → Products → In-app products → Managed
+///   • App Store Connect → In-App Purchases → **Consumable**
+///   • Google Play Console → Monetize → Products → In-app products
+///     (consumed server-side by `verifyPurchase` after the grant)
+///
+/// Tiers MUST be consumable: one tier product is shared by many courses,
+/// and a non-consumable can only ever be bought once per store account.
+/// Ownership is tracked per course on the server
+/// (`users/{uid}/purchases/{courseId}`), not by the store.
+/// Keep in sync with `courseTierProductId()` in functions/src/iap.ts.
 enum PriceTier {
   basic('basic', r'$9.99', 9.99),
   standard('standard', r'$19.99', 19.99),
@@ -23,7 +30,7 @@ enum PriceTier {
   final double rawFallbackPrice;
 
   /// Product ID registered in the App Store / Play Console.
-  String get productId => 'info.ilearnit.tier_$id';
+  String get productId => 'info.ilearnit.course_tier_$id';
 
   static PriceTier fromId(String id) => PriceTier.values.firstWhere(
         (e) => e.id == id,

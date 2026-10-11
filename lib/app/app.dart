@@ -9,9 +9,11 @@ import '../core/notifications/domain/notification_payload.dart';
 import '../core/notifications/presentation/notification_providers.dart';
 import '../core/routing/app_router.dart';
 import '../core/theme/app_theme.dart';
+import '../core/update/app_update_gate.dart';
 import '../features/profile/presentation/providers/theme_state.dart';
 import '../flavors.dart';
 import '../l10n/generated/app_localizations.dart';
+import '../l10n/l10n.dart';
 
 class App extends ConsumerWidget {
   const App({super.key});
@@ -44,12 +46,16 @@ class App extends ConsumerWidget {
       supportedLocales: AppLocalizations.supportedLocales,
 
       builder: (context, child) {
-        if (!F.isDev) return child ?? const SizedBox.shrink();
+        // Keep context-free strings (errors, enum labels) in sync.
+        L10n.update(AppLocalizations.of(context));
+        // Remote Config force / soft update (fails open).
+        final gated = AppUpdateGate(child: child ?? const SizedBox.shrink());
+        if (!F.isDev) return gated;
         return Banner(
           message: F.name.toUpperCase(),
           location: BannerLocation.topEnd,
           color: F.bannerColor,
-          child: child ?? const SizedBox.shrink(),
+          child: gated,
         );
       },
     );

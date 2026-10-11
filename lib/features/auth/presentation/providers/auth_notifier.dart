@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../../core/session/before_sign_out_hooks.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import 'auth_state.dart';
@@ -30,11 +31,14 @@ import 'auth_state.dart';
 /// emission within the cool-down window as advisory and ignores it if
 /// the current state already has a matching user id.
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier(this._repo) : super(const AuthState.initial()) {
+  AuthNotifier(this._repo, {BeforeSignOutHooks? beforeSignOut})
+      : _beforeSignOut = beforeSignOut,
+        super(const AuthState.initial()) {
     _bootstrap();
   }
 
   final AuthRepository _repo;
+  final BeforeSignOutHooks? _beforeSignOut;
   StreamSubscription<UserEntity?>? _sub;
 
   /// Wall-clock timestamp of the last manual refresh / login result.
@@ -105,6 +109,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
+    // Owner-only cleanup (e.g. FCM token removal) must run while the
+    // Firebase session is still valid — and before the loading state,
+    // which listeners already treat as "no user".
+    await _beforeSignOut?.run();
     state = const AuthState.loading();
     final result = await _repo.logout();
     result.fold(

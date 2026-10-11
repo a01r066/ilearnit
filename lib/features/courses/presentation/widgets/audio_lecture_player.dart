@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../mini_player/data/services/mini_player_service.dart';
 import '../../../mini_player/presentation/providers/mini_player_providers.dart';
 import 'video_lecture_player.dart' show LecturePlaybackTick;
+import '../../../../l10n/l10n.dart';
 
 /// Custom audio player UI built on top of `just_audio`.
 ///
@@ -116,7 +117,7 @@ class _AudioLecturePlayerState extends ConsumerState<AudioLecturePlayer> {
         height: 120,
         alignment: Alignment.center,
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        child: const Text('Could not load audio.'),
+        child: Text(context.l10n.audioLoadFailed),
       );
     }
 
@@ -191,6 +192,7 @@ class _AudioLecturePlayerState extends ConsumerState<AudioLecturePlayer> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
+                tooltip: context.l10n.playerBack10,
                 icon: const Icon(Icons.replay_10_rounded, size: 32),
                 onPressed: () => _player.seek(
                   _player.position - const Duration(seconds: 10),
@@ -213,6 +215,9 @@ class _AudioLecturePlayerState extends ConsumerState<AudioLecturePlayer> {
                   }
                   return FloatingActionButton(
                     heroTag: 'lecture-audio-play',
+                    tooltip: isPlaying
+                        ? context.l10n.playerPause
+                        : context.l10n.playerPlay,
                     elevation: 0,
                     onPressed: () =>
                         isPlaying ? _player.pause() : _player.play(),
@@ -227,6 +232,7 @@ class _AudioLecturePlayerState extends ConsumerState<AudioLecturePlayer> {
               ),
               const SizedBox(width: 8),
               IconButton(
+                tooltip: context.l10n.playerForward30,
                 icon: const Icon(Icons.forward_30_rounded, size: 32),
                 onPressed: () => _player.seek(
                   _player.position + const Duration(seconds: 30),

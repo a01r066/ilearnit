@@ -4,21 +4,38 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:open_filex/open_filex.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/storage/offline_storage.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../shared/providers/dio_provider.dart';
+import '../../data/datasources/lecture_media_service.dart';
 import '../../domain/entities/lecture_entity.dart';
+import '../providers/courses_providers.dart';
 import '../../domain/entities/lecture_resource_entity.dart';
 import '../../domain/entities/lecture_type.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Body for PDF / Word lectures: an icon hero + a primary download button +
 /// any extra resources attached to the lecture.
 class DocumentLectureView extends StatelessWidget {
-  const DocumentLectureView({super.key, required this.lecture});
+  const DocumentLectureView({
+    super.key,
+    required this.courseId,
+    required this.sectionId,
+    required this.lecture,
+  });
+  final String courseId;
+  final String sectionId;
   final LectureEntity lecture;
+
+  LectureMediaRequest _req([int? resourceIndex]) => LectureMediaRequest(
+        courseId: courseId,
+        sectionId: sectionId,
+        lectureId: lecture.id,
+        resourceIndex: resourceIndex,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -67,13 +84,17 @@ class DocumentLectureView extends StatelessWidget {
             ),
             isPrimary: true,
             overrideFileName: fileName,
+            source: _req(),
           ),
         if (lecture.hasResources) ...[
           const SizedBox(height: 24),
-          Text('Additional resources', style: context.textTheme.titleMedium),
+          Text(
+            context.l10n.lectureAdditionalResources,
+            style: context.textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
-          for (final r in lecture.resources)
-            DocumentLectureResourceTile(resource: r),
+          for (final (i, r) in lecture.resources.indexed)
+            DocumentLectureResourceTile(resource: r, source: _req(i)),
         ],
       ],
     );
@@ -102,11 +123,16 @@ class DocumentLectureResourceTile extends ConsumerStatefulWidget {
     required this.resource,
     this.isPrimary = false,
     this.overrideFileName,
+    this.source,
   });
 
   final LectureResourceEntity resource;
   final bool isPrimary;
   final String? overrideFileName;
+
+  /// Where to resolve a signed URL when [resource.url] is a private
+  /// Storage reference (`gs://…`). Ignored for plain https URLs.
+  final LectureMediaRequest? source;
 
   @override
   ConsumerState<DocumentLectureResourceTile> createState() =>
@@ -129,15 +155,30 @@ class _DocumentLectureResourceTileState
     // Storage's newer `*.firebasestorage.app` buckets. See
     // `mediaDownloadDioProvider` for the rationale.
     final dio = ref.read(mediaDownloadDioProvider);
-    final dir = await getApplicationDocumentsDirectory();
-    final fileName = widget.overrideFileName ??
-        widget.resource.name
-                .replaceAll(RegExp(r'[^\w\s.-]'), '_')
-                .trim() +
-            '.${widget.resource.format}';
-    final savePath = '${dir.path}/ilearnit/$fileName';
+    final dir = await OfflineStorage.dir('resources');
+    final String fileName;
+    final override = widget.overrideFileName;
+    if (override != null) {
+      // Already unique: `{lectureId}.{pdf|docx}`.
+      fileName = override.replaceAll(RegExp(r'[\\/]'), '_');
+    } else {
+      // `format` comes from Firestore (instructor-controlled): whitelist
+      // it so it can't inject path separators.
+      final ext = widget.resource.format.toLowerCase();
+      final safeExt = RegExp(r'^[a-z0-9]{1,8}$').hasMatch(ext) ? ext : 'bin';
+      final baseName = widget.resource.name
+          .replaceAll(RegExp(r'[^\w\s.-]'), '_')
+          .trim();
+      // Prefix with a hash of the URL so same-named resources from
+      // different lectures don't overwrite each other.
+      fileName =
+          '${widget.resource.url.hashCode.toUnsigned(32).toRadixString(16)}'
+          '_$baseName.$safeExt';
+    }
+    final savePath = '${dir.path}/$fileName';
     final saveFile = File(savePath);
     await saveFile.parent.create(recursive: true);
+    if (!mounted) return;
 
     setState(() {
       _progress = 0;
@@ -146,8 +187,9 @@ class _DocumentLectureResourceTileState
 
     _cancelToken = CancelToken();
     try {
+      final url = await _resolvedUrl();
       await dio.download(
-        widget.resource.url,
+        url,
         savePath,
         cancelToken: _cancelToken,
         onReceiveProgress: (received, total) {
@@ -164,20 +206,32 @@ class _DocumentLectureResourceTileState
       if (!mounted) return;
       setState(() {
         _progress = null;
-        _error = 'Download failed.';
+        _error = e is LectureMediaException && e.isLocked
+            ? context.l10n.downloadPurchaseToDownload
+            : context.l10n.downloadFailed;
       });
     }
+  }
+
+  /// Signed URL for private Storage files, the raw URL otherwise.
+  Future<String> _resolvedUrl() async {
+    final source = widget.source;
+    if (source != null &&
+        LectureMediaService.needsResolution(widget.resource.url)) {
+      return ref.read(lectureMediaServiceProvider).resolve(source);
+    }
+    return widget.resource.url;
   }
 
   Future<void> _open() async {
     if (_localPath == null) return;
     final result = await OpenFilex.open(_localPath!);
     if (result.type != ResultType.done && mounted) {
-      // Fall back to the URL launcher if no app can handle the format.
-      await launchUrl(
-        Uri.parse(widget.resource.url),
-        mode: LaunchMode.externalApplication,
-      );
+      // Fall back to the browser if no app can handle the format.
+      try {
+        final url = await _resolvedUrl();
+        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      } catch (_) {}
     }
   }
 
@@ -243,12 +297,14 @@ class _DocumentLectureResourceTileState
   Widget _trailing() {
     if (_progress == null) {
       return IconButton(
+        tooltip: context.l10n.downloadCta,
         icon: const Icon(Icons.download_rounded),
         onPressed: _download,
       );
     }
     if (_progress! < 1) {
       return IconButton(
+        tooltip: context.l10n.commonCancelDownload,
         icon: const Icon(Icons.close_rounded),
         onPressed: () => _cancelToken?.cancel('user'),
       );
@@ -270,7 +326,7 @@ class _DocumentLectureResourceTileState
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           visualDensity: VisualDensity.compact,
         ),
-        child: const Text('Open'),
+        child: Text(context.l10n.commonOpen),
       ),
     );
   }

@@ -19,6 +19,7 @@ import '../providers/courses_providers.dart';
 import '../providers/curriculum_state.dart';
 import '../widgets/course_reviews_section.dart';
 import '../widgets/section_tile.dart';
+import '../../../../l10n/l10n.dart';
 
 class CourseDetailPage extends ConsumerWidget {
   const CourseDetailPage({super.key, required this.courseId});
@@ -133,7 +134,7 @@ class _Loaded extends ConsumerWidget {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(
-                      'Taught by ',
+                      context.l10n.courseTaughtBy,
                       style:
                           Theme.of(context).textTheme.bodyMedium?.copyWith(
                                 color: Theme.of(context).hintColor,
@@ -170,7 +171,7 @@ class _Loaded extends ConsumerWidget {
                 _StatsRow(course: course),
                 const SizedBox(height: 24),
                 Text(
-                  'About this course',
+                  context.l10n.courseAbout,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
@@ -268,12 +269,12 @@ List<Widget> _curriculumSlivers({
     ],
     loaded: (s) {
       if (s.sections.isEmpty) {
-        return const [
+        return [
           SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               child: Text(
-                'Curriculum coming soon.',
+                L10n.current.courseCurriculumSoon,
                 textAlign: TextAlign.center,
               ),
             ),
@@ -314,8 +315,13 @@ class _CurriculumHeader extends StatelessWidget {
         );
         final h = totalSec ~/ 3600;
         final m = (totalSec % 3600) ~/ 60;
-        final dur = h > 0 ? '${h}h ${m}min' : '${m}min';
-        return '${s.sections.length} sections • $lectureCount lectures • $dur';
+        final t = context.l10n;
+        final dur = h > 0 ? t.durationHM('$h', '$m') : t.durationM('$m');
+        return t.courseCurriculumSummary(
+          '${s.sections.length}',
+          '$lectureCount',
+          dur,
+        );
       },
       orElse: () => null,
     );
@@ -323,7 +329,10 @@ class _CurriculumHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Curriculum', style: Theme.of(context).textTheme.titleLarge),
+        Text(
+          context.l10n.courseCurriculum,
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         if (summary != null) ...[
           const SizedBox(height: 4),
           Text(
@@ -373,17 +382,17 @@ class _StatsRow extends StatelessWidget {
       children: [
         _Stat(
           icon: Icons.video_library_outlined,
-          label: '${course.lessonCount} lessons',
+          label: context.l10n.courseLessons('${course.lessonCount}'),
         ),
         const SizedBox(width: 16),
         _Stat(
           icon: Icons.timer_outlined,
-          label: '${course.durationMinutes} min',
+          label: context.l10n.durationM('${course.durationMinutes}'),
         ),
         const SizedBox(width: 16),
         _Stat(
           icon: Icons.people_outline,
-          label: '${course.enrollmentCount} enrolled',
+          label: context.l10n.courseEnrolled('${course.enrollmentCount}'),
         ),
       ],
     );

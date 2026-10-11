@@ -1813,6 +1813,1468 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Helps us spot crashes and improve the app. Toggle off to stop all collection.'**
   String get settingsAnalyticsSubtitle;
+
+  /// No description provided for @errTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection timed out. Please try again.'**
+  String get errTimeout;
+
+  /// No description provided for @errRequestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Request failed.'**
+  String get errRequestFailed;
+
+  /// No description provided for @errRequestCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Request cancelled.'**
+  String get errRequestCancelled;
+
+  /// No description provided for @errBadCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure connection failed.'**
+  String get errBadCertificate;
+
+  /// No description provided for @errUnknownNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown network error.'**
+  String get errUnknownNetwork;
+
+  /// No description provided for @errNoInternet.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection.'**
+  String get errNoInternet;
+
+  /// No description provided for @authErrInvalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'That email address is invalid.'**
+  String get authErrInvalidEmail;
+
+  /// No description provided for @authErrDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'This account has been disabled.'**
+  String get authErrDisabled;
+
+  /// No description provided for @authErrInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email or password.'**
+  String get authErrInvalidCredentials;
+
+  /// No description provided for @authErrEmailInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'An account already exists for that email.'**
+  String get authErrEmailInUse;
+
+  /// No description provided for @authErrWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password is too weak.'**
+  String get authErrWeakPassword;
+
+  /// No description provided for @authErrTooManyRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Try again later.'**
+  String get authErrTooManyRequests;
+
+  /// No description provided for @authErrGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed.'**
+  String get authErrGeneric;
+
+  /// No description provided for @valEmailRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Email is required.'**
+  String get valEmailRequired;
+
+  /// No description provided for @valEmailInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email.'**
+  String get valEmailInvalid;
+
+  /// No description provided for @valPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Password is required.'**
+  String get valPasswordRequired;
+
+  /// No description provided for @valPasswordMin.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 8 characters.'**
+  String get valPasswordMin;
+
+  /// No description provided for @valFieldRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} is required.'**
+  String valFieldRequired(String field);
+
+  /// No description provided for @valThisField.
+  ///
+  /// In en, this message translates to:
+  /// **'This field'**
+  String get valThisField;
+
+  /// No description provided for @valMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} does not match.'**
+  String valMismatch(String field);
+
+  /// No description provided for @valConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmation'**
+  String get valConfirmation;
+
+  /// No description provided for @navMyLearning.
+  ///
+  /// In en, this message translates to:
+  /// **'My learning'**
+  String get navMyLearning;
+
+  /// No description provided for @routeNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Page not found.'**
+  String get routeNotFound;
+
+  /// No description provided for @timeJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get timeJustNow;
+
+  /// No description provided for @timeMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}m ago'**
+  String timeMinutesAgo(String n);
+
+  /// No description provided for @timeHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}h ago'**
+  String timeHoursAgo(String n);
+
+  /// No description provided for @timeDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}d ago'**
+  String timeDaysAgo(String n);
+
+  /// No description provided for @timeMinutesShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}m'**
+  String timeMinutesShort(String n);
+
+  /// No description provided for @timeHoursShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}h'**
+  String timeHoursShort(String n);
+
+  /// No description provided for @timeDaysShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}d'**
+  String timeDaysShort(String n);
+
+  /// No description provided for @authErrNoUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in did not complete. Please try again.'**
+  String get authErrNoUser;
+
+  /// No description provided for @authErrGoogleFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in failed.'**
+  String get authErrGoogleFailed;
+
+  /// No description provided for @authErrCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in cancelled.'**
+  String get authErrCancelled;
+
+  /// No description provided for @authErrAppleOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Apple is only available on Apple devices.'**
+  String get authErrAppleOnly;
+
+  /// No description provided for @authErrAppleFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Apple sign-in failed.'**
+  String get authErrAppleFailed;
+
+  /// No description provided for @authErrNotSignedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'You are not signed in.'**
+  String get authErrNotSignedIn;
+
+  /// No description provided for @authErrNoEmailReauth.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has no email — try Google or Apple re-auth.'**
+  String get authErrNoEmailReauth;
+
+  /// No description provided for @authErrReauthFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-authentication failed.'**
+  String get authErrReauthFailed;
+
+  /// No description provided for @authErrReauthCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-authentication cancelled.'**
+  String get authErrReauthCancelled;
+
+  /// No description provided for @authErrDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deletion failed.'**
+  String get authErrDeleteFailed;
+
+  /// No description provided for @authSkipGuestTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip — continue as guest'**
+  String get authSkipGuestTooltip;
+
+  /// No description provided for @authWelcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get authWelcomeBack;
+
+  /// No description provided for @authSignInSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to continue your lessons.'**
+  String get authSignInSubtitle;
+
+  /// No description provided for @authContinueAsGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue as guest'**
+  String get authContinueAsGuest;
+
+  /// No description provided for @authEnterEmailFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email above first.'**
+  String get authEnterEmailFirst;
+
+  /// No description provided for @authResetSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset email sent.'**
+  String get authResetSent;
+
+  /// No description provided for @authResetFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send reset email.'**
+  String get authResetFailed;
+
+  /// No description provided for @authAcceptTermsFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Please accept the Terms and Community Guidelines to continue.'**
+  String get authAcceptTermsFirst;
+
+  /// No description provided for @authCreateAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get authCreateAccount;
+
+  /// No description provided for @authSignUpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick up your instrument — guitar, piano or violin.'**
+  String get authSignUpSubtitle;
+
+  /// No description provided for @authDisplayName.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name'**
+  String get authDisplayName;
+
+  /// No description provided for @authAgreePrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree to the '**
+  String get authAgreePrefix;
+
+  /// No description provided for @authAgreeTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms'**
+  String get authAgreeTerms;
+
+  /// No description provided for @authAgreeAnd.
+  ///
+  /// In en, this message translates to:
+  /// **' and '**
+  String get authAgreeAnd;
+
+  /// No description provided for @authAgreeGuidelines.
+  ///
+  /// In en, this message translates to:
+  /// **'Community Guidelines'**
+  String get authAgreeGuidelines;
+
+  /// No description provided for @authAgreeSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'. I will not post abusive, illegal, or objectionable content.'**
+  String get authAgreeSuffix;
+
+  /// No description provided for @profileGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest'**
+  String get profileGuest;
+
+  /// No description provided for @profilePlanActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Plan · active'**
+  String get profilePlanActive;
+
+  /// No description provided for @profilePlanCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock all courses with Personal Plan'**
+  String get profilePlanCta;
+
+  /// No description provided for @profileModerationQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderation queue'**
+  String get profileModerationQueue;
+
+  /// No description provided for @profileModerationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review reported content'**
+  String get profileModerationSubtitle;
+
+  /// No description provided for @profileGuestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save your progress'**
+  String get profileGuestTitle;
+
+  /// No description provided for @profileGuestBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to unlock courses, save bookmarks, take notes, and pick up where you left off across devices.'**
+  String get profileGuestBody;
+
+  /// No description provided for @myLearningLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your library.'**
+  String get myLearningLoadFailed;
+
+  /// No description provided for @commonTryAgainLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check your connection and try again.'**
+  String get commonTryAgainLater;
+
+  /// No description provided for @myLearningEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing in your library yet.'**
+  String get myLearningEmptyTitle;
+
+  /// No description provided for @myLearningEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Start any lecture and it will show up here so you can pick up where you left off.'**
+  String get myLearningEmptyBody;
+
+  /// No description provided for @commonSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get commonSearch;
+
+  /// No description provided for @progressCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get progressCompleted;
+
+  /// No description provided for @progressPercentComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% complete'**
+  String progressPercentComplete(String percent);
+
+  /// No description provided for @purchaseContinueCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue course'**
+  String get purchaseContinueCourse;
+
+  /// No description provided for @purchaseIncludedInPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Included in your Personal Plan'**
+  String get purchaseIncludedInPlan;
+
+  /// No description provided for @purchaseSignInToUnlockCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to unlock this course.'**
+  String get purchaseSignInToUnlockCourse;
+
+  /// No description provided for @purchaseSignInToUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to unlock'**
+  String get purchaseSignInToUnlock;
+
+  /// No description provided for @purchaseUnlockFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock for {price}'**
+  String purchaseUnlockFor(String price);
+
+  /// No description provided for @purchaseUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'In-app purchases aren\'t available on this device.'**
+  String get purchaseUnavailable;
+
+  /// No description provided for @purchaseRestoreDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore complete. Your purchases will appear shortly.'**
+  String get purchaseRestoreDone;
+
+  /// No description provided for @purchaseRestoreSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync purchases made with your App Store or Google Play account.'**
+  String get purchaseRestoreSubtitle;
+
+  /// No description provided for @purchaseProductUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This item is not available in the store right now.'**
+  String get purchaseProductUnavailable;
+
+  /// No description provided for @purchaseStoreDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'The store could not start the purchase. Please try again.'**
+  String get purchaseStoreDeclined;
+
+  /// No description provided for @purchaseNotSupportedPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'In-app purchases are not supported on this platform.'**
+  String get purchaseNotSupportedPlatform;
+
+  /// No description provided for @purchaseAlreadyOwned.
+  ///
+  /// In en, this message translates to:
+  /// **'You already own this course.'**
+  String get purchaseAlreadyOwned;
+
+  /// No description provided for @purchaseCourseUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This course is not available for purchase.'**
+  String get purchaseCourseUnavailable;
+
+  /// No description provided for @purchaseFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase could not be completed. Please try again.'**
+  String get purchaseFailed;
+
+  /// No description provided for @subscriptionVerifyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not confirm your subscription. Please try again or use Restore purchases.'**
+  String get subscriptionVerifyFailed;
+
+  /// No description provided for @subscriptionOtherAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'This subscription is linked to another iLearnIt account.'**
+  String get subscriptionOtherAccount;
+
+  /// No description provided for @errLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load data. Please try again.'**
+  String get errLoadFailed;
+
+  /// No description provided for @courseNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Course not found.'**
+  String get courseNotFound;
+
+  /// No description provided for @videoUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Video unavailable. Please try again.'**
+  String get videoUnavailable;
+
+  /// No description provided for @notesSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save your note.'**
+  String get notesSaveFailed;
+
+  /// No description provided for @qaPostQuestionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not post your question.'**
+  String get qaPostQuestionFailed;
+
+  /// No description provided for @qaPostReplyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not post your reply.'**
+  String get qaPostReplyFailed;
+
+  /// No description provided for @durationHM.
+  ///
+  /// In en, this message translates to:
+  /// **'{h}h {m}min'**
+  String durationHM(String h, String m);
+
+  /// No description provided for @durationM.
+  ///
+  /// In en, this message translates to:
+  /// **'{m} min'**
+  String durationM(String m);
+
+  /// No description provided for @durationS.
+  ///
+  /// In en, this message translates to:
+  /// **'{s}s'**
+  String durationS(String s);
+
+  /// No description provided for @courseTaughtBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Taught by '**
+  String get courseTaughtBy;
+
+  /// No description provided for @courseAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About this course'**
+  String get courseAbout;
+
+  /// No description provided for @courseCurriculumSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Curriculum coming soon.'**
+  String get courseCurriculumSoon;
+
+  /// No description provided for @courseCurriculum.
+  ///
+  /// In en, this message translates to:
+  /// **'Curriculum'**
+  String get courseCurriculum;
+
+  /// No description provided for @courseCurriculumSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{sections} sections • {lectures} lectures • {duration}'**
+  String courseCurriculumSummary(
+    String sections,
+    String lectures,
+    String duration,
+  );
+
+  /// No description provided for @courseLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} lessons'**
+  String courseLessons(String count);
+
+  /// No description provided for @courseEnrolled.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} enrolled'**
+  String courseEnrolled(String count);
+
+  /// No description provided for @commonRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get commonRefresh;
+
+  /// No description provided for @coursesShowingFeatured.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing featured courses'**
+  String get coursesShowingFeatured;
+
+  /// No description provided for @coursesShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all courses'**
+  String get coursesShowAll;
+
+  /// No description provided for @instructorsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No instructors yet.'**
+  String get instructorsEmpty;
+
+  /// No description provided for @instructorStudents.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} students'**
+  String instructorStudents(String count);
+
+  /// No description provided for @commonLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Pull down to try again.'**
+  String get commonLoadFailed;
+
+  /// No description provided for @courseByInstructor.
+  ///
+  /// In en, this message translates to:
+  /// **'by {name}'**
+  String courseByInstructor(String name);
+
+  /// No description provided for @lectureNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Lecture not found.'**
+  String get lectureNotFound;
+
+  /// No description provided for @lectureMinimize.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimize'**
+  String get lectureMinimize;
+
+  /// No description provided for @lectureVideoMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Video unavailable.'**
+  String get lectureVideoMissing;
+
+  /// No description provided for @lectureAudioMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio unavailable.'**
+  String get lectureAudioMissing;
+
+  /// No description provided for @lecturePurchaseToWatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase this course to watch this lecture.'**
+  String get lecturePurchaseToWatch;
+
+  /// No description provided for @lectureEncoding.
+  ///
+  /// In en, this message translates to:
+  /// **'Video still encoding — try again in a minute.'**
+  String get lectureEncoding;
+
+  /// No description provided for @lectureResources.
+  ///
+  /// In en, this message translates to:
+  /// **'Resources'**
+  String get lectureResources;
+
+  /// No description provided for @lecturePurchaseToOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase this course to open this lecture.'**
+  String get lecturePurchaseToOpen;
+
+  /// No description provided for @lectureLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load this lecture. Please try again.'**
+  String get lectureLoadFailed;
+
+  /// No description provided for @audioLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load audio.'**
+  String get audioLoadFailed;
+
+  /// No description provided for @playerBack10.
+  ///
+  /// In en, this message translates to:
+  /// **'Back 10 seconds'**
+  String get playerBack10;
+
+  /// No description provided for @playerForward30.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward 30 seconds'**
+  String get playerForward30;
+
+  /// No description provided for @playerBack15.
+  ///
+  /// In en, this message translates to:
+  /// **'Back 15 seconds'**
+  String get playerBack15;
+
+  /// No description provided for @playerForward15.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward 15 seconds'**
+  String get playerForward15;
+
+  /// No description provided for @playerPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get playerPlay;
+
+  /// No description provided for @playerPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get playerPause;
+
+  /// No description provided for @commonClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get commonClose;
+
+  /// No description provided for @videoLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load video.'**
+  String get videoLoadFailed;
+
+  /// No description provided for @levelBeginner.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner'**
+  String get levelBeginner;
+
+  /// No description provided for @levelIntermediate.
+  ///
+  /// In en, this message translates to:
+  /// **'Intermediate'**
+  String get levelIntermediate;
+
+  /// No description provided for @levelAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get levelAdvanced;
+
+  /// No description provided for @lectureTypeVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Video'**
+  String get lectureTypeVideo;
+
+  /// No description provided for @lectureTypeAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio'**
+  String get lectureTypeAudio;
+
+  /// No description provided for @lectureTypePdf.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF'**
+  String get lectureTypePdf;
+
+  /// No description provided for @lectureTypeDoc.
+  ///
+  /// In en, this message translates to:
+  /// **'Document'**
+  String get lectureTypeDoc;
+
+  /// No description provided for @reasonSpam.
+  ///
+  /// In en, this message translates to:
+  /// **'Spam or scam'**
+  String get reasonSpam;
+
+  /// No description provided for @reasonHarassment.
+  ///
+  /// In en, this message translates to:
+  /// **'Harassment or bullying'**
+  String get reasonHarassment;
+
+  /// No description provided for @reasonHate.
+  ///
+  /// In en, this message translates to:
+  /// **'Hate speech or symbols'**
+  String get reasonHate;
+
+  /// No description provided for @reasonSexual.
+  ///
+  /// In en, this message translates to:
+  /// **'Nudity or sexual content'**
+  String get reasonSexual;
+
+  /// No description provided for @reasonViolence.
+  ///
+  /// In en, this message translates to:
+  /// **'Violence or dangerous content'**
+  String get reasonViolence;
+
+  /// No description provided for @reasonSelfHarm.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-harm or suicide'**
+  String get reasonSelfHarm;
+
+  /// No description provided for @reasonMisinformation.
+  ///
+  /// In en, this message translates to:
+  /// **'False information'**
+  String get reasonMisinformation;
+
+  /// No description provided for @reasonIp.
+  ///
+  /// In en, this message translates to:
+  /// **'Copyright / IP infringement'**
+  String get reasonIp;
+
+  /// No description provided for @reasonOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Something else'**
+  String get reasonOther;
+
+  /// No description provided for @ugcReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get ugcReview;
+
+  /// No description provided for @ugcQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Question'**
+  String get ugcQuestion;
+
+  /// No description provided for @ugcAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer'**
+  String get ugcAnswer;
+
+  /// No description provided for @ugcNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get ugcNote;
+
+  /// No description provided for @lectureAdditionalResources.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional resources'**
+  String get lectureAdditionalResources;
+
+  /// No description provided for @commonOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get commonOpen;
+
+  /// No description provided for @downloadPurchaseToDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase this course to download.'**
+  String get downloadPurchaseToDownload;
+
+  /// No description provided for @downloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed.'**
+  String get downloadFailed;
+
+  /// No description provided for @commonCancelDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel download'**
+  String get commonCancelDownload;
+
+  /// No description provided for @lecturePreviewBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get lecturePreviewBadge;
+
+  /// No description provided for @lectureLockedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get lectureLockedLabel;
+
+  /// No description provided for @sectionNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Section {n}'**
+  String sectionNumber(String n);
+
+  /// No description provided for @sectionSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} lectures • {duration}'**
+  String sectionSummary(String count, String duration);
+
+  /// No description provided for @reviewsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ratings & Reviews'**
+  String get reviewsTitle;
+
+  /// No description provided for @reviewsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load reviews.'**
+  String get reviewsLoadFailed;
+
+  /// No description provided for @reviewsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet — be the first.'**
+  String get reviewsEmpty;
+
+  /// No description provided for @reviewsCountOne.
+  ///
+  /// In en, this message translates to:
+  /// **'1 review'**
+  String get reviewsCountOne;
+
+  /// No description provided for @reviewsCountMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reviews'**
+  String reviewsCountMany(String count);
+
+  /// No description provided for @reviewSignInToWrite.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to write a review'**
+  String get reviewSignInToWrite;
+
+  /// No description provided for @reviewEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit your review'**
+  String get reviewEdit;
+
+  /// No description provided for @reviewWrite.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a review'**
+  String get reviewWrite;
+
+  /// No description provided for @reviewSignInSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to leave a review.'**
+  String get reviewSignInSnack;
+
+  /// No description provided for @reviewAccessGate.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock this course (or subscribe) to leave a review.'**
+  String get reviewAccessGate;
+
+  /// No description provided for @reviewBodyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your review (optional)'**
+  String get reviewBodyLabel;
+
+  /// No description provided for @reviewBodyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What did you think of the course?'**
+  String get reviewBodyHint;
+
+  /// No description provided for @commonSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get commonSubmit;
+
+  /// No description provided for @reviewDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your review?'**
+  String get reviewDeleteTitle;
+
+  /// No description provided for @reviewDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will remove your rating and review from this course.'**
+  String get reviewDeleteBody;
+
+  /// No description provided for @commonDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get commonDelete;
+
+  /// No description provided for @reviewDeleteMine.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete my review'**
+  String get reviewDeleteMine;
+
+  /// No description provided for @instructorCoursesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load courses.'**
+  String get instructorCoursesLoadFailed;
+
+  /// No description provided for @commonCouldNotOpenLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open link.'**
+  String get commonCouldNotOpenLink;
+
+  /// No description provided for @playerForward10.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward 10 seconds'**
+  String get playerForward10;
+
+  /// No description provided for @eulaAcceptFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save your acceptance. Please try again.'**
+  String get eulaAcceptFailed;
+
+  /// No description provided for @eulaUpdatedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated agreement'**
+  String get eulaUpdatedTitle;
+
+  /// No description provided for @eulaUpdatedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve updated our Terms and Community Guidelines ({date}). Please review and accept to continue using iLearnIt.'**
+  String eulaUpdatedBody(String date);
+
+  /// No description provided for @eulaReadTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Read terms'**
+  String get eulaReadTerms;
+
+  /// No description provided for @eulaReadGuidelines.
+  ///
+  /// In en, this message translates to:
+  /// **'Read guidelines'**
+  String get eulaReadGuidelines;
+
+  /// No description provided for @eulaAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'I accept'**
+  String get eulaAccept;
+
+  /// No description provided for @blockFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not block this user. Please try again.'**
+  String get blockFailed;
+
+  /// No description provided for @blockThisUser.
+  ///
+  /// In en, this message translates to:
+  /// **'this user'**
+  String get blockThisUser;
+
+  /// No description provided for @blockTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Block {name}?'**
+  String blockTitle(String name);
+
+  /// No description provided for @blockBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You won\'t see any reviews, questions, answers, or notes from {name}. They won\'t be notified.'**
+  String blockBody(String name);
+
+  /// No description provided for @blockAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get blockAction;
+
+  /// No description provided for @reportThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks — our team will review this shortly.'**
+  String get reportThanks;
+
+  /// No description provided for @reportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not submit the report. Please try again.'**
+  String get reportFailed;
+
+  /// No description provided for @reportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report {type}'**
+  String reportTitle(String type);
+
+  /// No description provided for @reportIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Help us keep this community safe. Reports are reviewed within 24 hours.'**
+  String get reportIntro;
+
+  /// No description provided for @reportReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get reportReason;
+
+  /// No description provided for @reportNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional notes (optional)'**
+  String get reportNotes;
+
+  /// No description provided for @reportSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit report'**
+  String get reportSubmit;
+
+  /// No description provided for @commonMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get commonMore;
+
+  /// No description provided for @ugcReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get ugcReport;
+
+  /// No description provided for @ugcBlockName.
+  ///
+  /// In en, this message translates to:
+  /// **'Block {name}'**
+  String ugcBlockName(String name);
+
+  /// No description provided for @ugcUnblockName.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock {name}'**
+  String ugcUnblockName(String name);
+
+  /// No description provided for @ugcUserFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'user'**
+  String get ugcUserFallback;
+
+  /// No description provided for @modTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderation'**
+  String get modTitle;
+
+  /// No description provided for @modNoAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have access.'**
+  String get modNoAccess;
+
+  /// No description provided for @modOpenCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} open'**
+  String modOpenCount(String count);
+
+  /// No description provided for @modNoOpenReports.
+  ///
+  /// In en, this message translates to:
+  /// **'No open reports'**
+  String get modNoOpenReports;
+
+  /// No description provided for @modNothingToTriage.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to triage'**
+  String get modNothingToTriage;
+
+  /// No description provided for @modEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports tied to your courses will appear here.'**
+  String get modEmptyHint;
+
+  /// No description provided for @modActionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Action failed. Please try again.'**
+  String get modActionFailed;
+
+  /// No description provided for @modHide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get modHide;
+
+  /// No description provided for @modDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get modDismiss;
+
+  /// No description provided for @notesSignInSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to save notes.'**
+  String get notesSignInSnack;
+
+  /// No description provided for @qaSignInToReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to reply'**
+  String get qaSignInToReply;
+
+  /// No description provided for @qaSignInToJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to join the conversation.'**
+  String get qaSignInToJoin;
+
+  /// No description provided for @qaSignInToAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to ask a question.'**
+  String get qaSignInToAsk;
+
+  /// No description provided for @filterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filterTitle;
+
+  /// No description provided for @filterReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get filterReset;
+
+  /// No description provided for @filterInstrument.
+  ///
+  /// In en, this message translates to:
+  /// **'Instrument'**
+  String get filterInstrument;
+
+  /// No description provided for @filterLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Level'**
+  String get filterLevel;
+
+  /// No description provided for @filterMinRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum rating'**
+  String get filterMinRating;
+
+  /// No description provided for @filterAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Any'**
+  String get filterAny;
+
+  /// No description provided for @filterMaxPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Max price'**
+  String get filterMaxPrice;
+
+  /// No description provided for @filterApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get filterApply;
+
+  /// No description provided for @learningPathCourseLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load this course.'**
+  String get learningPathCourseLoadFailed;
+
+  /// No description provided for @legalCommunityGuidelinesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Community Guidelines'**
+  String get legalCommunityGuidelinesTitle;
+
+  /// No description provided for @songbookLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load this songbook.'**
+  String get songbookLoadFailed;
+
+  /// No description provided for @songbookSectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{section} — failed to load.'**
+  String songbookSectionFailed(String section);
+
+  /// No description provided for @notifChannelName.
+  ///
+  /// In en, this message translates to:
+  /// **'iLearnIt notifications'**
+  String get notifChannelName;
+
+  /// No description provided for @notifChannelDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Course updates, application status, and announcements.'**
+  String get notifChannelDesc;
+
+  /// No description provided for @a11yShowPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get a11yShowPassword;
+
+  /// No description provided for @a11yHidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get a11yHidePassword;
+
+  /// No description provided for @a11yRateStars.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate {n} out of 5 stars'**
+  String a11yRateStars(String n);
+
+  /// No description provided for @updateRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update required'**
+  String get updateRequiredTitle;
+
+  /// No description provided for @updateRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This version of iLearnIt is no longer supported. Please update to keep learning.'**
+  String get updateRequiredBody;
+
+  /// No description provided for @updateNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get updateNow;
+
+  /// No description provided for @updateAvailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A new version of iLearnIt is available.'**
+  String get updateAvailableBody;
+
+  /// No description provided for @updateLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get updateLater;
+
+  /// No description provided for @songbookPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing your songbook…'**
+  String get songbookPreparing;
+
+  /// No description provided for @songbookNoViewer.
+  ///
+  /// In en, this message translates to:
+  /// **'No app on this device can open PDF files.'**
+  String get songbookNoViewer;
+
+  /// No description provided for @songbookLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Get this songbook (or the Personal Plan) to open it.'**
+  String get songbookLocked;
+
+  /// No description provided for @songbookOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the songbook. Please try again.'**
+  String get songbookOpenFailed;
+
+  /// No description provided for @songbookSamplePage.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample · {page}/{total}'**
+  String songbookSamplePage(String page, String total);
+
+  /// No description provided for @songbookOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open songbook'**
+  String get songbookOpen;
+
+  /// No description provided for @songbookSignInToGet.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to get this songbook.'**
+  String get songbookSignInToGet;
+
+  /// No description provided for @songbookGetForPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Songbook · {price}'**
+  String songbookGetForPrice(String price);
+
+  /// No description provided for @songbookOtherAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'This purchase is linked to another iLearnIt account.'**
+  String get songbookOtherAccount;
 }
 
 class _AppLocalizationsDelegate

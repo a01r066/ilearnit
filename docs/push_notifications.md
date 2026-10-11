@@ -13,17 +13,26 @@ iLearnIt uses **Firebase Cloud Messaging (FCM)** for transactional pushes (appli
 │  NotificationBootstrap                                ▼                │
 │    ├─ LocalNotificationsService.init()                                 │
 │    ├─ FcmService.init()                                                │
-│    │     • requestPermission                                           │
+│    │     • getNotificationSettings (read only — NO prompt)             │
 │    │     • subscribe `all_users`                                       │
 │    │     • forward onMessage → local.show()                            │
 │    │     • emit onMessageOpenedApp → taps stream                       │
-│    └─ on auth user change:                                             │
-│         • bindUser → users/{uid}.fcmTokens (arrayUnion)                │
-│         • reconcileTopicsForUser(role, instrument)                     │
+│    ├─ on sign-in:                                                      │
+│    │     • bindUser → users/{uid}.fcmTokens (arrayUnion)               │
+│    │     • reconcileTopicsForUser(role, instrument)                    │
+│    ├─ before sign-out (BeforeSignOutHooks, while still authed):        │
+│    │     • unbindUser → arrayRemove this device's token                │
+│    └─ after sign-out (any path: logout, delete, revoked session):      │
+│          • resetToken → deleteToken() + re-subscribe `all_users`       │
+│                                                                        │
+│  Permission prompt: onboarding "soft ask" step only                    │
+│    (OnboardingNotifier → FcmService.requestPermission)                 │
 └────────────────────────────────────────────────────────────────────────┘
 
 ┌─ Admin portal (Flutter web) ──────────────────────────────────────────┐
 │  bootstrap_admin.dart — same notification bootstrap                   │
+│  NotificationPermissionBanner → "Enable" (browsers need a user        │
+│    gesture) → NotificationBootstrap.requestPermissionAndBind()        │
 │  AdminNotificationsPage → writes notification_broadcasts/{id}         │
 └────────────────────────────────────────────────────────────────────────┘
 
@@ -39,6 +48,25 @@ iLearnIt uses **Firebase Cloud Messaging (FCM)** for transactional pushes (appli
 │  All three speak the shared payload format documented below.          │
 └────────────────────────────────────────────────────────────────────────┘
 ```
+
+### Why the sign-out dance
+
+`users/{uid}` is only writable by its signed-in owner, so the token must
+be removed from the profile **before** `FirebaseAuth.signOut()`. The
+`AuthNotifier.logout()` runs every registered `BeforeSignOutHooks`
+callback (`lib/core/session/before_sign_out_hooks.dart`, time-boxed to
+4 s) first. Paths that end the session without `logout()` (account
+deletion, revoked token) can't write the profile any more, so the device
+token is deleted instead — FCM then rejects any stale copy
+(`UNREGISTERED`) and the previous user's pushes stop arriving on a
+shared device.
+
+### Why no prompt at launch
+
+`init()` used to call `requestPermission()` before the first frame. On
+iOS a denial can't be asked again, so the onboarding rationale screen
+never got a chance. Now only the onboarding step (mobile) and the admin
+banner (web) prompt.
 
 ## Topic catalogue
 
@@ -96,13 +124,13 @@ If you ship multiple flavors (Runner-Dev / Runner-Prod), repeat for each target.
 
 Most config comes through the `google-services.json` you already ship per flavor. Two extras:
 
-1. **Android 13+ runtime permission**: handled automatically by `firebase_messaging.requestPermission()` — it prompts the user. Make sure your `android/app/src/main/AndroidManifest.xml` declares:
+1. **Android 13+ runtime permission**: requested by `FcmService.requestPermission()` from the onboarding step (never at launch). The manifest declares:
 
    ```xml
    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
    ```
 
-2. **Default notification icon / color** (optional, but the default is a generic white square):
+2. **Notification icon / color** — configured. `res/drawable/ic_notification.xml` is a monochrome vector (shield + note); `@color/notification_color` is the brand teal `#1A8C9C`. Android only uses the icon's alpha, so the full-colour launcher icon would render as a white square. Foreground notifications (`LocalNotificationsService`) use the same icon and colour, and the channel name/description are localized (refreshed on every post):
 
    ```xml
    <meta-data
@@ -126,14 +154,15 @@ The first deploy will prompt you to enable required Google Cloud APIs (Cloud Bui
 
 ## 5. Firestore security rules
 
-The admin `AdminNotificationsPage` writes to `notification_broadcasts/{id}`. The `enrollments/{id}` collection is written by the mobile app on IAP success. Add to `firestore.rules`:
+The admin `AdminNotificationsPage` writes to `notification_broadcasts/{id}`. `enrollments/{uid}_{courseId}` is written **only** by the `verifyPurchase` Cloud Function after the store purchase is verified (clients can't create enrollments — that would be free self-enrollment). From `firestore.rules`:
 
 ```javascript
 // ---------- enrollments ----------
 match /enrollments/{enrollmentId} {
-  allow read:   if isSignedIn() && (resource.data.userId == uid() || isAdmin());
-  allow create: if isSignedIn() && request.resource.data.userId == uid();
-  allow delete: if isAdmin();
+  allow read:   if isSignedIn() && (resource.data.userId == uid() || isAdmin()
+                  || /* instructor of the course */ ...);
+  allow create: if false;          // server-only (verifyPurchase)
+  allow update, delete: if isAdmin();
 }
 
 // ---------- notification_broadcasts ----------
@@ -153,10 +182,11 @@ match /notification_broadcasts/{broadcastId} {
 
 ## 6. Smoke testing
 
-1. **Run the mobile app**, sign in, accept the notification permission prompt. Check Firestore — `users/{uid}.fcmTokens` should contain one token.
+1. **Run the mobile app** (fresh install), go through onboarding and accept the notification step, sign in. Check Firestore — `users/{uid}.fcmTokens` should contain one token. Sign out → the token is removed from that array.
 2. **Trigger transactional**: sign in to the admin portal, approve a pending instructor application. The applicant's device should get a "You're approved!" push within ~5 s.
 3. **Trigger broadcast**: in the admin portal go to **Notifications**, send to topic `all_users`. Any device on `all_users` (every device, after first launch) should receive it.
-4. **Trigger enrollment**: complete an IAP purchase in the mobile app. Verify a doc lands in `enrollments/` and that the device receives the "You're enrolled" push.
+4. **Trigger enrollment**: complete a sandbox IAP purchase in the mobile app. Verify `verifyPurchase` writes `enrollments/{uid}_{courseId}` and that the device receives the "You're enrolled" push.
+5. **Admin portal**: open it in a browser that hasn't decided yet → the "Turn on notifications" banner appears; click Enable → browser prompt → `users/{uid}.fcmTokens` gains the web token.
 
 ## 7. Troubleshooting
 
@@ -165,7 +195,8 @@ match /notification_broadcasts/{broadcastId} {
 | No push on iOS device | APNs key not uploaded | Step 2 above |
 | No push on Android 13+ device | Runtime permission denied | Settings → Notifications → enable for app |
 | Push received but tap does nothing | `data.route` empty + no `type` match | Verify Cloud Function payload, see `App._handleTap` |
-| `users/{uid}.fcmTokens` empty | `bindUser` ran before auth resolved | Should be fine on next session; if persistent, check `currentUserProvider` |
+| `users/{uid}.fcmTokens` empty | Permission never granted (no prompt at launch by design) or `bindUser` failed | Grant via onboarding / admin banner; check `[notifications] auth sync failed` in debug logs |
+| Previous user's pushes on a shared device | Old build (pre-sign-out unbind) | Update the app; the new build deletes the token on sign-out |
 | `notification_broadcasts/{id}` stuck on `status: pending` | Cloud Function not deployed | Run `firebase deploy --only functions` |
 | `messaging/registration-token-not-registered` errors in logs | Stale token left after uninstall | Functions auto-prune via `arrayRemove` — wait one cycle |
 | Push works on debug build but not release on iOS | APNs production environment | Confirm in Xcode that `aps-environment` is `production` |
@@ -177,12 +208,15 @@ match /notification_broadcasts/{broadcastId} {
   - `lib/core/notifications/domain/notification_payload.dart`
   - `lib/core/notifications/data/local_notifications_service.dart`
   - `lib/core/notifications/data/fcm_service.dart`
-  - `lib/core/notifications/presentation/notification_providers.dart`
+  - `lib/core/notifications/presentation/notification_providers.dart` (`NotificationBootstrap`, `notificationPermissionProvider`)
+  - `lib/core/session/before_sign_out_hooks.dart`
+  - `android/app/src/main/res/drawable/ic_notification.xml`, `res/values/colors.xml`
   - `lib/bootstrap.dart` / `lib/bootstrap_admin.dart` (hooks)
   - `lib/app/app.dart` / `lib/admin/admin_app.dart` (tap router)
 - Admin UI
   - `lib/admin/notifications/data/notification_broadcast_datasource.dart`
   - `lib/admin/notifications/presentation/admin_notifications_page.dart`
+  - `lib/admin/shared/widgets/notification_permission_banner.dart`
   - `lib/admin/routing/admin_route_names.dart` + `admin_router.dart`
 - Cloud Functions
   - `functions/package.json`, `functions/tsconfig.json`, `functions/.gitignore`

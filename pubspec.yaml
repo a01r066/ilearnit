@@ -37,6 +37,12 @@ dependencies:
   cloud_firestore: ^6.3.0
   firebase_storage: ^13.3.0
   firebase_messaging: ^16.2.0
+  # App Check — attests that requests come from the genuine app
+  # (Play Integrity / App Attest / reCAPTCHA v3 on web).
+  firebase_app_check: ^0.4.0
+  # Remote Config — drives the force-update gate.
+  firebase_remote_config: ^6.0.0
+  package_info_plus: ^9.0.0
   # Observability — Crashlytics for crash + non-fatal reporting,
   # Performance for trace metrics, Analytics for event tracking
   # (also drives the GoRouter screen-view observer).

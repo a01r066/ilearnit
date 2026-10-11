@@ -11,6 +11,7 @@ import '../../../subscriptions/presentation/providers/subscription_providers.dar
 import '../../data/models/songbook_model.dart';
 import '../providers/songbook_providers.dart';
 import '../widgets/songbook_card.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Songbooks tab — top-level entry point.
 ///
@@ -53,13 +54,16 @@ class SongbooksPage extends ConsumerWidget {
             // ---------- Recently viewed ----------
             recents.when(
               loading: () =>
-                  const _CarouselSkeleton(label: 'Recently Viewed'),
+                  _CarouselSkeleton(label: context.l10n.songbooksRecentlyViewed),
               error: (e, _) =>
-                  _SectionFailure(label: 'Recently Viewed', error: e),
+                  _SectionFailure(
+                    label: context.l10n.songbooksRecentlyViewed,
+                    error: e,
+                  ),
               data: (items) {
                 if (items.isEmpty) return const SizedBox.shrink();
                 return _SectionCarousel(
-                  label: 'Recently Viewed',
+                  label: context.l10n.songbooksRecentlyViewed,
                   items: items,
                   cardBuilder: (b) => SongbookCard(
                     book: b,
@@ -75,11 +79,14 @@ class SongbooksPage extends ConsumerWidget {
             // ---------- Bestsellers ----------
             bestsellers.when(
               loading: () =>
-                  const _CarouselSkeleton(label: 'Bestsellers'),
+                  _CarouselSkeleton(label: context.l10n.songbooksBestsellers),
               error: (e, _) =>
-                  _SectionFailure(label: 'Bestsellers', error: e),
+                  _SectionFailure(
+                    label: context.l10n.songbooksBestsellers,
+                    error: e,
+                  ),
               data: (items) => _SectionCarousel(
-                label: 'Bestsellers',
+                label: context.l10n.songbooksBestsellers,
                 items: items,
                 cardBuilder: (b) => SongbookCard.compact(
                   book: b,
@@ -120,10 +127,6 @@ class _BrandHeader extends StatelessWidget {
                 ),
           ),
           const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.person_outline),
-            onPressed: () {},
-          ),
           const NotificationBell(),
         ],
       ),
@@ -148,14 +151,14 @@ class _TrialBanner extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Start 7-day free trial',
+                    context.l10n.songbooksTrialTitle,
                     style: context.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Tap to unlock your 7-day free trial',
+                    context.l10n.songbooksTrialSubtitle,
                     style: context.textTheme.bodyMedium?.copyWith(
                       color: context.colors.onSurfaceVariant,
                     ),
@@ -199,7 +202,7 @@ class _SearchBarRow extends StatelessWidget {
                             Theme.of(context).colorScheme.onSurfaceVariant),
                     const SizedBox(width: 12),
                     Text(
-                      'Search for Songbooks',
+                      context.l10n.songbooksSearchHint,
                       style:
                           Theme.of(context).textTheme.bodyLarge?.copyWith(
                                 color: Theme.of(context)
@@ -325,7 +328,7 @@ class _SectionFailure extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Text(
-        '$label — failed to load.\n$error',
+        context.l10n.songbookSectionFailed(label),
         style: TextStyle(color: Theme.of(context).colorScheme.error),
       ),
     );

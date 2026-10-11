@@ -1,15 +1,15 @@
 # Cloudflare Stream integration
 
-Video lectures play from Cloudflare Stream via HLS. The Flutter
-client carries only the video UID; the Cloud Function holds the API
-token and returns playback URLs on demand.
+Video lectures play from Cloudflare Stream via HLS. Lecture docs carry
+only the video UID; a Cloud Function checks the viewer's entitlement,
+holds the API token, and returns **short-lived signed** playback URLs.
 
 ## ⚠️ Token hygiene (read this first)
 
 **Never embed your Cloudflare API token in the Flutter app.** It grants
-account-wide write access to Stream — anyone who downloads the
-.ipa/.apk can extract it from the binary in minutes and upload, delete,
-or rate-limit videos on your account.
+write access to Stream — anyone who downloads the .ipa/.apk can extract
+it from the binary in minutes and upload, delete, or rate-limit videos
+on your account.
 
 The token lives only in Firebase Secrets:
 
@@ -25,212 +25,164 @@ Tokens.
 ## Data flow
 
 ```
-┌──────────┐       Firestore         ┌──────────────────────┐
-│  Admin   │ ──── cloudflareVideoId ─►│ courses/{c}/sections │
-│ editor   │                          │ /{s}/lectures/{l}    │
-└──────────┘                          └──────────┬───────────┘
-                                                 │ watchLecture
-                                                 ▼
-                                  ┌──────────────────────────┐
-                                  │   Flutter client          │
-                                  │  VideoLecturePlayer       │
-                                  └──────┬───────────────────┘
-                                         │ callable:
-                                         │ resolveStreamPlayback({videoId})
+┌──────────┐  createCloudflareUpload   ┌──────────────────────┐
+│  Admin   │ ── (requireSignedURLs) ──►│  Cloudflare Stream   │
+│ editor   │ ──── cloudflareVideoId ──►│ courses/{c}/sections │
+└──────────┘        (Firestore)        │ /{s}/lectures/{l}    │
+                                       └──────────┬───────────┘
+                                                  ▼
+                                  ┌──────────────────────────────┐
+                                  │ Flutter client                │
+                                  │ VideoLecturePlayer            │
+                                  └──────┬───────────────────────┘
+                                         │ callable resolveStreamPlayback
+                                         │ {courseId, sectionId, lectureId}
                                          ▼
-                                  ┌──────────────────────────┐
-                                  │ Cloud Function            │
-                                  │ (token in Firebase Secret)│
-                                  └──────┬───────────────────┘
-                                         │ GET /accounts/{id}/stream/{vid}
+                                  ┌──────────────────────────────┐
+                                  │ Cloud Function                │
+                                  │ 1. read lecture doc → UID     │
+                                  │ 2. not preview? require auth  │
+                                  │    + hasCourseAccess()        │
+                                  │ 3. GET video details          │
+                                  │ 4. POST /stream/{uid}/token   │
+                                  └──────┬───────────────────────┘
                                          ▼
-                                  ┌──────────────────────────┐
-                                  │  Cloudflare Stream API    │
-                                  └──────────────────────────┘
-                                         │
+                          {hlsUrl, dashUrl, thumbnailUrl,     ← UID path segment
+                           durationSec, readyToStream}          replaced by token
                                          ▼
-                          {hlsUrl, dashUrl, thumbnailUrl,
-                           durationSec, readyToStream}
-                                         │
-                                         ▼
-                                player loads HLS URL
+                                player loads signed HLS URL
 ```
+
+The client never sends a raw video UID — it identifies the **lecture**,
+and the server reads the UID from Firestore. A guest or non-buyer gets
+`unauthenticated` / `permission-denied`, which the player shows as
+"Purchase this course to watch this lecture."
+
+`hasCourseAccess(uid, courseId)` (in `functions/src/iap.ts`) is true for:
+the course instructor, admins, owners of `users/{uid}/purchases/{courseId}`
+with status `purchased`, and users with an active Personal Plan.
+Suspended users are always denied.
 
 ## Files
 
 | Layer | File | Purpose |
 |-------|------|---------|
-| Domain | `lib/features/courses/domain/entities/lecture_entity.dart` | Added `cloudflareVideoId` field |
+| Domain | `lib/features/courses/domain/entities/lecture_entity.dart` | `cloudflareVideoId` field |
 | Data | `lib/features/courses/data/models/lecture_model.dart` | Mirror field + Firestore JSON round-trip |
-| Data | `lib/features/courses/data/datasources/cloudflare_stream_service.dart` | Calls the Cloud Function, caches results 50 min |
-| Providers | `lib/features/courses/presentation/providers/courses_providers.dart` | `cloudflareStreamServiceProvider` + `cloudflareStreamPlaybackProvider` |
-| UI | `lib/features/courses/presentation/pages/lecture_player_page.dart` | `_VideoBody` resolution order: local download → Cloudflare → legacy mediaUrl |
-| Functions | `functions/src/index.ts` | `resolveStreamPlayback` callable |
-| Admin | `lib/admin/courses/presentation/course_editor_page.dart` | `_LectureDraft.cloudflareVideoId` + UID field in lecture dialog |
+| Data | `lib/features/courses/data/datasources/cloudflare_stream_service.dart` | `StreamPlaybackRequest` + callable client, caches 50 min |
+| Providers | `lib/features/courses/presentation/providers/courses_providers.dart` | `cloudflareStreamServiceProvider`, `cloudflareStreamPlaybackProvider(StreamPlaybackRequest)` |
+| UI | `lib/features/courses/presentation/pages/lecture_player_page.dart` | `_VideoBody` resolution order (below) + locked/error states |
+| Functions | `functions/src/index.ts` | `resolveStreamPlayback`, `createCloudflareUpload`, `deleteCloudflareVideo`, `enableSignedStreamUrls` |
+| Admin | `lib/admin/courses/presentation/course_editor_page.dart` | Upload / UID field in the lecture dialog |
+| Admin | `lib/admin/courses/data/cloudflare_upload_service.dart` | Direct creator upload + delete |
 
 ## Setup (one-time)
 
 1. **Create the Cloudflare API token** at dashboard → My Profile → API
-   Tokens. Use the "Read Stream and Stream Videos" template — read-only
-   is enough for playback resolution. Copy the token (starts with
-   `cfut_…`).
+   Tokens with **Stream: Edit** on your account. Edit (not read-only)
+   is required: the functions create upload URLs, mint signed playback
+   tokens, set `requireSignedURLs`, and delete videos.
 
 2. **Set the secrets:**
    ```
    cd functions
    firebase functions:secrets:set CLOUDFLARE_API_TOKEN
-   #   paste the token at the prompt
-   firebase functions:secrets:set CLOUDFLARE_ACCOUNT_ID
-   #   paste 7de7c6b1245c93f697d0c038e6047555 (or your account id)
+   firebase functions:secrets:set CLOUDFLARE_ACCOUNT_ID   # 32-hex account id
+   ```
+   Paste without a trailing newline — the functions trim, but a
+   malformed account id fails fast with `failed-precondition`.
+
+3. **Deploy the functions:**
+   ```
+   firebase deploy --only functions:resolveStreamPlayback,functions:createCloudflareUpload,functions:deleteCloudflareVideo,functions:enableSignedStreamUrls
    ```
 
-3. **Deploy the function:**
-   ```
-   firebase deploy --only functions:resolveStreamPlayback
-   ```
+4. **Enforce signed URLs.** New uploads are created with
+   `requireSignedURLs: true`. For videos uploaded before this change,
+   call the admin-only `enableSignedStreamUrls` callable once (after the
+   new app version is live — older builds play unsigned URLs and stop
+   working once a video requires signing). It returns
+   `{total, updated, failed}`.
 
-4. **Set Cloudflare Stream privacy** (per video). Either:
-   - Leave videos **public** — the HLS URL returned by the API is
-     directly playable (anyone with the URL can stream it). Simplest
-     option.
-   - Toggle **Require signed URLs** on the video — the Cloud Function
-     must mint a signed JWT per request. See the "Signed URLs" section
-     below.
+5. **Upload a video** from the admin lecture editor (direct upload), or
+   paste an existing UID into the "Cloudflare Stream video UID" field.
 
-5. **Upload a video** to Cloudflare Stream, copy its UID from the
-   dashboard URL (32 hex chars). Open the admin lecture editor, paste
-   the UID into the "Cloudflare Stream video UID" field, save.
-
-6. **Play the lecture** as a signed-in user — the player resolves the
-   UID and plays the HLS stream.
+6. **Play the lecture** as an entitled user (or mark it as a preview).
 
 ## Playback resolution order
 
 `_VideoBody` in `lecture_player_page.dart` picks in this order:
 
-1. **Local downloaded file** — if the lecture has been pre-downloaded
-   via the offline downloads feature, the player uses the `file://`
-   path directly. Skips Cloudflare entirely. (Note: download support
-   currently caches Firebase Storage URLs only; offline Cloudflare
-   playback is a follow-up.)
-2. **Cloudflare Stream** — when `lecture.cloudflareVideoId` is set,
-   call the Cloud Function and play the returned HLS URL.
-3. **Legacy `mediaUrl`** — for lectures created before the Cloudflare
-   migration, fall back to the Firebase Storage URL stored on
-   `lecture.mediaUrl`.
+1. **Local downloaded file** — `file://` path from offline downloads.
+2. **Cloudflare Stream** — when `lecture.cloudflareVideoId` is set:
+   `resolveStreamPlayback` → signed HLS URL.
+3. **Storage-hosted `mediaUrl`** — legacy / non-Cloudflare lectures.
+   Stored as a private `gs://` reference and resolved to a signed
+   Storage URL by `resolveLectureMedia` (see
+   `docs/offline_downloads.md` → "Paid files in Firebase Storage").
 
-This makes the migration safe: existing lectures keep working, new
-lectures use Cloudflare, and you can migrate one section at a time.
+Videos still transcoding (`readyToStream == false`) show "Video still
+encoding — try again in a minute."
 
 ## Caching
 
-`CloudflareStreamService` keeps in-memory resolutions for **50
-minutes**. Cloudflare's signed-URL default TTL is 60 minutes, so we
-stay comfortably under it. Cache is bound to the Riverpod container —
-killed and recreated on app cold start, on Riverpod container
-recreation, and when the user signs out.
+Signed tokens are minted with a **4-hour** TTL
+(`STREAM_TOKEN_TTL_SEC` in `functions/src/index.ts`).
+`CloudflareStreamService` caches resolutions for **50 minutes**, keyed by
+`StreamPlaybackRequest(courseId, sectionId, lectureId)`, so a resumed
+session never holds an expired token. The cache is cleared on sign-out
+(`lib/app/session_cleanup.dart`) so the next user can't reuse URLs.
 
-For manual invalidation (e.g., after the admin replaces a video):
+Manual invalidation (e.g. after the admin replaces a video):
 
 ```dart
-ref.read(cloudflareStreamServiceProvider).invalidate(videoId);
-ref.invalidate(cloudflareStreamPlaybackProvider(videoId));
-```
-
-## Auth gate
-
-The callable requires `request.auth` — only signed-in users can
-resolve playback. This stops anonymous scrapers from enumerating your
-catalogue's video UIDs through a single endpoint. If you later
-introduce paywall enforcement (e.g., "this lecture requires an
-enrollment"), add the check in `resolveStreamPlayback` before the
-fetch.
-
-## Signed URLs (when you enable "Require signed URLs")
-
-Public HLS URLs work as-is for the public catalogue. To paywall
-specific videos, enable "Require signed URLs" on the video in
-Cloudflare Stream and update the Cloud Function:
-
-1. Create a Stream signing key in Cloudflare dashboard → Stream →
-   Settings → Signing Keys. Save the JWK to a Firebase Secret:
-   ```
-   firebase functions:secrets:set CLOUDFLARE_STREAM_SIGNING_KEY
-   ```
-2. In `resolveStreamPlayback`, after fetching the metadata, mint a
-   signed JWT (use `jsonwebtoken` npm). Append it as `?token=…` to the
-   HLS URL.
-3. Set a TTL on the JWT (default Cloudflare TTL is 1 hour). The
-   client cache (50 min) keeps us inside the window.
-
-Code skeleton (not yet wired):
-
-```ts
-import jwt from 'jsonwebtoken';
-const signingKeyJwk = JSON.parse(CLOUDFLARE_STREAM_SIGNING_KEY.value());
-const token = jwt.sign(
-  {
-    sub: videoId,
-    kid: signingKeyJwk.kid,
-    exp: Math.floor(Date.now() / 1000) + 60 * 60,
-  },
-  signingKeyJwk,
-  {algorithm: 'RS256'},
+final req = StreamPlaybackRequest(
+  courseId: courseId, sectionId: sectionId, lectureId: lectureId,
 );
-const signedHls = `${hlsUrl}?token=${token}`;
+ref.read(cloudflareStreamServiceProvider).invalidate(req);
+ref.invalidate(cloudflareStreamPlaybackProvider(req));
 ```
+
+## Who can upload / delete
+
+- `createCloudflareUpload` — instructor or admin. Tags the upload with
+  `meta.uploadedByUid`.
+- `deleteCloudflareVideo` — admin, or an instructor who owns **every**
+  course whose lectures reference the UID. If no lecture references it
+  yet (an upload discarded in the editor), the uploader recorded in
+  `meta.uploadedByUid` may delete it. Uses the collection-group index on
+  `lectures.cloudflareVideoId` (`firestore.indexes.json`).
+- The `onLectureDeleted` trigger cleans up with Admin privileges as a
+  backstop.
 
 ## Testing
 
-1. **Local emulator:**
-   ```
-   cd functions
-   firebase emulators:start --only functions
-   ```
-   Then in the Flutter app point `FirebaseFunctions.instance` at the
-   emulator (`useFunctionsEmulator('localhost', 5001)`) before
-   `runApp`.
-
-2. **Hand-test the function** with the Firebase Functions shell:
+1. **Function shell:**
    ```
    firebase functions:shell
-   > resolveStreamPlayback({videoId: 'bf53017eb20e5db311c21d30ffb5a075'}, {auth: {uid: 'test'}})
+   > resolveStreamPlayback({courseId: 'c1', sectionId: 's1', lectureId: 'l1'}, {auth: {uid: '<buyer uid>'}})
    ```
-   Should return `{hlsUrl, dashUrl, durationSec, thumbnailUrl, readyToStream}`.
+   Expect `{hlsUrl: 'https://customer-…/<token>/manifest/video.m3u8', …}`.
+   Repeat with a non-buyer uid → `permission-denied`; without auth on a
+   non-preview lecture → `unauthenticated`.
 
-3. **Curl the deployed function** as an authenticated user (requires a
-   Firebase Auth ID token):
-   ```
-   curl -X POST \
-     -H 'Content-Type: application/json' \
-     -H "Authorization: Bearer $(firebase auth:sign-in-with-custom-token …)" \
-     -d '{"data":{"videoId":"bf53017eb20e5db311c21d30ffb5a075"}}' \
-     https://<region>-<project>.cloudfunctions.net/resolveStreamPlayback
-   ```
+2. **Player:** open a lecture with a Cloudflare UID — brief spinner, then
+   playback. The HLS URL contains a long token, not the 32-hex UID.
 
-4. **Verify in the player:** open a lecture with a Cloudflare UID —
-   you should see a brief spinner while the function resolves, then
-   the HLS stream begins. Watch the network panel: the only outbound
-   request is to the Cloud Function (not to Cloudflare directly).
+3. **Direct URL check:** request
+   `https://customer-<code>.cloudflarestream.com/<uid>/manifest/video.m3u8`
+   for a migrated video — Cloudflare must refuse it (signed URL required).
 
 ## HLS support on each platform
 
-- **iOS** — native HLS via AVPlayer (the `video_player` plugin uses
-  it under the hood). Works out of the box.
-- **Android** — HLS via ExoPlayer. The `video_player` plugin v2.8+
-  uses ExoPlayer with HLS support enabled. No extra setup.
-- **Web** — `video_player_web` doesn't ship HLS support. For web
-  playback, either embed the Cloudflare iframe player
-  (`https://customer-<code>.cloudflarestream.com/<uid>/iframe`) or add
-  `hls.js`. Out of scope for v1.
+- **iOS** — native HLS via AVPlayer (`video_player`).
+- **Android** — HLS via ExoPlayer (`video_player` 2.8+).
+- **Web** — `video_player_web` has no HLS. Use the Cloudflare iframe
+  player or `hls.js` (out of scope for v1).
 
 ## Removing the old Firebase Storage flow
 
-Once every lecture has a `cloudflareVideoId`, you can:
-1. Delete `mediaUrl` from the Firestore docs (or keep it as a backup).
-2. Remove the upload UI in the admin lecture editor (the bottom
-   "Media file" section) — leaving only the UID field.
-3. Delete the `videos/` prefix from Firebase Storage to save costs.
-
-Don't rush this; the legacy fallback is cheap insurance during the
-migration window.
+Once every video lecture has a `cloudflareVideoId`, you can delete the
+`mediaUrl` for video lectures and the media files under
+`courses/*/sections/*/lectures/*/media/`. Keep the Storage path for
+audio / PDF / DOCX lectures.

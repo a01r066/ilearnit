@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Header for the search page — pill input + optional "Cancel" + filter
 /// icon. Mirrors the Tonebase / Udemy style from the attached screenshots.
@@ -83,12 +84,16 @@ class SearchAppBar extends StatelessWidget implements PreferredSizeWidget {
                       ),
                     ),
                     if (controller.text.isNotEmpty)
-                      GestureDetector(
-                        onTap: onClear,
-                        child: Icon(
-                          Icons.cancel,
-                          size: 20,
-                          color: theme.colorScheme.onSurfaceVariant,
+                      Semantics(
+                        button: true,
+                        label: context.l10n.searchClear,
+                        child: GestureDetector(
+                          onTap: onClear,
+                          child: Icon(
+                            Icons.cancel,
+                            size: 20,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                   ],

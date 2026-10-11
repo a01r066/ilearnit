@@ -9,23 +9,44 @@ Profile → Subscription → Checkout
                             │ tap Start subscription
                             ▼
 SubscriptionNotifier.buy(plan)
-   └─ IapRemoteDataSource.buyNonConsumable(productId)
-        ▼ (purchaseStream emits purchased | restored)
+   └─ IapRemoteDataSource.buyNonConsumable(productId)   // in_app_purchase uses
+        ▼ (purchaseStream emits purchased | restored)   // this call for subs
 SubscriptionNotifier._onPurchaseUpdates
    ├─ filter to SubscriptionPlan product ids
-   └─ SubscriptionFirestoreDataSource.recordPurchase
-        → users/{uid}.subscription = {
-            planId, productId, startedAt, expiresAt, autoRenew,
-            platform, originalTransactionId
-          }
-        ▼ (live stream)
-SubscriptionNotifier.state.status updates → UI flips to "active"
+   └─ PurchaseVerificationDataSource.verifySubscription(p)
+        → Cloud Function `verifySubscription` (functions/src/iap.ts)
+            iOS:     App Store Server API — Get All Subscription Statuses
+            Android: Play Developer API — purchases.subscriptionsv2
+            binds the store subscription to ONE uid (_iap_subscriptions/{hash})
+            writes users/{uid}.subscription (Admin SDK)
+        ▼ only after the server answers → completePurchase(p)
+SubscriptionFirestoreDataSource.watch(uid)  (read-only live stream)
         ▼
-hasActiveSubscriptionProvider → hasUnlockedAccessProvider(courseId)
-        → BuyCourseButton renders "Continue course" instead of "Unlock for $X"
+SubscriptionNotifier.state.status → hasActiveSubscriptionProvider
+        → hasUnlockedAccessProvider(courseId) → BuyCourseButton shows "Continue course"
 ```
 
-Trust model: **client writes the entitlement after a successful purchase.** Firestore rules let users write their *own* subscription map. A future server-side verifier would replace `recordPurchase` with a callable function that validates the App Store / Play Store receipt.
+**Trust model: the server writes the entitlement.** `firestore.rules`
+forbid clients from creating or changing `users/{uid}.subscription`; only
+`verifySubscription` and the store notification handlers (Admin SDK) write
+it. The client never computes `expiresAt` — it comes from the store.
+
+**Renewals, cancellations, refunds** reach the server without the app being
+open through store notifications (`functions/src/storeNotifications.ts`):
+
+- `appStoreNotifications` — App Store Server Notifications v2 (HTTPS). The
+  signed payload is verified to Apple's root CA, then the latest status is
+  re-read with the App Store Server API.
+- `playRtdn` — Google Play Real-time Developer Notifications (Pub/Sub topic
+  `play-billing`). State is re-read from `subscriptionsv2`; upgrades carry
+  the account binding over via `linkedPurchaseToken`.
+
+A refund / revocation sets `expiresAt` to now and `autoRenew: false`.
+Setup steps for both are in `docs/iap_setup.md` → "Server notifications".
+
+**Cancel from the app**: `SubscriptionNotifier.openManageSubscription()`
+opens the App Store / Play subscription page. The store tells the server
+(`autoRenew` flips to false via the notification); the app never writes it.
 
 ## Plans
 
@@ -62,22 +83,27 @@ Locale switch: VND for `vi`, USD for `en` (and any other locale by default). Con
 
 ## 3. Firestore rules
 
-The mobile app writes to `users/{uid}.subscription`. Add to your existing user rule:
+`users/{uid}.subscription` is server-owned. From `firestore.rules`:
 
 ```javascript
 match /users/{userId} {
-  // ... existing rules ...
+  // New accounts can't arrive with privileges or a subscription.
+  allow create: if isSignedIn()
+    && uid() == userId
+    && request.resource.data.get('role', 'student') == 'student'
+    && request.resource.data.get('isSuspended', false) == false
+    && !('subscription' in request.resource.data);
 
-  // Allow the owner to write their own subscription map. Admins can write
-  // any user's subscription (for support / refunds).
+  // Owners may edit their profile, never role / isSuspended / subscription.
   allow update: if isSignedIn()
     && uid() == userId
-    && request.resource.data.diff(resource.data).affectedKeys()
-        .hasOnly(['subscription', 'fcmTokens']);
+    && !(request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['role', 'isSuspended', 'subscription']));
 }
-```
 
-This carves out a narrow allow-rule so users can't sneak edits to `role` or `email` while touching `subscription`.
+// Account binding for store subscriptions — server-only.
+match /_iap_subscriptions/{id} { allow read, write: if false; }
+```
 
 ## 4. Sample doc shape
 
@@ -95,12 +121,13 @@ This carves out a narrow allow-rule so users can't sneak edits to `role` or `ema
     "autoRenew": true,
     "canceledAt": null,
     "platform": "ios",
-    "originalTransactionId": "GPA.xxxx-xxxx-xxxx-xxxxx"
+    "originalTransactionId": "2000000123456789",   // iOS original txn id / Play purchase token
+    "verifiedAt": "2026-05-30T10:23:20Z"           // last server verification
   }
 }
 ```
 
-The client treats `isActive` as `expiresAt > now` — auto-renew off but still in the paid period counts as active.
+The client treats `isActive` as `expiresAt > now` — auto-renew off but still in the paid period counts as active. Server checks (`hasCourseAccess` in `functions/src/iap.ts`, the reviews rule in `firestore.rules`) use the same definition.
 
 ## 5. Course gate integration
 
@@ -114,9 +141,10 @@ The per-course purchase flow continues to work for users without a subscription 
 2. Run mobile app, sign in.
 3. Profile → Subscription → Start subscription → choose Yearly → Start.
 4. The store sheet appears; sign in with the sandbox account and confirm.
-5. Within ~5 s the page should re-render with the active card. Check Firestore → `users/{uid}` for the `subscription` map.
+5. Within a few seconds the page should re-render with the active card. Check Firestore → `users/{uid}.subscription` (note `verifiedAt`) and the `verifySubscription` logs.
 6. Navigate to a paid course → BuyCourseButton should show "Continue course" + "Included in your Personal Plan" caption.
-7. Cancel the subscription in the OS settings (Settings → Apple ID → Subscriptions on iOS) and confirm the next launch reflects `autoRenew: false` after the store re-emits the purchase.
+7. Cancel the subscription in the store (Settings → Apple ID → Subscriptions on iOS). The store notification should flip `autoRenew` to `false` within minutes (sandbox) — check the `appStoreNotifications` / `playRtdn` logs.
+8. Try the same store account with a second iLearnIt account → verification fails with "linked to another iLearnIt account".
 
 ## 7. Troubleshooting
 
@@ -124,8 +152,10 @@ The per-course purchase flow continues to work for users without a subscription 
 |---|---|---|
 | "Product not available" snackbar | SKUs not approved yet (iOS) | Wait for App Review or use sandbox |
 | Prices show fallback only | `fetchProducts` failed silently | Check device locale supports the SKU; check store config |
-| Subscription unlocks but reverts on relaunch | Firestore write was denied | Check rule allows owner write on `subscription` field |
-| Restored purchase doesn't unlock UI | `_persistEntitlement` ran with `null` user | Sign in first, then tap Restore from Profile |
+| "We could not confirm your subscription" | `verifySubscription` failed | Check function logs: Apple secrets / `APPLE_APP_ID` / root certs, or Play service-account permissions |
+| "Linked to another iLearnIt account" | Store subscription already bound to a different uid | Expected — one store subscription per account. Support can delete the `_iap_subscriptions` doc to re-bind |
+| Renewal / cancel not reflected | Store notifications not configured | Register the Apple URL + Play RTDN topic (docs/iap_setup.md) |
+| Restored purchase doesn't unlock UI | No signed-in user when the stream emitted | Sign in, then tap Restore purchases in Profile (transaction stays open until verified) |
 | "Continue course" never appears after purchase | `subscriptionNotifierProvider` not eagerly read | Verify `bootstrap.dart` reads it |
 
 ## 8. Files
@@ -135,7 +165,12 @@ The per-course purchase flow continues to work for users without a subscription 
   - `lib/features/subscriptions/domain/entities/subscription_status.dart`
 - Data
   - `lib/features/subscriptions/data/models/subscription_model.dart`
-  - `lib/features/subscriptions/data/datasources/subscription_firestore_datasource.dart`
+  - `lib/features/subscriptions/data/datasources/subscription_firestore_datasource.dart` (read-only)
+  - `lib/features/purchases/data/datasources/purchase_verification_datasource.dart` (calls the verifiers)
+- Server
+  - `functions/src/iap.ts` (`verifySubscription`, `applySubscription`)
+  - `functions/src/store/apple.ts`, `functions/src/store/google.ts`
+  - `functions/src/storeNotifications.ts` (`appStoreNotifications`, `playRtdn`)
 - State + providers
   - `lib/features/subscriptions/presentation/providers/subscription_state.dart`
   - `lib/features/subscriptions/presentation/providers/subscription_notifier.dart`

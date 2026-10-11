@@ -14,6 +14,7 @@ import '../providers/auth_providers.dart';
 import '../providers/auth_state.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/social_sign_in_button.dart';
+import '../../../../l10n/l10n.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -74,7 +75,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            tooltip: 'Skip — continue as guest',
+            tooltip: t.authSkipGuestTooltip,
             icon: const Icon(Icons.close),
             onPressed:
                 isLoading ? null : () => context.go(RoutePaths.home),
@@ -91,10 +92,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               child: ListView(
                 children: [
                   const SizedBox(height: 8),
-                  Text('Welcome back', style: context.textTheme.displayLarge),
+                  Text(t.authWelcomeBack, style: context.textTheme.displayLarge),
                   const SizedBox(height: 8),
                   Text(
-                    'Sign in to continue your lessons.',
+                    t.authSignInSubtitle,
                     style: context.textTheme.bodyLarge?.copyWith(
                       color: context.colors.onSurfaceVariant,
                     ),
@@ -121,6 +122,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     validator: Validators.password,
                     onSubmitted: (_) => _submit(),
                     suffix: IconButton(
+                      tooltip: _obscure
+                          ? t.a11yShowPassword
+                          : t.a11yHidePassword,
                       icon: Icon(
                         _obscure
                             ? Icons.visibility_outlined
@@ -185,7 +189,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       onPressed: isLoading
                           ? null
                           : () => context.go(RoutePaths.home),
-                      child: const Text('Continue as guest'),
+                      child: Text(t.authContinueAsGuest),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -203,13 +207,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Future<void> _onForgot() async {
     final email = _email.text.trim();
     if (Validators.email(email) != null) {
-      context.showSnack('Enter your email above first.');
+      context.showSnack(context.l10n.authEnterEmailFirst);
       return;
     }
     final ok = await ref.read(authNotifierProvider.notifier).sendPasswordReset(email);
     if (!mounted) return;
     context.showSnack(
-      ok ? 'Password reset email sent.' : 'Could not send reset email.',
+      ok ? context.l10n.authResetSent : context.l10n.authResetFailed,
     );
   }
 }

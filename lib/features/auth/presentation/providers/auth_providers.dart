@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+import '../../../../core/session/before_sign_out_hooks.dart';
 import '../../../../shared/providers/firebase_providers.dart';
 import '../../../../shared/providers/connectivity_provider.dart';
 import '../../../../shared/providers/storage_providers.dart';
@@ -27,7 +28,10 @@ final authRepositoryProvider = Provider<AuthRepository>(
 
 final authNotifierProvider =
     StateNotifierProvider<AuthNotifier, AuthState>(
-  (ref) => AuthNotifier(ref.watch(authRepositoryProvider)),
+  (ref) => AuthNotifier(
+    ref.watch(authRepositoryProvider),
+    beforeSignOut: ref.watch(beforeSignOutHooksProvider),
+  ),
 );
 
 /// Convenience selector for the current user (null when not signed in).

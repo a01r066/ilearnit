@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'admin/admin_app.dart';
 import 'core/notifications/data/fcm_service.dart';
+import 'core/security/app_check_bootstrap.dart';
 import 'core/notifications/presentation/notification_providers.dart';
 import 'core/storage/prefs_service.dart';
 import 'firebase_options_dev.dart' as dev_opts;
@@ -25,6 +26,9 @@ Future<void> bootstrapAdmin() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: _firebaseOptions());
+
+  // reCAPTCHA v3 App Check (needs --dart-define=RECAPTCHA_SITE_KEY).
+  await activateAppCheck();
 
   // Register the FCM background message handler immediately after Firebase
   // is up. On Flutter web this still works (browser push), and on the

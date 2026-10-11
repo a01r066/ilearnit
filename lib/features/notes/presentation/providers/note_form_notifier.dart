@@ -4,6 +4,7 @@ import '../../../../core/error/failure.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 import '../../data/datasources/lecture_notes_datasource.dart';
 import 'note_form_state.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Drives the "Write a note" sheet. One notifier per lecture so
 /// concurrent drafts don't bleed across the curriculum.
@@ -99,7 +100,7 @@ class NoteFormNotifier extends StateNotifier<NoteFormState> {
       state = state.copyWith(
         isSubmitting: false,
         lastFailure: Failure.unexpected(
-          message: 'Could not save your note.',
+          message: L10n.current.notesSaveFailed,
           error: e,
         ),
       );

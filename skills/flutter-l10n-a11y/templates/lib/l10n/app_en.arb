@@ -1,0 +1,56 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "MyApp",
+
+  "actionCancel": "Cancel",
+  "actionSave": "Save",
+  "actionDelete": "Delete",
+  "actionRetry": "Try again",
+  "notNow": "Not now",
+  "turnOn": "Turn on",
+
+  "errGeneric": "Something went wrong. Please try again.",
+  "errNoInternet": "No internet connection.",
+  "errPermission": "You don't have access to this.",
+  "authErrInvalidEmail": "That email address doesn't look right.",
+  "authErrInvalidCredentials": "Incorrect email or password.",
+  "authErrEmailInUse": "An account already exists for this email.",
+  "authErrGeneric": "Sign-in failed. Please try again.",
+
+  "itemCount": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
+  "@itemCount": {
+    "description": "Count shown under a list title",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "priceLabel": "Buy for {price}",
+  "@priceLabel": {
+    "description": "Purchase button; price is the store-formatted string (already localized)",
+    "placeholders": {"price": {"type": "String"}}
+  },
+  "updatedOn": "Updated {date}",
+  "@updatedOn": {
+    "placeholders": {"date": {"type": "DateTime", "format": "yMMMd"}}
+  },
+
+  "difficultyBeginner": "Beginner",
+  "difficultyIntermediate": "Intermediate",
+  "difficultyAdvanced": "Advanced",
+
+  "notifSoftAskTitle": "Stay on track",
+  "notifSoftAskBody": "Get a reminder when new lessons arrive or a practice streak is about to end.",
+  "updateRequiredTitle": "Update required",
+  "updateRequiredBody": "This version is no longer supported. Please update to continue.",
+  "updateAvailableBody": "A new version is available.",
+  "updateNow": "Update",
+  "updateLater": "Dismiss",
+
+  "a11yRatingStars": "{rating} out of 5 stars",
+  "@a11yRatingStars": {
+    "placeholders": {"rating": {"type": "num", "format": "decimalPattern"}}
+  },
+  "a11ySetRating": "Rate {value} of 5",
+  "@a11ySetRating": {
+    "placeholders": {"value": {"type": "int"}}
+  }
+}

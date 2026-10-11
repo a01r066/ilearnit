@@ -1,0 +1,11 @@
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+nullable-getter: false
+# Generate into the source tree and COMMIT the output: CI and teammates
+# build without running gen-l10n, and diffs show string changes.
+synthetic-package: false
+output-dir: lib/l10n/generated
+preferred-supported-locales:
+  - en

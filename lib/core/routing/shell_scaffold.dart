@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/mini_player/presentation/widgets/mini_player_bar.dart';
 import '../../features/moderation/eula/eula_reacceptance_gate.dart';
+import '../../l10n/l10n.dart';
 
 /// The bottom-nav scaffold that wraps the four primary tabs.
 ///
@@ -17,12 +18,12 @@ class ShellScaffold extends StatelessWidget {
     _NavItem(
       icon: Icons.home_outlined,
       activeIcon: Icons.home_rounded,
-      label: 'Home',
+      labelOf: _home,
     ),
     _NavItem(
       icon: Icons.library_music_outlined,
       activeIcon: Icons.library_music_rounded,
-      label: 'Courses',
+      labelOf: _courses,
     ),
     // Instructors tab moved out of the bottom nav per product request —
     // /instructors + /instructors/:id remain reachable by deep link
@@ -33,14 +34,19 @@ class ShellScaffold extends StatelessWidget {
     _NavItem(
       icon: Icons.play_circle_outline,
       activeIcon: Icons.play_circle_rounded,
-      label: 'My learning',
+      labelOf: _myLearning,
     ),
     _NavItem(
       icon: Icons.account_circle_outlined,
       activeIcon: Icons.account_circle_rounded,
-      label: 'Profile',
+      labelOf: _profile,
     ),
   ];
+
+  static String _home(AppLocalizations t) => t.navHome;
+  static String _courses(AppLocalizations t) => t.navCourses;
+  static String _myLearning(AppLocalizations t) => t.navMyLearning;
+  static String _profile(AppLocalizations t) => t.navProfile;
 
   void _onTap(int index) {
     navigationShell.goBranch(
@@ -69,7 +75,7 @@ class ShellScaffold extends StatelessWidget {
                   (item) => NavigationDestination(
                     icon: Icon(item.icon),
                     selectedIcon: Icon(item.activeIcon),
-                    label: item.label,
+                    label: item.labelOf(context.l10n),
                   ),
                 )
                 .toList(),
@@ -85,9 +91,9 @@ class _NavItem {
   const _NavItem({
     required this.icon,
     required this.activeIcon,
-    required this.label,
+    required this.labelOf,
   });
   final IconData icon;
   final IconData activeIcon;
-  final String label;
+  final String Function(AppLocalizations) labelOf;
 }

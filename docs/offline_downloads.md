@@ -9,11 +9,13 @@ or expensive networks (VN is mostly mobile-tethered).
 ## 1. Where things live
 
 ```
-Documents directory (app-private, unencrypted, removed on uninstall)
-  └── downloads/
-        ├── <lectureId>.mp4
-        ├── <lectureId>.m4a
-        └── <lectureId>.pdf
+Application Support (app-private, excluded from backups, removed on uninstall)
+  ├── downloads/                 ← offline lectures (DownloadsService)
+  │     ├── <lectureId>.mp4
+  │     ├── <lectureId>.m4a
+  │     └── <lectureId>.pdf
+  └── resources/                 ← PDFs / scores opened from a lecture
+        └── <urlHash>_<name>.<ext>   (DocumentLectureResourceTile)
 
 Secure storage (Keychain on iOS / EncryptedSharedPreferences on Android)
   └── downloads_manifest_v1   (JSON: { lectureId: DownloadEntity, … })
@@ -22,6 +24,18 @@ Secure storage (Keychain on iOS / EncryptedSharedPreferences on Android)
 - **Media bytes** sit in app-private storage — the OS sandbox already
   prevents other apps from reading them, so we don't double-encrypt.
   Removed on uninstall.
+- **Not Documents.** Older builds wrote to `<Documents>/downloads` and
+  `<Documents>/ilearnit`. Documents is backed up to iCloud, which Apple's
+  data-storage guideline forbids for re-downloadable media. Paths come
+  from `lib/core/storage/offline_storage.dart`:
+  - `OfflineStorage.dir(name)` → `<ApplicationSupport>/<name>`, created
+    on demand and flagged `isExcludedFromBackup` on iOS through the
+    `ilearnit/backup` method channel (`ios/Runner/AppDelegate.swift`).
+  - Android Auto Backup / device transfer exclude these folders (and the
+    legacy `app_flutter/` ones) via `res/xml/data_extraction_rules.xml`
+    and `res/xml/backup_rules.xml`.
+  - Entries written by older builds keep their absolute Documents path
+    in the manifest and still play; wipes delete both locations.
 - **Manifest** is encrypted-at-rest in flutter_secure_storage per the
   P1-8 acceptance criteria. The JSON blob includes per-file
   `localPath`, `bytesDownloaded`, `totalBytes`, `status`,
@@ -54,6 +68,12 @@ Notes:
   here. For users on intermittent networks this means a 200 MB lecture
   re-downloads from byte 0. Filed as future work.
 - `delete()` is a hard purge: cancel + unlink file + drop manifest row.
+- **Signed URLs are resolved per transfer.** For paid Storage files the
+  manifest stores a stable reference (`lecture-media:<course>/<section>/<lecture>`)
+  in `mediaUrl`, never the signed URL. `DownloadsService.enqueue` calls
+  its `resolveUrl` hook (`LectureMediaService.resolveRef`) right before
+  each transfer, so a resume after the URL expired still works. If the
+  server refuses (not entitled / signed out) the entry becomes `failed`.
 
 ---
 
@@ -101,13 +121,18 @@ Notes:
 
 ## 6. Player local-file swap
 
-The player code is unchanged structurally; only the URL it receives flips:
+The player picks a local file first, then a signed URL:
 
 ```dart
 final localPath = ref.watch(localMediaPathForLectureProvider(lecture.id));
-final url = localPath != null
-    ? Uri.file(localPath).toString()
-    : lecture.mediaUrl!;
+if (localPath != null) {
+  url = Uri.file(localPath).toString();
+} else if (LectureMediaService.needsResolution(lecture.mediaUrl)) {
+  // gs:// reference → signed URL after a server entitlement check
+  url = await ref.watch(lectureMediaUrlProvider(LectureMediaRequest(...)));
+} else {
+  url = lecture.mediaUrl!; // plain https (external CDN)
+}
 ```
 
 `Uri.file(path).toString()` produces the correct `file:///…` URL on both
@@ -138,12 +163,13 @@ consider clearing some").
 ## 8. Permissions
 
 Neither iOS nor Android needs an extra permission for app-private
-Documents directory writes. Specifically:
+writes:
 
 - iOS — no `Info.plist` entry required.
-- Android — we use `getApplicationDocumentsDirectory()` which maps to
-  the app's internal `files/` directory; the legacy
-  `WRITE_EXTERNAL_STORAGE` permission is **not** needed.
+- Android — `getApplicationSupportDirectory()` maps to the app's
+  internal `files/` directory. No storage or `READ_MEDIA_*` permission is
+  needed — the manifest explicitly strips `READ_MEDIA_*` that plugins
+  merge in (Play's photo/video permission policy).
 
 ## 9. Testing checklist
 
@@ -159,7 +185,9 @@ Documents directory writes. Specifically:
 | Swipe a row in Downloads | Hard-deletes file + manifest entry |
 | Clear all overflow | Wipes the whole `downloads/` directory + manifest |
 | Tap a row in Downloads | Routes to lecture player with the saved position |
-| Sign out / delete account | Manifest entries remain (file-local — no PII gain by syncing). Hooking into deleteAccount.wipe() is filed as future polish. |
+| Sign out / delete account / revoked session | `sessionCleanupProvider` (`lib/app/session_cleanup.dart`) wipes all downloads + saved resources and stops the mini player, so the next person on the device can't play paid content. Guest downloads (never signed in) are untouched. |
+| Download a paid lecture as a non-owner | Entry becomes `failed` ("Purchase this course to download.") |
+| Resume a download hours later | New signed URL is fetched; transfer restarts |
 
 ## 10. Future work
 
@@ -173,3 +201,30 @@ Documents directory writes. Specifically:
 - DRM / HLS offline via Mux when we cut over from raw MP4.
 - Background downloads via `flutter_downloader` so iOS app
   backgrounding doesn't pause the transfer.
+
+## 11. Paid files in Firebase Storage
+
+Lecture media that isn't on Cloudflare (audio, PDF/DOCX lectures, older
+videos) and lecture resources are paid content. They are protected like
+this:
+
+- **Admin uploads** (`AdminStorageService.uploadLectureMedia` /
+  `uploadLectureResource`) store `gs://<bucket>/<path>` in the lecture
+  doc instead of a token-bearing download URL.
+- **`onLectureObjectFinalized`** (`functions/src/media.ts`) strips the
+  `firebaseStorageDownloadTokens` metadata from every new object under
+  `courses/*/sections/*/lectures/*/(media|resources)/`. A download token
+  would let anyone with the URL bypass Storage rules.
+- **`storage.rules`** allow direct reads of those paths only to the
+  course's instructor and admins (`canManageCourse`).
+- **`resolveLectureMedia`** (callable) checks entitlement
+  (`hasCourseAccess`; preview lectures are free) and returns a V4 signed
+  URL valid for 4 hours. The client (`LectureMediaService`) caches it for
+  50 minutes and clears the cache on sign-out.
+- **Migration**: admin calls `migrateLectureMediaToPrivate` once after
+  the new app is live — it rewrites legacy download URLs to `gs://`
+  references and revokes their tokens. Returns
+  `{lectures, docsUpdated, tokensRevoked, failures}`.
+- **IAM**: signing uses IAM `signBlob`. Grant the functions runtime
+  service account *Service Account Token Creator* on itself.
+

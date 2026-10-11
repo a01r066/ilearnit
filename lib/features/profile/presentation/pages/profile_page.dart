@@ -13,6 +13,7 @@ import 'package:ilearnit/features/auth/domain/entities/user_entity.dart';
 import '../../../purchases/presentation/widgets/restore_purchases_tile.dart';
 import '../../../subscriptions/presentation/providers/subscription_providers.dart';
 import '../../../wishlist/presentation/providers/wishlist_providers.dart';
+import '../../../../l10n/l10n.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -23,7 +24,7 @@ class ProfilePage extends ConsumerWidget {
     final isLoading = ref.watch(authNotifierProvider).isLoading;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(title: Text(context.l10n.navProfile)),
       body: _buildBody(user, context, isLoading, ref),
     );
   }
@@ -31,6 +32,7 @@ class ProfilePage extends ConsumerWidget {
   ListView _buildBody(UserEntity? user, BuildContext context, bool isLoading, WidgetRef ref) {
     final hasSubscription = ref.watch(hasActiveSubscriptionProvider);
     final isGuest = user == null;
+    final t = context.l10n;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -52,7 +54,7 @@ class ProfilePage extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    user?.displayName ?? 'Guest',
+                    user?.displayName ?? t.profileGuest,
                     style: context.textTheme.titleLarge,
                   ),
                   if (user != null) ...[
@@ -87,10 +89,10 @@ class ProfilePage extends ConsumerWidget {
           // surfacing the same destination twice.
           ListTile(
             leading: const Icon(Icons.workspace_premium_outlined),
-            title: const Text('Subscription'),
-            subtitle: hasSubscription
-                ? const Text('Personal Plan · active')
-                : const Text('Unlock all courses with Personal Plan'),
+            title: Text(t.subscriptionTitle),
+            subtitle: Text(
+              hasSubscription ? t.profilePlanActive : t.profilePlanCta,
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.goNamed(RouteNames.subscription),
           ),
@@ -110,12 +112,6 @@ class ProfilePage extends ConsumerWidget {
             onTap: () => context.pushNamed(RouteNames.wishlist),
           ),
           ListTile(
-            leading: const Icon(Icons.history),
-            title: const Text('Watch history'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {},
-          ),
-          ListTile(
             leading: const Icon(Icons.sticky_note_2_outlined),
             title: Text(AppLocalizations.of(context).notesPageTitle),
             subtitle:
@@ -133,8 +129,8 @@ class ProfilePage extends ConsumerWidget {
           if (user!.role.isModerator)
             ListTile(
               leading: const Icon(Icons.flag_outlined),
-              title: const Text('Moderation queue'),
-              subtitle: const Text('Triage UGC reports'),
+              title: Text(t.profileModerationQueue),
+              subtitle: Text(t.profileModerationSubtitle),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.pushNamed(RouteNames.moderator),
             ),
@@ -157,7 +153,7 @@ class ProfilePage extends ConsumerWidget {
         ),
         ListTile(
           leading: const Icon(Icons.settings_outlined),
-          title: const Text('Settings'),
+          title: Text(t.settingsTitle),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             context.goNamed(RouteNames.setting);
@@ -170,9 +166,9 @@ class ProfilePage extends ConsumerWidget {
           const Divider(height: 32),
           ListTile(
             leading: const Icon(Icons.logout, color: AppColors.error),
-            title: const Text(
-              'Sign out',
-              style: TextStyle(color: AppColors.error),
+            title: Text(
+              t.authSignOut,
+              style: const TextStyle(color: AppColors.error),
             ),
             onTap: isLoading
                 ? null
@@ -203,7 +199,7 @@ class _GuestSignInCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Save your progress',
+            context.l10n.profileGuestTitle,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: scheme.onPrimaryContainer,
                   fontWeight: FontWeight.w800,
@@ -211,8 +207,7 @@ class _GuestSignInCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Sign in to unlock courses, save bookmarks, take notes, '
-            'and pick up where you left off across devices.',
+            context.l10n.profileGuestBody,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: scheme.onPrimaryContainer.withValues(alpha: 0.85),
                 ),
@@ -223,7 +218,7 @@ class _GuestSignInCard extends StatelessWidget {
               Expanded(
                 child: FilledButton(
                   onPressed: () => context.goNamed(RouteNames.login),
-                  child: const Text('Sign in'),
+                  child: Text(context.l10n.authSignIn),
                 ),
               ),
               const SizedBox(width: 12),
@@ -236,7 +231,7 @@ class _GuestSignInCard extends StatelessWidget {
                       color: scheme.onPrimaryContainer.withValues(alpha: 0.4),
                     ),
                   ),
-                  child: const Text('Create account'),
+                  child: Text(context.l10n.authCreateAccount),
                 ),
               ),
             ],

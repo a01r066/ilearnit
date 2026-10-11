@@ -4,7 +4,14 @@ import '../../../../l10n/generated/app_localizations.dart';
 import '../widgets/metronome_view.dart';
 import '../widgets/tuner_view.dart';
 
-/// Practice tools page — two tabs, Metronome and Tuner.
+/// Flip to `true` once a real [TunerEngine] (mic capture + pitch
+/// detection, docs/practice_tools.md §4) replaces `StubTunerEngine`.
+/// Shipping the stub would show a tuner that never reacts — an
+/// App Review 2.1 "incomplete feature" rejection risk — and the real one
+/// also needs NSMicrophoneUsageDescription / RECORD_AUDIO.
+const bool kTunerEnabled = false;
+
+/// Practice tools page — Metronome, plus Tuner when [kTunerEnabled].
 ///
 /// Reached from `Profile → Practice tools`. Lives outside the bottom
 /// nav by design — adding a 6th tab would crowd the existing 5.
@@ -14,6 +21,12 @@ class PracticePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
+    if (!kTunerEnabled) {
+      return Scaffold(
+        appBar: AppBar(title: Text(t.practiceTitle)),
+        body: const MetronomeView(),
+      );
+    }
     return DefaultTabController(
       length: 2,
       child: Scaffold(

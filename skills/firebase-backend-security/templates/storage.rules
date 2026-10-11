@@ -1,0 +1,46 @@
+rules_version = '2';
+
+// Template. Paid files live under private prefixes and are served ONLY via
+// signed URLs minted by a callable; an onObjectFinalized trigger strips
+// Firebase download tokens from those prefixes.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() { return request.auth != null; }
+    function userDoc() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+    function isAdmin() {
+      return isSignedIn() && userDoc().get('role', 'user') == 'admin'
+        && userDoc().get('isSuspended', false) == false;
+    }
+    // Owner of items/{itemId} (or admin). A not-yet-created doc lets any
+    // signed-in creator upload a cover before the first save.
+    function canManage(itemId) {
+      return isAdmin() || (isSignedIn()
+        && (!firestore.exists(/databases/(default)/documents/items/$(itemId))
+            || firestore.get(/databases/(default)/documents/items/$(itemId)).data.ownerId == request.auth.uid));
+    }
+    function isImage() { return request.resource.contentType.matches('image/.*'); }
+
+    // Public marketing assets (covers, thumbnails).
+    match /items/{itemId}/public/{file=**} {
+      allow read: if true;
+      allow write: if canManage(itemId) && isImage() && request.resource.size < 5 * 1024 * 1024;
+    }
+
+    // Paid content — no direct reads except owner/admin (editor preview).
+    match /items/{itemId}/private/{file=**} {
+      allow read: if canManage(itemId);
+      allow write: if canManage(itemId) && request.resource.size < 2 * 1024 * 1024 * 1024;
+    }
+
+    // Per-user uploads (avatars).
+    match /users/{userId}/{file=**} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == userId
+        && isImage() && request.resource.size < 2 * 1024 * 1024;
+    }
+
+    match /{path=**} { allow read, write: if false; }
+  }
+}

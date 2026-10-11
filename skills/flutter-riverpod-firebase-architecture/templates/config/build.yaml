@@ -1,0 +1,8 @@
+# explicit_to_json: nested freezed models serialize to Maps, not Dart
+# objects (otherwise Firestore throws "Unsupported field value").
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          explicit_to_json: true

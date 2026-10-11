@@ -47,6 +47,9 @@ class InstructorsDataSource {
   Stream<List<CourseModel>> watchCoursesByInstructor(String instructorId) =>
       _courses
           .where('instructorId', isEqualTo: instructorId)
+          // Public profile shows published courses only (and rules
+          // reject unfiltered list queries over unpublished courses).
+          .where('status', isEqualTo: 'published')
           .snapshots()
           .map((s) => s.docs.map(CourseModel.fromDoc).toList());
 }

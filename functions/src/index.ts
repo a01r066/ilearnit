@@ -19,13 +19,20 @@
 
 import {initializeApp} from 'firebase-admin/app';
 import {getAuth} from 'firebase-admin/auth';
-import {getFirestore, FieldValue} from 'firebase-admin/firestore';
+import {AggregateField, getFirestore, FieldValue} from 'firebase-admin/firestore';
 import {getMessaging, MulticastMessage, TopicMessage} from 'firebase-admin/messaging';
 import {getStorage} from 'firebase-admin/storage';
-import {onDocumentCreated, onDocumentDeleted, onDocumentUpdated} from 'firebase-functions/v2/firestore';
+import {
+  onDocumentCreated,
+  onDocumentDeleted,
+  onDocumentUpdated,
+  onDocumentWritten,
+} from 'firebase-functions/v2/firestore';
 import {HttpsError, onCall} from 'firebase-functions/v2/https';
 import {logger} from 'firebase-functions/v2';
 import {defineSecret} from 'firebase-functions/params';
+import {requireAppCheck} from './appCheck';
+import {hasCourseAccess} from './iap';
 
 // ---------- Cloudflare Stream secrets -------------------------------------
 //
@@ -38,6 +45,7 @@ import {defineSecret} from 'firebase-functions/params';
 //
 const CLOUDFLARE_API_TOKEN = defineSecret('CLOUDFLARE_API_TOKEN');
 const CLOUDFLARE_ACCOUNT_ID = defineSecret('CLOUDFLARE_ACCOUNT_ID');
+
 
 initializeApp();
 const db = getFirestore();
@@ -340,6 +348,7 @@ export const onNotificationBroadcast = onDocumentCreated(
  * failure snackbar without leaking server internals.
  */
 export const deleteAccount = onCall(async (request) => {
+  requireAppCheck(request, 'deleteAccount');
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError(
@@ -373,6 +382,32 @@ export const deleteAccount = onCall(async (request) => {
     await deleteSubcollection(
       db.collection('users').doc(uid).collection('notes'),
     );
+
+    // 3c. Remaining per-user subcollections. Deleting users/{uid} does
+    //     NOT delete its subcollections.
+    const userRef = db.collection('users').doc(uid);
+    for (const name of ['purchases', 'songbooks', 'notifications', 'blocks']) {
+      await deleteSubcollection(userRef.collection(name));
+    }
+    const progress = await userRef.collection('courseProgress').get();
+    for (const doc of progress.docs) {
+      await deleteSubcollection(doc.ref.collection('lectures'));
+      await doc.ref.delete();
+    }
+
+    // 3d. IAP bookkeeping. Store-subscription bindings + open intents are
+    //     removed so the person can re-link their store subscription to a
+    //     new account. The ledger (`transactions`) is kept for financial
+    //     records but anonymized; `_iap_transactions` keeps only the uid
+    //     so the same store receipt can't be replayed.
+    for (const col of ['_iap_subscriptions', 'purchase_intents']) {
+      const snap = await db.collection(col).where('uid', '==', uid).get();
+      for (const doc of snap.docs) await doc.ref.delete();
+    }
+    const txns = await db.collection('transactions').where('studentUid', '==', uid).get();
+    for (const doc of txns.docs) {
+      await doc.ref.update({studentName: '', studentEmail: '', studentDeleted: true});
+    }
 
     // 4. Storage objects under users/{uid}/.
     try {
@@ -659,108 +694,102 @@ interface StreamPlaybackResult {
 }
 
 /**
- * Resolves a Cloudflare Stream video UID to playback URLs.
+ * Resolves a LECTURE to short-lived, signed Cloudflare Stream URLs.
  *
- * The Flutter client sends `{videoId: "bf53017eb..."}` and gets back
- * `{hlsUrl, dashUrl, thumbnailUrl, durationSec, readyToStream}`.
+ * Request:  {courseId, sectionId, lectureId}
+ * Response: {hlsUrl, dashUrl, thumbnailUrl, durationSec, readyToStream}
  *
- * The API token lives in a Firebase Secret and never leaves the
- * server. We require auth on the client side so anonymous strangers
- * can't enumerate the catalogue's video UIDs.
+ * Paywall: the video UID is read from the lecture doc server-side (the
+ * client can't ask for an arbitrary UID). Non-preview lectures require a
+ * signed-in user with access (purchase, active subscription, course
+ * instructor, or admin) — see hasCourseAccess() in iap.ts. Preview
+ * lectures stay playable for guests.
  *
- * Path: POST https://api.cloudflare.com/client/v4/accounts/{accountId}/stream/{videoId}
+ * URLs are signed with a Cloudflare Stream token (TTL below). Signing is
+ * only ENFORCED by Cloudflare for videos with `requireSignedURLs: true`;
+ * new uploads set it (createCloudflareUpload) and existing videos are
+ * migrated with the admin-only `enableSignedStreamUrls` callable.
  */
+const STREAM_TOKEN_TTL_SEC = 4 * 60 * 60;
+
+function cloudflareCreds(): {accountId: string; token: string} {
+  // Trim aggressively — `firebase functions:secrets:set` reads from stdin
+  // and a trailing newline silently corrupts the header / URL path.
+  const accountId = CLOUDFLARE_ACCOUNT_ID.value().trim();
+  const token = CLOUDFLARE_API_TOKEN.value().trim();
+  if (!/^[a-f0-9]{32}$/i.test(accountId)) {
+    logger.error(
+      `CLOUDFLARE_ACCOUNT_ID malformed (length=${accountId.length}). ` +
+        'Re-set the secret without trailing whitespace.',
+    );
+    throw new HttpsError('failed-precondition', 'Server misconfiguration — account id invalid.');
+  }
+  if (!token) {
+    throw new HttpsError('failed-precondition', 'Server misconfiguration — token missing.');
+  }
+  return {accountId, token};
+}
+
 export const resolveStreamPlayback = onCall(
   {secrets: [CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID]},
   async (request): Promise<StreamPlaybackResult> => {
-    // No auth gate — the consumer app now ships in guest-browse mode
-    // (Splash → Onboarding → Login(skippable) → Home) and free-preview
-    // lectures must be playable without an account.
-    //
-    // The returned HLS URLs are PUBLIC Cloudflare Stream URLs in v1
-    // (no signed-URL TTL); a guest hitting this callable gains nothing
-    // they couldn't get from the Cloudflare URL directly. Paywall
-    // enforcement for non-preview lectures is handled client-side on
-    // the lecture player + via the BuyCourseButton CTA.
-    //
-    // When signed-URLs land (see docs/cloudflare_stream.md "Signed
-    // URLs" section), this function should re-introduce an auth check
-    // AND a per-lecture entitlement lookup before minting the JWT.
-
-    const videoId = (request.data?.videoId as string | undefined)?.trim();
-    if (!videoId) {
-      throw new HttpsError('invalid-argument', 'videoId is required.');
-    }
-    // Cloudflare Stream UIDs are 32-char hex.
-    if (!/^[a-f0-9]{32}$/i.test(videoId)) {
-      throw new HttpsError(
-        'invalid-argument',
-        'videoId must be a Cloudflare Stream UID (32 hex chars).',
-      );
+    requireAppCheck(request, 'resolveStreamPlayback');
+    const courseId = (request.data?.courseId as string | undefined)?.trim();
+    const sectionId = (request.data?.sectionId as string | undefined)?.trim();
+    const lectureId = (request.data?.lectureId as string | undefined)?.trim();
+    if (!courseId || !sectionId || !lectureId) {
+      throw new HttpsError('invalid-argument', 'courseId, sectionId and lectureId are required.');
     }
 
-    // Trim aggressively — `firebase functions:secrets:set` reads from
-    // stdin and a trailing newline silently corrupts the Authorization
-    // header (request becomes `Bearer abc\n`) which Cloudflare rejects
-    // with 400. Same risk on the account id; a trailing `\n` in the URL
-    // path also triggers 400. Both are accepted as plain hex/alpha-num.
-    const accountId = CLOUDFLARE_ACCOUNT_ID.value().trim();
-    const token = CLOUDFLARE_API_TOKEN.value().trim();
+    const lectureSnap = await db
+      .doc(`courses/${courseId}/sections/${sectionId}/lectures/${lectureId}`)
+      .get();
+    const lecture = lectureSnap.data();
+    if (!lecture) throw new HttpsError('not-found', 'Lecture not found.');
 
-    if (!/^[a-f0-9]{32}$/i.test(accountId)) {
-      logger.error(
-        `CLOUDFLARE_ACCOUNT_ID malformed (length=${accountId.length}). ` +
-          'Re-set the secret without trailing whitespace.',
-      );
-      throw new HttpsError(
-        'failed-precondition',
-        'Server misconfiguration — account id invalid.',
-      );
-    }
-    if (!token) {
-      throw new HttpsError(
-        'failed-precondition',
-        'Server misconfiguration — token missing.',
-      );
+    const videoId = (lecture.cloudflareVideoId as string | undefined)?.trim();
+    if (!videoId || !/^[a-f0-9]{32}$/i.test(videoId)) {
+      throw new HttpsError('not-found', 'This lecture has no Cloudflare video.');
     }
 
-    const url =
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}` +
-      `/stream/${videoId}`;
+    if (lecture.isPreview !== true) {
+      const uid = request.auth?.uid;
+      if (!uid) {
+        throw new HttpsError('unauthenticated', 'Sign in to watch this lecture.');
+      }
+      if (!(await hasCourseAccess(uid, courseId))) {
+        throw new HttpsError('permission-denied', 'Purchase this course to watch this lecture.');
+      }
+    }
 
-    let response: Response;
+    const {accountId, token} = cloudflareCreds();
+    const base = `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/${videoId}`;
+    const auth = {Authorization: `Bearer ${token}`};
+
+    let details: Response;
+    let signed: Response;
     try {
-      response = await fetch(url, {
-        headers: {Authorization: `Bearer ${token}`},
-      });
+      [details, signed] = await Promise.all([
+        fetch(base, {headers: auth}),
+        fetch(`${base}/token`, {
+          method: 'POST',
+          headers: {...auth, 'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            exp: Math.floor(Date.now() / 1000) + STREAM_TOKEN_TTL_SEC,
+            downloadable: false,
+          }),
+        }),
+      ]);
     } catch (e) {
       logger.error(`Cloudflare fetch failed for ${videoId}: ${e}`);
-      throw new HttpsError(
-        'unavailable',
-        'Could not reach Cloudflare Stream.',
-      );
+      throw new HttpsError('unavailable', 'Could not reach Cloudflare Stream.');
     }
 
-    if (!response.ok) {
-      // Read the body so we can see what Cloudflare is actually
-      // complaining about. The 400 path almost always carries a JSON
-      // `errors: [{code, message}]` array that names the bad field.
-      let bodyText = '';
-      try {
-        bodyText = (await response.text()).slice(0, 500);
-      } catch (_) {
-        /* ignore */
-      }
-      logger.warn(
-        `Cloudflare returned ${response.status} for video ${videoId}. ` +
-          `Body: ${bodyText}`,
-      );
-      // 404 / 403 from Cloudflare → surface as not-found to the client
-      // so the UI can show a "video missing" message.
-      throw new HttpsError(
-        response.status === 404 ? 'not-found' : 'internal',
-        `Cloudflare Stream returned ${response.status}: ${bodyText}`,
-      );
+    if (!details.ok) {
+      const body = (await details.text().catch(() => '')).slice(0, 300);
+      logger.warn(`Cloudflare returned ${details.status} for ${videoId}: ${body}`);
+      // Don't echo Cloudflare's body to clients.
+      throw new HttpsError(details.status === 404 ? 'not-found' : 'internal', 'Video unavailable.');
     }
 
     interface CFResponse {
@@ -772,21 +801,70 @@ export const resolveStreamPlayback = onCall(
         playback?: {hls?: string; dash?: string};
       };
     }
-    const payload = (await response.json()) as CFResponse;
+    const payload = (await details.json()) as CFResponse;
     if (!payload.success || !payload.result) {
-      throw new HttpsError(
-        'internal',
-        'Cloudflare response was not successful.',
-      );
+      throw new HttpsError('internal', 'Cloudflare response was not successful.');
     }
 
+    const tokenJson = signed.ok
+      ? ((await signed.json()) as {result?: {token?: string}})
+      : null;
+    const streamToken = tokenJson?.result?.token;
+    if (!streamToken) {
+      logger.error(`Cloudflare token mint failed for ${videoId}: ${signed.status}`);
+      throw new HttpsError('internal', 'Could not sign playback URL.');
+    }
+
+    // Signed URLs replace the video UID path segment with the token.
+    const sign = (u?: string) => (u ? u.replace(`/${videoId}/`, `/${streamToken}/`) : null);
+
     return {
-      hlsUrl: payload.result.playback?.hls ?? null,
-      dashUrl: payload.result.playback?.dash ?? null,
-      thumbnailUrl: payload.result.thumbnail ?? null,
+      hlsUrl: sign(payload.result.playback?.hls),
+      dashUrl: sign(payload.result.playback?.dash),
+      thumbnailUrl: sign(payload.result.thumbnail),
       durationSec: Math.round(payload.result.duration ?? 0),
       readyToStream: payload.result.readyToStream === true,
     };
+  },
+);
+
+/**
+ * Admin-only one-off migration: flip `requireSignedURLs: true` on every
+ * Cloudflare video referenced by a lecture, so the paywall in
+ * resolveStreamPlayback is enforced by Cloudflare too. Idempotent.
+ * Deploy the new app + function FIRST (old app builds play unsigned
+ * URLs and will stop working once a video requires signing).
+ */
+export const enableSignedStreamUrls = onCall(
+  {secrets: [CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID], timeoutSeconds: 540},
+  async (request) => {
+    if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
+    if ((await getRole(request.auth.uid)) !== 'admin') {
+      throw new HttpsError('permission-denied', 'Admin role required.');
+    }
+    const {accountId, token} = cloudflareCreds();
+    const snap = await db.collectionGroup('lectures').get();
+    const ids = new Set<string>();
+    for (const d of snap.docs) {
+      const v = (d.data().cloudflareVideoId as string | undefined)?.trim();
+      if (v && /^[a-f0-9]{32}$/i.test(v)) ids.add(v);
+    }
+    let updated = 0;
+    const failed: string[] = [];
+    for (const id of ids) {
+      const res = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/${id}`,
+        {
+          method: 'POST',
+          headers: {Authorization: `Bearer ${token}`, 'Content-Type': 'application/json'},
+          body: JSON.stringify({uid: id, requireSignedURLs: true}),
+        },
+      ).catch(() => null);
+      if (res?.ok) updated++;
+      else failed.push(id);
+    }
+    logger.info(`enableSignedStreamUrls: updated=${updated} failed=${failed.length}`);
+    return {total: ids.size, updated, failed};
   },
 );
 
@@ -858,6 +936,9 @@ export const createCloudflareUpload = onCall(
         },
         body: JSON.stringify({
           maxDurationSeconds,
+          // Playback only via short-lived tokens minted by
+          // resolveStreamPlayback after an entitlement check.
+          requireSignedURLs: true,
           // Tag the upload so we can attribute it later in Cloudflare
           // dashboards / analytics. `meta` is arbitrary.
           meta: {
@@ -1135,6 +1216,46 @@ async function deleteCollectionInBatches(
 // We treat 404 as success — idempotency means a retry after a partial
 // failure can run through cleanly.
 
+/**
+ * True iff [uid] may delete Cloudflare video [videoUid]:
+ *   • every lecture that references it belongs to a course [uid] teaches, or
+ *   • no lecture references it yet and [uid] uploaded it (meta stamped by
+ *     createCloudflareUpload) — e.g. an upload discarded in the editor.
+ */
+async function callerOwnsStreamVideo(
+  uid: string,
+  videoUid: string,
+  accountId: string,
+  token: string,
+): Promise<boolean> {
+  const refs = await db
+    .collectionGroup('lectures')
+    .where('cloudflareVideoId', '==', videoUid)
+    .limit(10)
+    .get();
+  if (!refs.empty) {
+    // courses/{c}/sections/{s}/lectures/{l}
+    const courseIds = new Set(
+      refs.docs
+        .map((d) => d.ref.parent.parent?.parent.parent?.id)
+        .filter((id): id is string => !!id),
+    );
+    for (const courseId of courseIds) {
+      const course = await db.doc(`courses/${courseId}`).get();
+      if (course.data()?.instructorId !== uid) return false;
+    }
+    return courseIds.size > 0;
+  }
+
+  const res = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/${videoUid}`,
+    {headers: {Authorization: `Bearer ${token}`}},
+  ).catch(() => null);
+  if (!res?.ok) return false;
+  const json = (await res.json()) as {result?: {meta?: {uploadedByUid?: string}}};
+  return json.result?.meta?.uploadedByUid === uid;
+}
+
 export const deleteCloudflareVideo = onCall(
   {secrets: [CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID]},
   async (request) => {
@@ -1163,6 +1284,16 @@ export const deleteCloudflareVideo = onCall(
       throw new HttpsError(
         'failed-precondition',
         'Cloudflare account id or token misconfigured.',
+      );
+    }
+
+    // Ownership: video UIDs are visible in public lecture docs, so an
+    // instructor role alone must not be enough to delete one.
+    if (role !== 'admin' &&
+        !(await callerOwnsStreamVideo(request.auth.uid, videoUid, accountId, token))) {
+      throw new HttpsError(
+        'permission-denied',
+        'You can only delete videos from your own courses.',
       );
     }
 
@@ -1275,17 +1406,42 @@ export const processRefund = onCall(async (request) => {
     refundReason: reason,
   });
 
-  const enrSnap = await db
-    .collection('enrollments')
-    .where('userId', '==', studentUid)
-    .where('courseId', '==', courseId)
-    .limit(5)
+  // A duplicate payment never granted anything — refunding it must not
+  // revoke the original purchase.
+  if (txn.duplicate !== true) {
+    const enrSnap = await db
+      .collection('enrollments')
+      .where('userId', '==', studentUid)
+      .where('courseId', '==', courseId)
+      .limit(5)
+      .get();
+    for (const doc of enrSnap.docs) {
+      batch.update(doc.ref, {
+        status: 'cancelled',
+        cancelledAt: FieldValue.serverTimestamp(),
+        cancelledReason: 'refund',
+      });
+    }
+    // Remove access (hasCourseAccess / ownedCourseIds only honour
+    // status == 'purchased').
+    batch.set(db.doc(`users/${studentUid}/purchases/${courseId}`), {
+      status: 'refunded',
+      refundedAt: FieldValue.serverTimestamp(),
+    }, {merge: true});
+  }
+
+  // Keep the store-transaction sentinel in sync so a later store refund
+  // notification is a no-op and the receipt can't be replayed.
+  const sentinels = await db
+    .collection('_iap_transactions')
+    .where('ledgerId', '==', txnId)
+    .limit(1)
     .get();
-  for (const doc of enrSnap.docs) {
+  for (const doc of sentinels.docs) {
     batch.update(doc.ref, {
-      status: 'cancelled',
-      cancelledAt: FieldValue.serverTimestamp(),
-      cancelledReason: 'refund',
+      status: 'refunded',
+      refundReason: reason ?? 'admin',
+      refundedAt: FieldValue.serverTimestamp(),
     });
   }
 
@@ -1568,3 +1724,52 @@ export const onUserRoleChanged = onDocumentUpdated(
     }
   },
 );
+
+// ---------- Course rating aggregate ---------------------------------------
+
+/**
+ * Recomputes courses/{courseId}.rating + reviewCount whenever a review is
+ * created, edited or deleted. Clients can't write those fields (rules), so
+ * the catalogue rating can't be forged.
+ */
+export const onCourseReviewWritten = onDocumentWritten(
+  'courses/{courseId}/reviews/{userId}',
+  async (event) => {
+    const {courseId} = event.params;
+    const courseRef = db.doc(`courses/${courseId}`);
+    const agg = await courseRef
+      .collection('reviews')
+      .where('rating', '>=', 1)
+      .aggregate({
+        avg: AggregateField.average('rating'),
+        count: AggregateField.count(),
+      })
+      .get();
+    const {avg, count} = agg.data();
+    const course = await courseRef.get();
+    if (!course.exists) return; // course deleted — nothing to update
+    await courseRef.update({
+      rating: count > 0 && avg != null ? Math.round(avg * 100) / 100 : 0,
+      reviewCount: count,
+    });
+  },
+);
+
+// ---------- In-app purchases (see iap.ts) ---------------------------------
+export {
+  createPurchaseIntent,
+  verifyPurchase,
+  verifySongbookPurchase,
+  verifySubscription,
+} from './iap';
+
+// ---------- Paid lecture files in Storage (see media.ts) ------------------
+export {
+  migrateLectureMediaToPrivate,
+  onLectureObjectFinalized,
+  resolveLectureMedia,
+  resolveSongbookContent,
+} from './media';
+
+// ---------- Store server notifications (see storeNotifications.ts) --------
+export {appStoreNotifications, playRtdn} from './storeNotifications';

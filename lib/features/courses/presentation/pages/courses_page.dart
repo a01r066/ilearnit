@@ -15,6 +15,7 @@ import '../providers/courses_state.dart';
 import '../widgets/category_filter_bar.dart';
 import '../widgets/course_card.dart';
 import '../widgets/course_card_skeleton.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Catalogue browse page with cursor-paginated infinite scroll.
 ///
@@ -144,11 +145,12 @@ class _CoursesPageState extends ConsumerState<CoursesPage> {
         title: Text(t.coursesTitle),
         actions: [
           IconButton(
-            tooltip: 'Search',
+            tooltip: t.commonSearch,
             icon: const Icon(Icons.search),
             onPressed: () => context.goNamed(RouteNames.search),
           ),
           IconButton(
+            tooltip: t.commonRefresh,
             icon: const Icon(Icons.refresh_rounded),
             onPressed: notifier.refresh,
           ),
@@ -316,7 +318,7 @@ class _FeaturedBanner extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Showing featured courses',
+              context.l10n.coursesShowingFeatured,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: AppColors.primary,
                 fontWeight: FontWeight.w700,
@@ -326,7 +328,7 @@ class _FeaturedBanner extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.close, size: 18),
             color: AppColors.primary,
-            tooltip: 'Show all courses',
+            tooltip: context.l10n.coursesShowAll,
             onPressed: onClear,
             visualDensity: VisualDensity.compact,
           ),

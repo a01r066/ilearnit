@@ -9,6 +9,7 @@ import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../data/models/instructor_model.dart';
 import '../providers/instructor_providers.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Lists every instructor / publisher. Tap a row → InstructorDetailPage.
 class InstructorsPage extends ConsumerWidget {
@@ -19,10 +20,10 @@ class InstructorsPage extends ConsumerWidget {
     final list = ref.watch(instructorsListProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Instructors'),
+        title: Text(context.l10n.instructorsTitle),
         actions: [
           IconButton(
-            tooltip: 'Search',
+            tooltip: context.l10n.commonSearch,
             icon: const Icon(Icons.search),
             onPressed: () => context.goNamed(RouteNames.search),
           ),
@@ -37,7 +38,8 @@ class InstructorsPage extends ConsumerWidget {
           error: (e, _) => Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: Text('$e',
+              child: Text(context.l10n.commonLoadFailed,
+                  textAlign: TextAlign.center,
                   style: TextStyle(color: context.colors.error)),
             ),
           ),
@@ -47,17 +49,17 @@ class InstructorsPage extends ConsumerWidget {
               // works when the catalogue is empty.
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                children: const [
-                  SizedBox(height: 80),
+                children: [
+                  const SizedBox(height: 80),
                   Padding(
-                    padding: EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(24),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.person_search_rounded, size: 56),
-                        SizedBox(height: 12),
+                        const Icon(Icons.person_search_rounded, size: 56),
+                        const SizedBox(height: 12),
                         Text(
-                          'No instructors yet.',
+                          context.l10n.instructorsEmpty,
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -154,7 +156,7 @@ class _InstructorRow extends StatelessWidget {
         [
           if (instructor.primaryInstrument != null)
             instructor.primaryInstrument!,
-          '${fmt.format(instructor.studentCount)} students',
+          context.l10n.instructorStudents(fmt.format(instructor.studentCount)),
         ].join(' · '),
       ),
       trailing: const Icon(Icons.chevron_right),

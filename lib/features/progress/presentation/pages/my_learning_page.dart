@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../data/models/course_progress_model.dart';
 import '../providers/progress_providers.dart';
+import '../../../../l10n/l10n.dart';
 
 /// "My learning" — every course the user has any progress on, newest
 /// activity first. Reuses the existing `users/{uid}/courseProgress`
@@ -27,20 +28,15 @@ class MyLearningPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My learning'),
+        title: Text(context.l10n.navMyLearning),
         // Right-aligned actions match the screenshot reference: search
         // is wired here as a TODO (deep-link into /search filtered to
         // the user's own courses would be the natural next step).
         actions: [
           IconButton(
-            tooltip: 'Search',
+            tooltip: context.l10n.commonSearch,
             icon: const Icon(Icons.search),
             onPressed: () => context.pushNamed(RouteNames.search),
-          ),
-          IconButton(
-            tooltip: 'Filter',
-            icon: const Icon(Icons.tune),
-            onPressed: () {/* future: in-progress / completed filter */},
           ),
           const SizedBox(width: 4),
         ],
@@ -48,17 +44,15 @@ class MyLearningPage extends ConsumerWidget {
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => _Empty(
-          title: 'Could not load your library.',
-          subtitle: '$e',
+          title: context.l10n.myLearningLoadFailed,
+          subtitle: context.l10n.commonTryAgainLater,
           icon: Icons.error_outline,
         ),
         data: (items) {
           if (items.isEmpty) {
-            return const _Empty(
-              title: 'Nothing in your library yet.',
-              subtitle:
-                  'Start any lecture and it will show up here so you can '
-                  'pick up where you left off.',
+            return _Empty(
+              title: context.l10n.myLearningEmptyTitle,
+              subtitle: context.l10n.myLearningEmptyBody,
               icon: Icons.school_outlined,
             );
           }
@@ -138,7 +132,9 @@ class _LearningRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    progress.title.isEmpty ? '(untitled)' : progress.title,
+                    progress.title.isEmpty
+                        ? context.l10n.courseProgressUntitled
+                        : progress.title,
                     style: theme.textTheme.titleSmall
                         ?.copyWith(fontWeight: FontWeight.w800),
                     maxLines: 2,
@@ -161,8 +157,8 @@ class _LearningRow extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     isFinished
-                        ? 'Completed'
-                        : '$percent% complete',
+                        ? context.l10n.progressCompleted
+                        : context.l10n.progressPercentComplete('$percent'),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: isFinished
                           ? theme.colorScheme.primary

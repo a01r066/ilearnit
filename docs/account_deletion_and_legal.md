@@ -27,13 +27,27 @@ UI:    DeleteAccountPage (Settings → Delete account)
           │
           ▼ deletes
           ├── users/{uid}
+          ├── users/{uid}/{wishlist, notes, purchases, songbooks, notifications, blocks}
+          ├── users/{uid}/courseProgress/* (+ lectures/*)
           ├── instructor_applications/{uid}
           ├── enrollments where userId == uid (and /progress subcoll)
-          ├── courses/{*}/reviews/{uid}
+          ├── courses/{*}/reviews/{uid}   (→ onCourseReviewWritten recomputes ratings)
           ├── songbooks/{*}/reviews where userId == uid
+          ├── _iap_subscriptions + purchase_intents where uid == uid
           ├── Storage objects under users/{uid}/
           └── Auth user record (admin.auth().deleteUser)
+          ▼ anonymizes
+          └── transactions where studentUid == uid  (studentName/Email cleared,
+                                                    studentDeleted: true — kept as
+                                                    financial records)
 ```
+
+`_iap_transactions` sentinels keep only the uid so a deleted account's
+store receipts can't be replayed into a new account for a free course.
+
+On the device, ending the session triggers `sessionCleanupProvider`
+(mini player stopped, offline downloads + resources wiped, signed-URL
+caches cleared) and the FCM token is deleted.
 
 ### Files added
 
@@ -135,8 +149,9 @@ Then run `firebase deploy --only firestore:indexes`.
 
 ### Firestore rules
 
-The existing rules allow the function to write because the Admin SDK
-bypasses rules. No rule changes needed.
+The function writes with the Admin SDK, which bypasses rules. Clients
+can't delete `users/{uid}` themselves (`allow delete: if isAdmin()`), so
+the callable is the only deletion path.
 
 ### Testing checklist
 
@@ -158,8 +173,9 @@ bypasses rules. No rule changes needed.
 ### Architecture
 
 ```
-assets/legal/privacy_policy.md
-assets/legal/terms_of_service.md
+assets/legal/privacy_policy.md      (+ privacy_policy_vi.md — draft)
+assets/legal/terms_of_service.md    (+ terms_of_service_vi.md — draft)
+assets/legal/community.md           (+ community_vi.md — draft)
         │
         ▼  bundled assets (registered in pubspec.yaml)
    LegalDocumentPage(document: LegalDocument.X)

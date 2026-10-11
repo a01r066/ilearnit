@@ -14,7 +14,7 @@ enum DownloadStatus { queued, downloading, paused, completed, failed }
 /// iOS only if the user re-signs-in with the same keychain access group.
 ///
 /// The actual media bytes live at [localPath] under
-/// `getApplicationDocumentsDirectory()/downloads/` — app-private,
+/// `getApplicationSupportDirectory()/downloads/` — app-private,
 /// unencrypted, removed on uninstall.
 @freezed
 abstract class DownloadEntity with _$DownloadEntity {
@@ -30,7 +30,7 @@ abstract class DownloadEntity with _$DownloadEntity {
     /// instructor re-uploads a lecture (we'd then invalidate the cache).
     required String mediaUrl,
 
-    /// Absolute file path under the app's Documents directory.
+    /// Absolute file path under Application Support (older builds: Documents).
     required String localPath,
 
     /// Bytes written so far (== total on completion).

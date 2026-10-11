@@ -7,6 +7,7 @@ import '../core/theme/app_theme.dart';
 import '../features/profile/presentation/providers/locale_provider.dart';
 import '../flavors.dart';
 import '../l10n/generated/app_localizations.dart';
+import '../l10n/l10n.dart';
 import 'routing/admin_router.dart';
 
 /// Root widget of the admin web portal.
@@ -44,6 +45,8 @@ class AdminApp extends ConsumerWidget {
       supportedLocales: AppLocalizations.supportedLocales,
 
       builder: (context, child) {
+        // Keep context-free strings (errors, enum labels) in sync.
+        L10n.update(AppLocalizations.of(context));
         if (!F.isDev) return child ?? const SizedBox.shrink();
         return Banner(
           message: 'ADMIN · ${F.name.toUpperCase()}',

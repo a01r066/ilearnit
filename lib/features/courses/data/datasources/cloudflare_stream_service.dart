@@ -1,5 +1,6 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Cached resolution of one Cloudflare Stream video.
 @immutable
@@ -35,39 +36,58 @@ class CloudflareStreamPlayback {
 ///     authenticate the caller (the function rejects unsigned
 ///     requests) so we don't leak the catalogue's video UIDs to the
 ///     open internet.
+/// Identifies the lecture whose video should be resolved. The server
+/// reads the Cloudflare UID from the lecture doc and checks entitlement,
+/// so the client never asks for a raw video UID.
+@immutable
+class StreamPlaybackRequest {
+  const StreamPlaybackRequest({
+    required this.courseId,
+    required this.sectionId,
+    required this.lectureId,
+  });
+
+  final String courseId;
+  final String sectionId;
+  final String lectureId;
+
+  String get _key => '$courseId/$sectionId/$lectureId';
+
+  @override
+  bool operator ==(Object other) =>
+      other is StreamPlaybackRequest && other._key == _key;
+
+  @override
+  int get hashCode => _key.hashCode;
+}
+
 class CloudflareStreamService {
   CloudflareStreamService({FirebaseFunctions? functions})
       : _functions = functions ?? FirebaseFunctions.instance;
 
   final FirebaseFunctions _functions;
 
-  /// In-memory cache. Cloudflare HLS URLs are stable until the video
-  /// is re-uploaded or signed-URL policy flips, so we keep them for
-  /// the lifetime of the app process. Background app launches re-fetch
-  /// because the service is a singleton tied to the Riverpod container.
-  final Map<String, CloudflareStreamPlayback> _cache = {};
+  final Map<StreamPlaybackRequest, CloudflareStreamPlayback> _cache = {};
 
-  /// Cache TTL — after this we re-resolve even if the cache has an
-  /// entry. Set to 50 minutes because Cloudflare's default signed-URL
-  /// TTL is 60 minutes; staying under it gives us a safety margin.
+  /// Signed URLs are minted with a 4 h TTL server-side; refresh well
+  /// before that so a resumed session never holds an expired token.
   static const Duration _ttl = Duration(minutes: 50);
 
-  /// Resolve a UID. Throws a [CloudflareStreamException] on failure so
-  /// the player can show a friendly error widget.
-  Future<CloudflareStreamPlayback> resolve(String videoId) async {
-    final cached = _cache[videoId];
+  Future<CloudflareStreamPlayback> resolve(StreamPlaybackRequest req) async {
+    final cached = _cache[req];
     if (cached != null &&
         DateTime.now().difference(cached.resolvedAt) < _ttl) {
       return cached;
     }
 
     try {
-      final callable =
-          _functions.httpsCallable('resolveStreamPlayback');
-      final result = await callable.call<Map<String, dynamic>>(
-        {'videoId': videoId},
-      );
-      final data = result.data;
+      final callable = _functions.httpsCallable('resolveStreamPlayback');
+      final result = await callable.call<Object?>(<String, dynamic>{
+        'courseId': req.courseId,
+        'sectionId': req.sectionId,
+        'lectureId': req.lectureId,
+      });
+      final data = Map<String, dynamic>.from(result.data! as Map);
       final playback = CloudflareStreamPlayback(
         hlsUrl: data['hlsUrl'] as String?,
         dashUrl: data['dashUrl'] as String?,
@@ -76,23 +96,25 @@ class CloudflareStreamService {
         readyToStream: data['readyToStream'] as bool? ?? false,
         resolvedAt: DateTime.now(),
       );
-      _cache[videoId] = playback;
+      _cache[req] = playback;
       return playback;
     } on FirebaseFunctionsException catch (e) {
       throw CloudflareStreamException(
         code: e.code,
-        message: e.message ?? 'Unknown Cloudflare error',
+        message: L10n.current.videoUnavailable,
       );
     } catch (e) {
       throw CloudflareStreamException(
         code: 'unknown',
-        message: e.toString(),
+        message: L10n.current.videoUnavailable,
       );
     }
   }
 
-  /// Manual invalidation — call after replacing a video's media.
-  void invalidate(String videoId) => _cache.remove(videoId);
+  void invalidate(StreamPlaybackRequest req) => _cache.remove(req);
+
+  /// Drop every cached signed URL (e.g. on sign-out / account switch).
+  void clear() => _cache.clear();
 }
 
 class CloudflareStreamException implements Exception {

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'exceptions.dart';
 import 'failure.dart';
+import '../../l10n/l10n.dart';
 
 /// Centralized exception → Failure mapping.
 ///
@@ -48,23 +49,23 @@ Failure _fromDio(DioException e) {
     case DioExceptionType.connectionTimeout:
     case DioExceptionType.sendTimeout:
     case DioExceptionType.receiveTimeout:
-      return const Failure.network(message: 'Connection timeout. Try again.');
+      return Failure.network(message: L10n.current.errTimeout);
     case DioExceptionType.connectionError:
-      return const Failure.network();
+      return Failure.network(message: L10n.current.errNoInternet);
     case DioExceptionType.badResponse:
       final status = e.response?.statusCode;
       final data = e.response?.data;
       final msg = (data is Map && data['message'] is String)
           ? data['message'] as String
-          : 'Request failed.';
+          : L10n.current.errRequestFailed;
       return Failure.server(message: msg, statusCode: status);
     case DioExceptionType.cancel:
-      return const Failure.unexpected(message: 'Request cancelled.');
+      return Failure.unexpected(message: L10n.current.errRequestCancelled);
     case DioExceptionType.badCertificate:
-      return const Failure.network(message: 'Bad certificate.');
+      return Failure.network(message: L10n.current.errBadCertificate);
     case DioExceptionType.unknown:
       return Failure.unexpected(
-        message: e.message ?? 'Unknown network error.',
+        message: L10n.current.errUnknownNetwork,
         error: e,
       );
   }
@@ -73,22 +74,22 @@ Failure _fromDio(DioException e) {
 String _firebaseAuthMessage(FirebaseAuthException e) {
   switch (e.code) {
     case 'invalid-email':
-      return 'That email address is invalid.';
+      return L10n.current.authErrInvalidEmail;
     case 'user-disabled':
-      return 'This account has been disabled.';
+      return L10n.current.authErrDisabled;
     case 'user-not-found':
     case 'wrong-password':
     case 'invalid-credential':
-      return 'Invalid email or password.';
+      return L10n.current.authErrInvalidCredentials;
     case 'email-already-in-use':
-      return 'An account already exists for that email.';
+      return L10n.current.authErrEmailInUse;
     case 'weak-password':
-      return 'Password is too weak.';
+      return L10n.current.authErrWeakPassword;
     case 'too-many-requests':
-      return 'Too many attempts. Try again later.';
+      return L10n.current.authErrTooManyRequests;
     case 'network-request-failed':
-      return 'No internet connection.';
+      return L10n.current.errNoInternet;
     default:
-      return e.message ?? 'Authentication failed.';
+      return L10n.current.authErrGeneric;
   }
 }

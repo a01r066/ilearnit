@@ -5,6 +5,7 @@ import '../../../../shared/providers/connectivity_provider.dart';
 import '../../../../shared/providers/firebase_providers.dart';
 import '../../data/datasources/cloudflare_stream_service.dart';
 import '../../data/datasources/courses_remote_datasource.dart';
+import '../../data/datasources/lecture_media_service.dart';
 import '../../data/repositories/courses_repository_impl.dart';
 import '../../domain/entities/course_entity.dart';
 import '../../domain/entities/instrument_category.dart';
@@ -29,11 +30,24 @@ final cloudflareStreamServiceProvider = Provider<CloudflareStreamService>(
   (_) => CloudflareStreamService(),
 );
 
-/// Resolves a single video UID to a playback object. Use:
-/// `ref.watch(cloudflareStreamPlaybackProvider(lecture.cloudflareVideoId!))`.
+/// Resolves a lecture's Cloudflare video to signed playback URLs. The
+/// server enforces the paywall; a locked lecture fails with
+/// `permission-denied` / `unauthenticated`.
 final cloudflareStreamPlaybackProvider = FutureProvider.autoDispose
-    .family<CloudflareStreamPlayback, String>((ref, videoId) {
-  return ref.watch(cloudflareStreamServiceProvider).resolve(videoId);
+    .family<CloudflareStreamPlayback, StreamPlaybackRequest>((ref, req) {
+  return ref.watch(cloudflareStreamServiceProvider).resolve(req);
+});
+
+/// Paid Storage-hosted lecture files → short-lived signed URLs.
+final lectureMediaServiceProvider = Provider<LectureMediaService>(
+  (_) => LectureMediaService(),
+);
+
+/// Signed URL for a lecture's primary file (or one of its resources).
+/// Fails with [LectureMediaException.isLocked] when not entitled.
+final lectureMediaUrlProvider = FutureProvider.autoDispose
+    .family<String, LectureMediaRequest>((ref, req) {
+  return ref.watch(lectureMediaServiceProvider).resolve(req);
 });
 
 final coursesRepositoryProvider = Provider<CoursesRepository>(

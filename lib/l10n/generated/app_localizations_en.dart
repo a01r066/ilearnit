@@ -974,4 +974,832 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsAnalyticsSubtitle =>
       'Helps us spot crashes and improve the app. Toggle off to stop all collection.';
+
+  @override
+  String get errTimeout => 'Connection timed out. Please try again.';
+
+  @override
+  String get errRequestFailed => 'Request failed.';
+
+  @override
+  String get errRequestCancelled => 'Request cancelled.';
+
+  @override
+  String get errBadCertificate => 'Secure connection failed.';
+
+  @override
+  String get errUnknownNetwork => 'Unknown network error.';
+
+  @override
+  String get errNoInternet => 'No internet connection.';
+
+  @override
+  String get authErrInvalidEmail => 'That email address is invalid.';
+
+  @override
+  String get authErrDisabled => 'This account has been disabled.';
+
+  @override
+  String get authErrInvalidCredentials => 'Invalid email or password.';
+
+  @override
+  String get authErrEmailInUse => 'An account already exists for that email.';
+
+  @override
+  String get authErrWeakPassword => 'Password is too weak.';
+
+  @override
+  String get authErrTooManyRequests => 'Too many attempts. Try again later.';
+
+  @override
+  String get authErrGeneric => 'Authentication failed.';
+
+  @override
+  String get valEmailRequired => 'Email is required.';
+
+  @override
+  String get valEmailInvalid => 'Enter a valid email.';
+
+  @override
+  String get valPasswordRequired => 'Password is required.';
+
+  @override
+  String get valPasswordMin => 'At least 8 characters.';
+
+  @override
+  String valFieldRequired(String field) {
+    return '$field is required.';
+  }
+
+  @override
+  String get valThisField => 'This field';
+
+  @override
+  String valMismatch(String field) {
+    return '$field does not match.';
+  }
+
+  @override
+  String get valConfirmation => 'Confirmation';
+
+  @override
+  String get navMyLearning => 'My learning';
+
+  @override
+  String get routeNotFound => 'Page not found.';
+
+  @override
+  String get timeJustNow => 'just now';
+
+  @override
+  String timeMinutesAgo(String n) {
+    return '${n}m ago';
+  }
+
+  @override
+  String timeHoursAgo(String n) {
+    return '${n}h ago';
+  }
+
+  @override
+  String timeDaysAgo(String n) {
+    return '${n}d ago';
+  }
+
+  @override
+  String timeMinutesShort(String n) {
+    return '${n}m';
+  }
+
+  @override
+  String timeHoursShort(String n) {
+    return '${n}h';
+  }
+
+  @override
+  String timeDaysShort(String n) {
+    return '${n}d';
+  }
+
+  @override
+  String get authErrNoUser => 'Sign-in did not complete. Please try again.';
+
+  @override
+  String get authErrGoogleFailed => 'Google sign-in failed.';
+
+  @override
+  String get authErrCancelled => 'Sign-in cancelled.';
+
+  @override
+  String get authErrAppleOnly =>
+      'Sign in with Apple is only available on Apple devices.';
+
+  @override
+  String get authErrAppleFailed => 'Apple sign-in failed.';
+
+  @override
+  String get authErrNotSignedIn => 'You are not signed in.';
+
+  @override
+  String get authErrNoEmailReauth =>
+      'Your account has no email — try Google or Apple re-auth.';
+
+  @override
+  String get authErrReauthFailed => 'Re-authentication failed.';
+
+  @override
+  String get authErrReauthCancelled => 'Re-authentication cancelled.';
+
+  @override
+  String get authErrDeleteFailed => 'Account deletion failed.';
+
+  @override
+  String get authSkipGuestTooltip => 'Skip — continue as guest';
+
+  @override
+  String get authWelcomeBack => 'Welcome back';
+
+  @override
+  String get authSignInSubtitle => 'Sign in to continue your lessons.';
+
+  @override
+  String get authContinueAsGuest => 'Continue as guest';
+
+  @override
+  String get authEnterEmailFirst => 'Enter your email above first.';
+
+  @override
+  String get authResetSent => 'Password reset email sent.';
+
+  @override
+  String get authResetFailed => 'Could not send reset email.';
+
+  @override
+  String get authAcceptTermsFirst =>
+      'Please accept the Terms and Community Guidelines to continue.';
+
+  @override
+  String get authCreateAccount => 'Create account';
+
+  @override
+  String get authSignUpSubtitle =>
+      'Pick up your instrument — guitar, piano or violin.';
+
+  @override
+  String get authDisplayName => 'Display name';
+
+  @override
+  String get authAgreePrefix => 'I agree to the ';
+
+  @override
+  String get authAgreeTerms => 'Terms';
+
+  @override
+  String get authAgreeAnd => ' and ';
+
+  @override
+  String get authAgreeGuidelines => 'Community Guidelines';
+
+  @override
+  String get authAgreeSuffix =>
+      '. I will not post abusive, illegal, or objectionable content.';
+
+  @override
+  String get profileGuest => 'Guest';
+
+  @override
+  String get profilePlanActive => 'Personal Plan · active';
+
+  @override
+  String get profilePlanCta => 'Unlock all courses with Personal Plan';
+
+  @override
+  String get profileModerationQueue => 'Moderation queue';
+
+  @override
+  String get profileModerationSubtitle => 'Review reported content';
+
+  @override
+  String get profileGuestTitle => 'Save your progress';
+
+  @override
+  String get profileGuestBody =>
+      'Sign in to unlock courses, save bookmarks, take notes, and pick up where you left off across devices.';
+
+  @override
+  String get myLearningLoadFailed => 'Could not load your library.';
+
+  @override
+  String get commonTryAgainLater =>
+      'Please check your connection and try again.';
+
+  @override
+  String get myLearningEmptyTitle => 'Nothing in your library yet.';
+
+  @override
+  String get myLearningEmptyBody =>
+      'Start any lecture and it will show up here so you can pick up where you left off.';
+
+  @override
+  String get commonSearch => 'Search';
+
+  @override
+  String get progressCompleted => 'Completed';
+
+  @override
+  String progressPercentComplete(String percent) {
+    return '$percent% complete';
+  }
+
+  @override
+  String get purchaseContinueCourse => 'Continue course';
+
+  @override
+  String get purchaseIncludedInPlan => 'Included in your Personal Plan';
+
+  @override
+  String get purchaseSignInToUnlockCourse => 'Sign in to unlock this course.';
+
+  @override
+  String get purchaseSignInToUnlock => 'Sign in to unlock';
+
+  @override
+  String purchaseUnlockFor(String price) {
+    return 'Unlock for $price';
+  }
+
+  @override
+  String get purchaseUnavailable =>
+      'In-app purchases aren\'t available on this device.';
+
+  @override
+  String get purchaseRestoreDone =>
+      'Restore complete. Your purchases will appear shortly.';
+
+  @override
+  String get purchaseRestoreSubtitle =>
+      'Sync purchases made with your App Store or Google Play account.';
+
+  @override
+  String get purchaseProductUnavailable =>
+      'This item is not available in the store right now.';
+
+  @override
+  String get purchaseStoreDeclined =>
+      'The store could not start the purchase. Please try again.';
+
+  @override
+  String get purchaseNotSupportedPlatform =>
+      'In-app purchases are not supported on this platform.';
+
+  @override
+  String get purchaseAlreadyOwned => 'You already own this course.';
+
+  @override
+  String get purchaseCourseUnavailable =>
+      'This course is not available for purchase.';
+
+  @override
+  String get purchaseFailed =>
+      'Purchase could not be completed. Please try again.';
+
+  @override
+  String get subscriptionVerifyFailed =>
+      'We could not confirm your subscription. Please try again or use Restore purchases.';
+
+  @override
+  String get subscriptionOtherAccount =>
+      'This subscription is linked to another iLearnIt account.';
+
+  @override
+  String get errLoadFailed => 'Could not load data. Please try again.';
+
+  @override
+  String get courseNotFound => 'Course not found.';
+
+  @override
+  String get videoUnavailable => 'Video unavailable. Please try again.';
+
+  @override
+  String get notesSaveFailed => 'Could not save your note.';
+
+  @override
+  String get qaPostQuestionFailed => 'Could not post your question.';
+
+  @override
+  String get qaPostReplyFailed => 'Could not post your reply.';
+
+  @override
+  String durationHM(String h, String m) {
+    return '${h}h ${m}min';
+  }
+
+  @override
+  String durationM(String m) {
+    return '$m min';
+  }
+
+  @override
+  String durationS(String s) {
+    return '${s}s';
+  }
+
+  @override
+  String get courseTaughtBy => 'Taught by ';
+
+  @override
+  String get courseAbout => 'About this course';
+
+  @override
+  String get courseCurriculumSoon => 'Curriculum coming soon.';
+
+  @override
+  String get courseCurriculum => 'Curriculum';
+
+  @override
+  String courseCurriculumSummary(
+    String sections,
+    String lectures,
+    String duration,
+  ) {
+    return '$sections sections • $lectures lectures • $duration';
+  }
+
+  @override
+  String courseLessons(String count) {
+    return '$count lessons';
+  }
+
+  @override
+  String courseEnrolled(String count) {
+    return '$count enrolled';
+  }
+
+  @override
+  String get commonRefresh => 'Refresh';
+
+  @override
+  String get coursesShowingFeatured => 'Showing featured courses';
+
+  @override
+  String get coursesShowAll => 'Show all courses';
+
+  @override
+  String get instructorsEmpty => 'No instructors yet.';
+
+  @override
+  String instructorStudents(String count) {
+    return '$count students';
+  }
+
+  @override
+  String get commonLoadFailed =>
+      'Something went wrong. Pull down to try again.';
+
+  @override
+  String courseByInstructor(String name) {
+    return 'by $name';
+  }
+
+  @override
+  String get lectureNotFound => 'Lecture not found.';
+
+  @override
+  String get lectureMinimize => 'Minimize';
+
+  @override
+  String get lectureVideoMissing => 'Video unavailable.';
+
+  @override
+  String get lectureAudioMissing => 'Audio unavailable.';
+
+  @override
+  String get lecturePurchaseToWatch =>
+      'Purchase this course to watch this lecture.';
+
+  @override
+  String get lectureEncoding => 'Video still encoding — try again in a minute.';
+
+  @override
+  String get lectureResources => 'Resources';
+
+  @override
+  String get lecturePurchaseToOpen =>
+      'Purchase this course to open this lecture.';
+
+  @override
+  String get lectureLoadFailed =>
+      'Could not load this lecture. Please try again.';
+
+  @override
+  String get audioLoadFailed => 'Could not load audio.';
+
+  @override
+  String get playerBack10 => 'Back 10 seconds';
+
+  @override
+  String get playerForward30 => 'Forward 30 seconds';
+
+  @override
+  String get playerBack15 => 'Back 15 seconds';
+
+  @override
+  String get playerForward15 => 'Forward 15 seconds';
+
+  @override
+  String get playerPlay => 'Play';
+
+  @override
+  String get playerPause => 'Pause';
+
+  @override
+  String get commonClose => 'Close';
+
+  @override
+  String get videoLoadFailed => 'Could not load video.';
+
+  @override
+  String get levelBeginner => 'Beginner';
+
+  @override
+  String get levelIntermediate => 'Intermediate';
+
+  @override
+  String get levelAdvanced => 'Advanced';
+
+  @override
+  String get lectureTypeVideo => 'Video';
+
+  @override
+  String get lectureTypeAudio => 'Audio';
+
+  @override
+  String get lectureTypePdf => 'PDF';
+
+  @override
+  String get lectureTypeDoc => 'Document';
+
+  @override
+  String get reasonSpam => 'Spam or scam';
+
+  @override
+  String get reasonHarassment => 'Harassment or bullying';
+
+  @override
+  String get reasonHate => 'Hate speech or symbols';
+
+  @override
+  String get reasonSexual => 'Nudity or sexual content';
+
+  @override
+  String get reasonViolence => 'Violence or dangerous content';
+
+  @override
+  String get reasonSelfHarm => 'Self-harm or suicide';
+
+  @override
+  String get reasonMisinformation => 'False information';
+
+  @override
+  String get reasonIp => 'Copyright / IP infringement';
+
+  @override
+  String get reasonOther => 'Something else';
+
+  @override
+  String get ugcReview => 'Review';
+
+  @override
+  String get ugcQuestion => 'Question';
+
+  @override
+  String get ugcAnswer => 'Answer';
+
+  @override
+  String get ugcNote => 'Note';
+
+  @override
+  String get lectureAdditionalResources => 'Additional resources';
+
+  @override
+  String get commonOpen => 'Open';
+
+  @override
+  String get downloadPurchaseToDownload => 'Purchase this course to download.';
+
+  @override
+  String get downloadFailed => 'Download failed.';
+
+  @override
+  String get commonCancelDownload => 'Cancel download';
+
+  @override
+  String get lecturePreviewBadge => 'Preview';
+
+  @override
+  String get lectureLockedLabel => 'Locked';
+
+  @override
+  String sectionNumber(String n) {
+    return 'Section $n';
+  }
+
+  @override
+  String sectionSummary(String count, String duration) {
+    return '$count lectures • $duration';
+  }
+
+  @override
+  String get reviewsTitle => 'Ratings & Reviews';
+
+  @override
+  String get reviewsLoadFailed => 'Could not load reviews.';
+
+  @override
+  String get reviewsEmpty => 'No reviews yet — be the first.';
+
+  @override
+  String get reviewsCountOne => '1 review';
+
+  @override
+  String reviewsCountMany(String count) {
+    return '$count reviews';
+  }
+
+  @override
+  String get reviewSignInToWrite => 'Sign in to write a review';
+
+  @override
+  String get reviewEdit => 'Edit your review';
+
+  @override
+  String get reviewWrite => 'Write a review';
+
+  @override
+  String get reviewSignInSnack => 'Sign in to leave a review.';
+
+  @override
+  String get reviewAccessGate =>
+      'Unlock this course (or subscribe) to leave a review.';
+
+  @override
+  String get reviewBodyLabel => 'Your review (optional)';
+
+  @override
+  String get reviewBodyHint => 'What did you think of the course?';
+
+  @override
+  String get commonSubmit => 'Submit';
+
+  @override
+  String get reviewDeleteTitle => 'Delete your review?';
+
+  @override
+  String get reviewDeleteBody =>
+      'This will remove your rating and review from this course.';
+
+  @override
+  String get commonDelete => 'Delete';
+
+  @override
+  String get reviewDeleteMine => 'Delete my review';
+
+  @override
+  String get instructorCoursesLoadFailed => 'Could not load courses.';
+
+  @override
+  String get commonCouldNotOpenLink => 'Could not open link.';
+
+  @override
+  String get playerForward10 => 'Forward 10 seconds';
+
+  @override
+  String get eulaAcceptFailed =>
+      'Could not save your acceptance. Please try again.';
+
+  @override
+  String get eulaUpdatedTitle => 'Updated agreement';
+
+  @override
+  String eulaUpdatedBody(String date) {
+    return 'We\'ve updated our Terms and Community Guidelines ($date). Please review and accept to continue using iLearnIt.';
+  }
+
+  @override
+  String get eulaReadTerms => 'Read terms';
+
+  @override
+  String get eulaReadGuidelines => 'Read guidelines';
+
+  @override
+  String get eulaAccept => 'I accept';
+
+  @override
+  String get blockFailed => 'Could not block this user. Please try again.';
+
+  @override
+  String get blockThisUser => 'this user';
+
+  @override
+  String blockTitle(String name) {
+    return 'Block $name?';
+  }
+
+  @override
+  String blockBody(String name) {
+    return 'You won\'t see any reviews, questions, answers, or notes from $name. They won\'t be notified.';
+  }
+
+  @override
+  String get blockAction => 'Block';
+
+  @override
+  String get reportThanks => 'Thanks — our team will review this shortly.';
+
+  @override
+  String get reportFailed => 'Could not submit the report. Please try again.';
+
+  @override
+  String reportTitle(String type) {
+    return 'Report $type';
+  }
+
+  @override
+  String get reportIntro =>
+      'Help us keep this community safe. Reports are reviewed within 24 hours.';
+
+  @override
+  String get reportReason => 'Reason';
+
+  @override
+  String get reportNotes => 'Additional notes (optional)';
+
+  @override
+  String get reportSubmit => 'Submit report';
+
+  @override
+  String get commonMore => 'More';
+
+  @override
+  String get ugcReport => 'Report';
+
+  @override
+  String ugcBlockName(String name) {
+    return 'Block $name';
+  }
+
+  @override
+  String ugcUnblockName(String name) {
+    return 'Unblock $name';
+  }
+
+  @override
+  String get ugcUserFallback => 'user';
+
+  @override
+  String get modTitle => 'Moderation';
+
+  @override
+  String get modNoAccess => 'You do not have access.';
+
+  @override
+  String modOpenCount(String count) {
+    return '$count open';
+  }
+
+  @override
+  String get modNoOpenReports => 'No open reports';
+
+  @override
+  String get modNothingToTriage => 'Nothing to triage';
+
+  @override
+  String get modEmptyHint => 'Reports tied to your courses will appear here.';
+
+  @override
+  String get modActionFailed => 'Action failed. Please try again.';
+
+  @override
+  String get modHide => 'Hide';
+
+  @override
+  String get modDismiss => 'Dismiss';
+
+  @override
+  String get notesSignInSnack => 'Sign in to save notes.';
+
+  @override
+  String get qaSignInToReply => 'Sign in to reply';
+
+  @override
+  String get qaSignInToJoin => 'Sign in to join the conversation.';
+
+  @override
+  String get qaSignInToAsk => 'Sign in to ask a question.';
+
+  @override
+  String get filterTitle => 'Filters';
+
+  @override
+  String get filterReset => 'Reset';
+
+  @override
+  String get filterInstrument => 'Instrument';
+
+  @override
+  String get filterLevel => 'Level';
+
+  @override
+  String get filterMinRating => 'Minimum rating';
+
+  @override
+  String get filterAny => 'Any';
+
+  @override
+  String get filterMaxPrice => 'Max price';
+
+  @override
+  String get filterApply => 'Apply';
+
+  @override
+  String get learningPathCourseLoadFailed => 'Could not load this course.';
+
+  @override
+  String get legalCommunityGuidelinesTitle => 'Community Guidelines';
+
+  @override
+  String get songbookLoadFailed => 'Could not load this songbook.';
+
+  @override
+  String songbookSectionFailed(String section) {
+    return '$section — failed to load.';
+  }
+
+  @override
+  String get notifChannelName => 'iLearnIt notifications';
+
+  @override
+  String get notifChannelDesc =>
+      'Course updates, application status, and announcements.';
+
+  @override
+  String get a11yShowPassword => 'Show password';
+
+  @override
+  String get a11yHidePassword => 'Hide password';
+
+  @override
+  String a11yRateStars(String n) {
+    return 'Rate $n out of 5 stars';
+  }
+
+  @override
+  String get updateRequiredTitle => 'Update required';
+
+  @override
+  String get updateRequiredBody =>
+      'This version of iLearnIt is no longer supported. Please update to keep learning.';
+
+  @override
+  String get updateNow => 'Update';
+
+  @override
+  String get updateAvailableBody => 'A new version of iLearnIt is available.';
+
+  @override
+  String get updateLater => 'Not now';
+
+  @override
+  String get songbookPreparing => 'Preparing your songbook…';
+
+  @override
+  String get songbookNoViewer => 'No app on this device can open PDF files.';
+
+  @override
+  String get songbookLocked =>
+      'Get this songbook (or the Personal Plan) to open it.';
+
+  @override
+  String get songbookOpenFailed =>
+      'Could not open the songbook. Please try again.';
+
+  @override
+  String songbookSamplePage(String page, String total) {
+    return 'Sample · $page/$total';
+  }
+
+  @override
+  String get songbookOpen => 'Open songbook';
+
+  @override
+  String get songbookSignInToGet => 'Sign in to get this songbook.';
+
+  @override
+  String songbookGetForPrice(String price) {
+    return 'Get Songbook · $price';
+  }
+
+  @override
+  String get songbookOtherAccount =>
+      'This purchase is linked to another iLearnIt account.';
 }

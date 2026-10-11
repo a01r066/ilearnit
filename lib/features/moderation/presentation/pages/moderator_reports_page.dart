@@ -10,6 +10,7 @@ import '../../data/models/report_model.dart';
 import '../../domain/entities/report.dart';
 import '../../domain/entities/report_status.dart';
 import '../providers/moderation_providers.dart';
+import '../../../../l10n/l10n.dart';
 
 /// In-app moderation surface, opened at `/moderator`.
 ///
@@ -38,8 +39,8 @@ class ModeratorReportsPage extends ConsumerWidget {
     // somehow reached without role.
     if (user == null || !role.isModerator) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Moderation')),
-        body: const Center(child: Text('You do not have access.')),
+        appBar: AppBar(title: Text(context.l10n.modTitle)),
+        body: Center(child: Text(context.l10n.modNoAccess)),
       );
     }
 
@@ -49,7 +50,7 @@ class ModeratorReportsPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Moderation queue'),
+        title: Text(context.l10n.profileModerationQueue),
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -60,7 +61,7 @@ class ModeratorReportsPage extends ConsumerWidget {
               loading: () => const SizedBox.shrink(),
               error: (_, __) => const SizedBox.shrink(),
               data: (rs) => Text(
-                '${rs.length} open',
+                context.l10n.modOpenCount('${rs.length}'),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -72,7 +73,7 @@ class ModeratorReportsPage extends ConsumerWidget {
                 loading: () =>
                     const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Center(
-                  child: Text('Could not load: $e',
+                  child: Text(context.l10n.commonLoadFailed,
                       style: TextStyle(color: theme.colorScheme.error)),
                 ),
                 data: (list) => list.isEmpty
@@ -112,13 +113,15 @@ class _Empty extends StatelessWidget {
               size: 48, color: theme.colorScheme.primary),
           const SizedBox(height: 12),
           Text(
-            isAdmin ? 'No open reports' : 'Nothing to triage',
+            isAdmin
+                ? context.l10n.modNoOpenReports
+                : context.l10n.modNothingToTriage,
             style: theme.textTheme.titleMedium,
           ),
           if (!isAdmin) ...[
             const SizedBox(height: 4),
             Text(
-              'Reports tied to your courses will appear here.',
+              context.l10n.modEmptyHint,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -191,7 +194,7 @@ class _ModReportCardState extends ConsumerState<_ModReportCard> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Resolve failed: $e')),
+        SnackBar(content: Text(context.l10n.modActionFailed)),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -211,7 +214,7 @@ class _ModReportCardState extends ConsumerState<_ModReportCard> {
       if (!mounted) return;
       setState(() => _busy = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Hide failed: $e')),
+        SnackBar(content: Text(context.l10n.modActionFailed)),
       );
     }
   }
@@ -256,7 +259,9 @@ class _ModReportCardState extends ConsumerState<_ModReportCard> {
           Text(r.contentSnapshot, style: theme.textTheme.bodyLarge),
           const SizedBox(height: 8),
           Text(
-            'by ${r.authorName.isEmpty ? r.authorId : r.authorName}',
+            context.l10n.courseByInstructor(
+              r.authorName.isEmpty ? r.authorId : r.authorName,
+            ),
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -280,7 +285,7 @@ class _ModReportCardState extends ConsumerState<_ModReportCard> {
               Expanded(
                 child: FilledButton.icon(
                   icon: const Icon(Icons.visibility_off_outlined),
-                  label: const Text('Hide'),
+                  label: Text(context.l10n.modHide),
                   onPressed: _busy ? null : _hideContent,
                 ),
               ),
@@ -288,7 +293,7 @@ class _ModReportCardState extends ConsumerState<_ModReportCard> {
               Expanded(
                 child: OutlinedButton.icon(
                   icon: const Icon(Icons.close),
-                  label: const Text('Dismiss'),
+                  label: Text(context.l10n.modDismiss),
                   onPressed: _busy
                       ? null
                       : () => _resolve(ReportStatus.dismissed),

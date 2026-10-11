@@ -10,6 +10,7 @@ import '../../../utils/extensions.dart';
 import '../../data/models/notification_item_model.dart';
 import '../../domain/notification_payload.dart';
 import '../inbox_providers.dart';
+import '../../../../l10n/l10n.dart';
 
 /// In-app inbox at `/notifications`.
 ///
@@ -213,10 +214,11 @@ class _InboxTile extends StatelessWidget {
     if (when == null) return '';
     final now = DateTime.now();
     final diff = now.difference(when);
-    if (diff.inMinutes < 1) return 'just now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-    if (diff.inDays < 1) return '${diff.inHours}h ago';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    final t = L10n.current;
+    if (diff.inMinutes < 1) return t.timeJustNow;
+    if (diff.inHours < 1) return t.timeMinutesAgo('${diff.inMinutes}');
+    if (diff.inDays < 1) return t.timeHoursAgo('${diff.inHours}');
+    if (diff.inDays < 7) return t.timeDaysAgo('${diff.inDays}');
     return DateFormat.yMMMd().format(when);
   }
 }

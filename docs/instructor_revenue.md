@@ -52,8 +52,11 @@ transactions/{transactionId}
   currency        'USD' | 'VND' | …
   platform        'ios' | 'android' | 'web'
   status          'paid' | 'refunded' | 'pending'
-  last4           string?                 (last 4 of payment method — display only)
-  processorRef    string?                 (App Store transactionId / Play purchaseToken)
+  duplicate       bool                    (true = paid again for an owned course; grants nothing)
+  productId       string                  (info.ilearnit.course_tier_*)
+  last4           string?                 (last 4 of payment method — display only; not available from stores)
+  processorRef    string?                 (App Store transactionId / Play orderId)
+  originalTransactionId string?
   createdAt       Timestamp
   refundedAt      Timestamp?
   refundReason    string?
@@ -97,7 +100,8 @@ payouts/{payoutId}
   update : isAdmin()
   delete : isAdmin()
 
-enrollments/{id}
+enrollments/{uid}_{courseId}
+  create : false   (verifyPurchase only)
   read   : userId == uid
            || isAdmin()
            || (isInstructor()
@@ -113,7 +117,7 @@ dozens of rows.
 
 | Function | Caller | What it does |
 |---|---|---|
-| `processRefund` | admin | Flip `transactions/{id}.status = 'refunded'`, cancel matching enrollment, notify student via inbox + push. |
+| `processRefund` | admin | Flip `transactions/{id}.status = 'refunded'`; unless the row is a `duplicate`, cancel the matching enrollment and set `users/{uid}/purchases/{courseId}.status = 'refunded'` (removes access); mark the `_iap_transactions` sentinel refunded; notify student via inbox + push. |
 | `instructorBroadcast` | instructor (own course) or admin | Resolve the course's enrolled students server-side; fan out a push + inbox row to each via `notifyUser`. Title ≤ 80 chars, body ≤ 800 chars. |
 | `markPayoutPaid` | admin | Flip `payouts/{id}.status = 'paid'`, stamp `paidAt`, `paidByUid`, `payoutMethod`. |
 
@@ -154,15 +158,23 @@ top right. Filename templates:
 
 ## Where transactions come from
 
-The roadmap item P0-1 (server-side IAP receipt verification, in
-`docs/go_live_roadmap.md`) is the future writer of the `transactions`
-collection. Until that lands, transactions are seeded manually — see
-`sample_data/seed_firestore.js` for a future `--only=transactions`
-extension, or write docs directly via the Firebase console.
+`verifyPurchase` (`functions/src/iap.ts`) writes one `transactions` row
+per verified store purchase, in the same Firestore transaction that
+grants `users/{uid}/purchases/{courseId}` and
+`enrollments/{uid}_{courseId}`. It denormalizes `courseTitle`,
+`instructorId` / `instructorName` (from the course doc) and
+`studentName` / `studentEmail` (from `users/{uid}`), so the instructor
+queries work without joins.
 
-A transaction's `instructorId` MUST match the course's
-`courses/{id}.instructorId` for any of the instructor-side queries to
-work. The receipt verifier will denormalize this at write time.
+`amountUsd` is the tier's **list price** (basic $9.99 / standard $19.99 /
+premium $39.99 — `TIER_LIST_PRICE_USD`, mirroring
+`PriceTier.rawFallbackPrice`). The amount actually charged varies by
+storefront/currency and store fees; reconcile payouts against App Store
+Connect / Play Console financial reports.
+
+Store refunds arrive automatically: `appStoreNotifications` (REFUND /
+REVOKE) and `playRtdn` (voided purchases) flip the row to `refunded`
+and remove access, like `processRefund`.
 
 ## Communication channel rationale
 
@@ -185,19 +197,20 @@ parallel mode.
 
 **v1 is bookkeeping-only.** No real money moves through the system.
 
-- A refund flips `transactions.{status: 'refunded'}` and cancels the
-  matching `enrollments/{id}` doc. The actual storefront refund is
-  processed out-of-band (App Store Connect → Sales and Trends →
-  refund, or Play Console → Order management). Best practice: refund
-  in the storefront first, then click Refund in admin so the
-  bookkeeping reflects reality.
+- An admin refund flips `transactions.{status: 'refunded'}`, cancels the
+  matching enrollment and removes course access. The storefront refund
+  itself is still processed out-of-band (Play Console → Order
+  management; Apple refunds are customer-initiated via
+  reportaproblem.apple.com). Refunds initiated in the store reach the
+  backend on their own through the store notifications — no admin click
+  needed.
 - A payout marks `payouts.{status: 'paid'}` after the admin has
   processed the actual bank wire / Stripe Connect transfer / Wise
   payment outside the system.
 
-Upgrading to real money movement (Stripe Connect for payouts;
-App Store Server Notifications V2 / Play Voided Purchases webhook for
-auto-refunds) is filed as P0-1 follow-on work.
+Store-side refunds are already automated (App Store Server
+Notifications v2 / Play RTDN voided purchases). Real money movement for
+payouts (Stripe Connect / Wise) is still future work.
 
 ## Required follow-up after pulling this branch
 

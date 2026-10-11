@@ -20,9 +20,6 @@ class CourseReviewsDataSource {
           .doc(courseId)
           .collection('reviews');
 
-  DocumentReference<Map<String, dynamic>> _course(String courseId) =>
-      _firestore.collection(FirestoreCollections.courses).doc(courseId);
-
   Stream<List<CourseReviewModel>> watchByCourse(
     String courseId, {
     int limit = 100,
@@ -38,13 +35,10 @@ class CourseReviewsDataSource {
             (doc) => doc.exists ? CourseReviewModel.fromDoc(doc) : null,
           );
 
-  /// Insert / update the calling user's review in one atomic transaction
-  /// that also re-aggregates the course's `rating` + `reviewCount`.
-  ///
-  /// Aggregate math: re-scan the subcollection, sum + count, write the
-  /// course doc. For a small N (typical course has < 1k reviews) the
-  /// extra read is fine. Switch to a Cloud Function-aggregated counter
-  /// once you cross a few thousand reviews per course.
+  /// Insert / update the calling user's review. The course's `rating` +
+  /// `reviewCount` are recomputed server-side by the `onCourseReviewWritten`
+  /// Cloud Function — clients can't write those fields (firestore.rules),
+  /// and the review itself is only accepted from buyers / subscribers.
   Future<void> upsert({
     required String courseId,
     required String userId,
@@ -71,7 +65,6 @@ class CourseReviewsDataSource {
       json.remove('createdAt');
     }
     await reviewRef.set(json, SetOptions(merge: true));
-    await _recomputeAggregate(courseId);
   }
 
   Future<void> delete({
@@ -79,32 +72,5 @@ class CourseReviewsDataSource {
     required String userId,
   }) async {
     await _reviews(courseId).doc(userId).delete();
-    await _recomputeAggregate(courseId);
-  }
-
-  Future<void> _recomputeAggregate(String courseId) async {
-    final snap = await _reviews(courseId).get();
-    final docs = snap.docs;
-    if (docs.isEmpty) {
-      await _course(courseId).update({
-        'rating': 0,
-        'reviewCount': 0,
-      });
-      return;
-    }
-    var total = 0;
-    var count = 0;
-    for (final d in docs) {
-      final r = (d.data()['rating'] as num?)?.toInt() ?? 0;
-      if (r > 0) {
-        total += r;
-        count += 1;
-      }
-    }
-    final avg = count == 0 ? 0.0 : total / count;
-    await _course(courseId).update({
-      'rating': double.parse(avg.toStringAsFixed(2)),
-      'reviewCount': count,
-    });
   }
 }

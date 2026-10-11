@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../l10n/l10n.dart';
 
 /// What kind of media a lecture exposes — drives the icon, the player surface,
 /// and whether it streams or downloads.
@@ -8,10 +9,21 @@ enum LectureType {
   pdf('pdf', 'PDF'),
   doc('doc', 'Document');
 
-  const LectureType(this.id, this.label);
+  const LectureType(this.id, this.englishLabel);
 
   final String id;
-  final String label;
+  final String englishLabel;
+
+  /// Localized display label (app language).
+  String get label {
+    final t = L10n.current;
+    return switch (this) {
+      LectureType.video => t.lectureTypeVideo,
+      LectureType.audio => t.lectureTypeAudio,
+      LectureType.pdf => t.lectureTypePdf,
+      LectureType.doc => t.lectureTypeDoc,
+    };
+  }
 
   static LectureType fromId(String id) => LectureType.values.firstWhere(
         (e) => e.id == id,

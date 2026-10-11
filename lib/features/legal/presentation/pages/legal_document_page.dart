@@ -31,6 +31,14 @@ enum LegalDocument {
     }
   }
 
+  /// Localized variant (`<name>_<lang>.md`), e.g. `privacy_policy_vi.md`.
+  /// The Vietnamese files are reference translations — the English text
+  /// prevails (each translation says so at the top).
+  String assetPathFor(String languageCode) {
+    if (languageCode == 'en') return assetPath;
+    return assetPath.replaceFirst('.md', '_$languageCode.md');
+  }
+
   /// Localized AppBar title.
   String titleFor(AppLocalizations t) {
     switch (this) {
@@ -39,7 +47,7 @@ enum LegalDocument {
       case LegalDocument.termsOfService:
         return t.legalTermsOfServiceTitle;
       case LegalDocument.communityGuidelines:
-        return 'Community Guidelines';
+        return t.legalCommunityGuidelinesTitle;
     }
   }
 
@@ -78,12 +86,29 @@ class LegalDocumentPage extends StatefulWidget {
 }
 
 class _LegalDocumentPageState extends State<LegalDocumentPage> {
-  late final Future<String> _content;
+  Future<String>? _content;
+  String? _lang;
 
   @override
-  void initState() {
-    super.initState();
-    _content = rootBundle.loadString(widget.document.assetPath);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final lang = Localizations.localeOf(context).languageCode;
+    if (lang == _lang) return;
+    _lang = lang;
+    _content = _load(lang);
+  }
+
+  /// App-language version first, English as the fallback.
+  Future<String> _load(String lang) async {
+    final doc = widget.document;
+    if (lang != 'en') {
+      try {
+        return await rootBundle.loadString(doc.assetPathFor(lang));
+      } catch (_) {
+        // No translation bundled — fall through to English.
+      }
+    }
+    return rootBundle.loadString(doc.assetPath);
   }
 
   @override

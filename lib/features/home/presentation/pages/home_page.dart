@@ -15,6 +15,7 @@ import '../../../courses/presentation/widgets/course_card.dart';
 import '../../../courses/presentation/widgets/course_carousel_skeleton.dart';
 import '../../../learning_paths/presentation/widgets/learning_paths_rail.dart';
 import '../../../progress/presentation/widgets/continue_learning_rail.dart';
+import '../../../../l10n/l10n.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -48,7 +49,7 @@ class HomePage extends ConsumerWidget {
                 children: [
                   const Spacer(),
                   IconButton(
-                    tooltip: 'Search',
+                    tooltip: context.l10n.commonSearch,
                     icon: const Icon(Icons.search),
                     onPressed: () => context.goNamed(RouteNames.search),
                   ),

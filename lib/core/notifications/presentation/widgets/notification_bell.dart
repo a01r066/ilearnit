@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../routing/route_names.dart';
 import '../../../theme/app_colors.dart';
 import '../inbox_providers.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Bell IconButton with an unread-count badge. Tap routes to the in-app
 /// inbox.
@@ -24,7 +25,7 @@ class NotificationBell extends ConsumerWidget {
       children: [
         IconButton(
           icon: Icon(Icons.notifications_outlined, color: iconColor),
-          tooltip: 'Notifications',
+          tooltip: context.l10n.notificationsInboxTitle,
           onPressed: () => context.pushNamed(RouteNames.notificationsInbox),
         ),
         if (count > 0)

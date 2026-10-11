@@ -74,22 +74,16 @@ class FcmService {
   /// Initialize the service. Idempotent — calling twice is safe but the
   /// second call is a no-op.
   Future<void> init() async {
-    // 1. Permission. On iOS this shows the system prompt; on Android 13+
-    //    it shows the new POST_NOTIFICATIONS permission prompt. On older
-    //    Android it's a no-op that returns authorized.
-    final settings = await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    // 1. Permission — READ only. We never prompt at cold start: the
+    //    onboarding "soft ask" step calls [requestPermission] after a
+    //    rationale screen. (Prompting here fired the system dialog before
+    //    any UI, and on iOS a denial can't be re-asked.) Listeners below
+    //    are wired regardless so they work as soon as permission lands.
+    final settings = await _messaging.getNotificationSettings();
     permissionStatus = settings.authorizationStatus;
-
-    if (permissionStatus == AuthorizationStatus.denied) {
-      if (kDebugMode) {
-        debugPrint('[fcm] Permission denied — push notifications will not '
-            'be displayed. The user can re-enable in OS settings.');
-      }
-      return;
+    if (kDebugMode &&
+        permissionStatus == AuthorizationStatus.denied) {
+      debugPrint('[fcm] Notifications denied — re-enable in OS settings.');
     }
 
     // 2. Foreground messages → forward to local notifications so they
@@ -158,8 +152,10 @@ class FcmService {
     });
   }
 
-  /// Remove the current device's token from a user's profile and stop
-  /// listening for refreshes. Call on sign-out.
+  /// Remove the current device's token from [uid]'s profile and stop
+  /// listening for refreshes. MUST run while [uid] is still signed in —
+  /// rules only let the owner update `users/{uid}`. Called from the
+  /// before-sign-out hook and on account switch.
   Future<void> unbindUser(String uid) async {
     await _tokenSub?.cancel();
     _tokenSub = null;
@@ -171,6 +167,24 @@ class FcmService {
       },
       SetOptions(merge: true),
     );
+  }
+
+  /// Invalidate this device's FCM token. Runs after sign-out (any path:
+  /// logout, account deletion, revoked session). Even if the Firestore
+  /// removal in [unbindUser] never happened, a deleted token is rejected
+  /// by FCM (`UNREGISTERED`), so the previous user's pushes stop arriving
+  /// on this device. The next [bindUser] fetches a fresh token.
+  Future<void> resetToken() async {
+    await _tokenSub?.cancel();
+    _tokenSub = null;
+    try {
+      await _messaging.deleteToken();
+      // Topic subscriptions die with the old token; guests still get
+      // app-wide broadcasts.
+      await subscribeToTopic(NotificationTopics.allUsers);
+    } catch (e) {
+      if (kDebugMode) debugPrint('[fcm] deleteToken failed: $e');
+    }
   }
 
   /// Re-request notification permission outside of [init].

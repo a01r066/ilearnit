@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/lecture_entity.dart';
 import '../../domain/entities/lecture_type.dart';
+import '../../../../l10n/l10n.dart';
 
 /// One row inside a [SectionTile]'s expanded body.
 ///
@@ -123,9 +124,9 @@ class LectureTile extends StatelessWidget {
                   color: AppColors.success.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
-                  'Preview',
-                  style: TextStyle(
+                child: Text(
+                  context.l10n.lecturePreviewBadge,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: AppColors.success,
@@ -133,7 +134,12 @@ class LectureTile extends StatelessWidget {
                 ),
               )
             else if (!isAccessible)
-              Icon(Icons.lock_outline_rounded, size: 18, color: hint),
+              Icon(
+                Icons.lock_outline_rounded,
+                size: 18,
+                color: hint,
+                semanticLabel: context.l10n.lectureLockedLabel,
+              ),
           ],
         ),
       ),

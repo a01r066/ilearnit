@@ -145,7 +145,10 @@ so the grid never jumps when results arrive.
 - **Predictive prefetch.** Trigger `loadNextPage()` at 60% instead of
   80% if the previous page's fetch latency was under 300ms. Reduces
   perceived loading to zero on fast connections.
-- **Composite index for sort changes.** As of v1 the catalogue is
-  sorted by `publishedAt desc` on the server side. Adding "sort by
+- **Composite index for sort changes.** As of v1 the catalogue query
+  is `where('status', '==', 'published')` (+ optional `category` /
+  `isFeatured`) ordered by `publishedAt desc` — the status filter is
+  required by `firestore.rules` for list queries, and each combination
+  has a composite index in `firestore.indexes.json`. Adding "sort by
   popularity" or "sort by rating" would need composite indexes —
   documented in `docs/go_live_roadmap.md` Ops-6.

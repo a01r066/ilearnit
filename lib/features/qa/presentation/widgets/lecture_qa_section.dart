@@ -17,6 +17,7 @@ import '../providers/qa_keys.dart';
 import '../providers/qa_providers.dart';
 import 'verified_instructor_badge.dart';
 import 'write_question_sheet.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Compact Q&A section embedded inside the lecture body. Shows the
 /// most recent questions + "Ask a question" CTA + "See all" link to
@@ -68,7 +69,7 @@ class LectureQASection extends ConsumerWidget {
               label: Text(t.qaAsk),
               onPressed: () async {
                 if (user == null) {
-                  context.showSnack('Sign in to ask a question.');
+                  context.showSnack(context.l10n.qaSignInToAsk);
                   context.goNamed(RouteNames.login);
                   return;
                 }
@@ -267,10 +268,11 @@ class _QuestionRow extends StatelessWidget {
 
   static String _relative(DateTime when) {
     final diff = DateTime.now().difference(when);
-    if (diff.inMinutes < 1) return 'just now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m';
-    if (diff.inDays < 1) return '${diff.inHours}h';
-    if (diff.inDays < 7) return '${diff.inDays}d';
+    final t = L10n.current;
+    if (diff.inMinutes < 1) return t.timeJustNow;
+    if (diff.inHours < 1) return t.timeMinutesShort('${diff.inMinutes}');
+    if (diff.inDays < 1) return t.timeHoursShort('${diff.inHours}');
+    if (diff.inDays < 7) return t.timeDaysShort('${diff.inDays}');
     return DateFormat.yMMMd().format(when);
   }
 }

@@ -37,6 +37,18 @@ class F {
     }
   }
 
+  /// Android applicationId for this flavor (see android/app/flavorizr.gradle.kts).
+  /// Used for the Play "manage subscription" deep link. (The server reads
+  /// its own ANDROID_PACKAGE_NAME param for Play API calls.)
+  static String get androidPackageName {
+    switch (appFlavor) {
+      case Flavor.dev:
+        return 'info.ilearnit.app.dev';
+      case Flavor.prod:
+        return 'info.ilearnit.app';
+    }
+  }
+
   static String get firebaseProjectId {
     switch (appFlavor) {
       case Flavor.dev:

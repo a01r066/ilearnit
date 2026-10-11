@@ -7,6 +7,7 @@ import '../../../shared/providers/firebase_providers.dart';
 import '../../auth/presentation/providers/auth_providers.dart';
 import 'eula_acceptance_service.dart';
 import 'eula_version.dart';
+import '../../../l10n/l10n.dart';
 
 /// One-shot re-acceptance prompt for users whose stored
 /// `eulaAcceptedVersion` is older than [kCurrentEulaVersion].
@@ -96,7 +97,7 @@ class _EulaSheetState extends ConsumerState<_EulaSheet> {
       if (!mounted) return;
       setState(() => _accepting = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not accept: $e')),
+        SnackBar(content: Text(context.l10n.eulaAcceptFailed)),
       );
     }
   }
@@ -120,15 +121,13 @@ class _EulaSheetState extends ConsumerState<_EulaSheet> {
                   Icon(Icons.handshake_outlined,
                       color: theme.colorScheme.primary),
                   const SizedBox(width: 8),
-                  Text('Updated agreement',
+                  Text(context.l10n.eulaUpdatedTitle,
                       style: theme.textTheme.titleLarge),
                 ],
               ),
               const SizedBox(height: 8),
               Text(
-                'We\'ve updated our Terms and Community Guidelines '
-                '($kCurrentEulaPublishedLabel). Please review and accept '
-                'to continue using iLearnIt.',
+                context.l10n.eulaUpdatedBody(kCurrentEulaPublishedLabel),
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: 16),
@@ -142,7 +141,7 @@ class _EulaSheetState extends ConsumerState<_EulaSheet> {
                                 RouteNames.legal,
                                 pathParameters: {'slug': 'terms'},
                               ),
-                      child: const Text('Read terms'),
+                      child: Text(context.l10n.eulaReadTerms),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -154,7 +153,7 @@ class _EulaSheetState extends ConsumerState<_EulaSheet> {
                                 RouteNames.legal,
                                 pathParameters: {'slug': 'community'},
                               ),
-                      child: const Text('Read guidelines'),
+                      child: Text(context.l10n.eulaReadGuidelines),
                     ),
                   ),
                 ],
@@ -170,7 +169,7 @@ class _EulaSheetState extends ConsumerState<_EulaSheet> {
                           width: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('I accept'),
+                      : Text(context.l10n.eulaAccept),
                 ),
               ),
             ],

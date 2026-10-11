@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/utils/extensions.dart';
 import '../providers/review_form_state.dart';
 import '../providers/reviews_providers.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Modal bottom sheet for writing or editing the user's own review.
 ///
@@ -81,7 +82,7 @@ class _WriteReviewSheetState extends ConsumerState<WriteReviewSheet> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                hasExisting ? 'Edit your review' : 'Write a review',
+                hasExisting ? context.l10n.reviewEdit : context.l10n.reviewWrite,
                 style: context.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
@@ -97,9 +98,9 @@ class _WriteReviewSheetState extends ConsumerState<WriteReviewSheet> {
                 minLines: 3,
                 maxLines: 8,
                 maxLength: 600,
-                decoration: const InputDecoration(
-                  labelText: 'Your review (optional)',
-                  hintText: 'What did you think of the course?',
+                decoration: InputDecoration(
+                  labelText: context.l10n.reviewBodyLabel,
+                  hintText: context.l10n.reviewBodyHint,
                 ),
                 onChanged: notifier.setBody,
               ),
@@ -115,7 +116,7 @@ class _WriteReviewSheetState extends ConsumerState<WriteReviewSheet> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Submit'),
+                    : Text(context.l10n.commonSubmit),
               ),
               if (hasExisting) ...[
                 const SizedBox(height: 8),
@@ -126,30 +127,28 @@ class _WriteReviewSheetState extends ConsumerState<WriteReviewSheet> {
                           final ok = await showDialog<bool>(
                             context: context,
                             builder: (ctx) => AlertDialog(
-                              title: const Text('Delete your review?'),
-                              content: const Text(
-                                  'This will remove your rating and review '
-                                  'from this course.'),
+                              title: Text(ctx.l10n.reviewDeleteTitle),
+                              content: Text(ctx.l10n.reviewDeleteBody),
                               actions: [
                                 TextButton(
                                   onPressed: () =>
                                       Navigator.of(ctx).pop(false),
-                                  child: const Text('Cancel'),
+                                  child: Text(ctx.l10n.commonCancel),
                                 ),
                                 FilledButton(
                                   style: FilledButton.styleFrom(
                                       backgroundColor: Colors.red),
                                   onPressed: () =>
                                       Navigator.of(ctx).pop(true),
-                                  child: const Text('Delete'),
+                                  child: Text(ctx.l10n.commonDelete),
                                 ),
                               ],
                             ),
                           );
                           if (ok == true) await notifier.deleteMine();
                         },
-                  child: const Text('Delete my review',
-                      style: TextStyle(color: Colors.red)),
+                  child: Text(context.l10n.reviewDeleteMine,
+                      style: const TextStyle(color: Colors.red)),
                 ),
               ],
             ],
@@ -174,6 +173,8 @@ class _StarPicker extends StatelessWidget {
         final filled = i < rating;
         return IconButton(
           iconSize: 40,
+          tooltip: context.l10n.a11yRateStars('${i + 1}'),
+          isSelected: filled,
           icon: Icon(
             filled ? Icons.star_rounded : Icons.star_border_rounded,
             color: _gold,

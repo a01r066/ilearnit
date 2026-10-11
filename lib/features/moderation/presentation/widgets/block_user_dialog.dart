@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/moderation_providers.dart';
+import '../../../../l10n/l10n.dart';
 
 /// AlertDialog that confirms a block, then writes to
 /// `users/{viewerUid}/blocks/{authorUid}`. The blocked author's
@@ -43,24 +44,22 @@ class _BlockUserDialogState extends ConsumerState<BlockUserDialog> {
       if (!mounted) return;
       setState(() => _busy = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not block: $e')),
+        SnackBar(content: Text(context.l10n.blockFailed)),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final name = widget.authorName.isEmpty ? 'this user' : widget.authorName;
+    final t = context.l10n;
+    final name = widget.authorName.isEmpty ? t.blockThisUser : widget.authorName;
     return AlertDialog(
-      title: Text('Block $name?'),
-      content: Text(
-        "You won't see any reviews, questions, answers, or notes from "
-        "$name. They won't be notified.",
-      ),
+      title: Text(t.blockTitle(name)),
+      content: Text(t.blockBody(name)),
       actions: [
         TextButton(
           onPressed: _busy ? null : () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: Text(t.commonCancel),
         ),
         FilledButton.tonal(
           onPressed: _busy ? null : _block,
@@ -70,7 +69,7 @@ class _BlockUserDialogState extends ConsumerState<BlockUserDialog> {
                   width: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Block'),
+              : Text(t.blockAction),
         ),
       ],
     );

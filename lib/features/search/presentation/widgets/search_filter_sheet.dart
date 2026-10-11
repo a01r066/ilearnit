@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../courses/domain/entities/instrument_category.dart';
 import '../../domain/entities/search_filter.dart';
+import '../../../../l10n/l10n.dart';
 
 /// Bottom sheet for adjusting the [SearchFilter]. Returns the new filter
 /// via [Navigator.pop] on Apply; returns null on Cancel / dismiss.
@@ -81,18 +82,21 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
               Row(
                 children: [
                   Expanded(
-                    child: Text('Filters',
+                    child: Text(context.l10n.filterTitle,
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w800,
                         )),
                   ),
-                  TextButton(onPressed: _reset, child: const Text('Reset')),
+                  TextButton(
+                    onPressed: _reset,
+                    child: Text(context.l10n.filterReset),
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
 
               // Instrument
-              _SectionLabel(label: 'Instrument'),
+              _SectionLabel(label: context.l10n.filterInstrument),
               Wrap(
                 spacing: 8,
                 children: [
@@ -108,7 +112,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
               ),
 
               const SizedBox(height: 16),
-              _SectionLabel(label: 'Level'),
+              _SectionLabel(label: context.l10n.filterLevel),
               Wrap(
                 spacing: 8,
                 children: [
@@ -124,7 +128,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
               ),
 
               const SizedBox(height: 16),
-              _SectionLabel(label: 'Minimum rating'),
+              _SectionLabel(label: context.l10n.filterMinRating),
               Slider(
                 value: _minRating,
                 onChanged: (v) => setState(() => _minRating = v),
@@ -132,12 +136,12 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
                 max: 5,
                 divisions: 10,
                 label: _minRating == 0
-                    ? 'Any'
+                    ? context.l10n.filterAny
                     : _minRating.toStringAsFixed(1),
               ),
 
               const SizedBox(height: 8),
-              _SectionLabel(label: 'Max price'),
+              _SectionLabel(label: context.l10n.filterMaxPrice),
               Wrap(
                 spacing: 8,
                 children: [
@@ -156,8 +160,8 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
                   minimumSize: const Size.fromHeight(52),
                 ),
                 onPressed: _apply,
-                child: const Text('Apply',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
+                child: Text(context.l10n.filterApply,
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
               ),
             ],
           ),
@@ -167,7 +171,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
   }
 
   String _priceLabel(int? vnd) {
-    if (vnd == null) return 'Any';
+    if (vnd == null) return context.l10n.filterAny;
     return '≤ ₫${_thousands(vnd)}';
   }
 

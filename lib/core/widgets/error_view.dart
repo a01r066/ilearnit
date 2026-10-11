@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_text_styles.dart';
+import '../../l10n/l10n.dart';
 
 class ErrorView extends StatelessWidget {
   const ErrorView({super.key, required this.message, this.onRetry});
@@ -29,7 +30,10 @@ class ErrorView extends StatelessWidget {
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 16),
-              FilledButton.tonal(onPressed: onRetry, child: const Text('Retry')),
+              FilledButton.tonal(
+                onPressed: onRetry,
+                child: Text(context.l10n.commonRetry),
+              ),
             ],
           ],
         ),
